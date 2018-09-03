@@ -82,6 +82,16 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/Records/interface/CaloTopologyRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
+#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
+
 #include "PhysicsTools/Utilities/interface/LumiReWeighting.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -109,11 +119,9 @@ public:
   reco::VertexCollection getMatchedVertex(const pat::Muon & mu, const reco::VertexCollection& vertexCollection);
   reco::VertexCollection PrimaryVertex( const reco::VertexCollection &vtx);
   bool isAncestor(const reco::Candidate* ancestor, const reco::Candidate* particle);
-  /* they do not compile
-  double MatchGenFirstMuon(const edm::Event&,  reco::TrackRef BestTrack);
-  double MatchGenSecondMuon(const edm::Event&,  reco::TrackRef BestTrack);
-  */
-  double MatchGenVertex(const edm::Event& iEvent, reco::Vertex vertex);
+  double MatchGenMuon(const edm::Event&,  reco::TrackRef BestTrack , int pdgId);
+  double MatchGenElectron(const edm::Event& iEvent, const pat::Electron& ele_, int pdgId);
+  double MatchGenVertex(const edm::Event& iEvent, reco::Vertex vertex, int pdgId);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
   
@@ -180,12 +188,13 @@ private:
   edm::EDGetTokenT < std::vector<PileupSummaryInfo> > PUInfoToken_;
   edm::EDGetTokenT                < LHEEventProduct > lheEventProductToken_;
   edm::EDGetTokenT         < reco::VertexCollection > inclusiveSecondaryVertices_;
+  const std::vector<std::string> bDiscriminators_;
   
 protected:
   edm::Handle         < reco::VertexCollection > vtxHandle;
   edm::Handle                         < double > rhoHandle;
   edm::Handle            < pat::MuonCollection > muonsHandle;
-  edm::Handle        < pat::ElectronCollection > electronsHandle;
+  edm::Handle       <std::vector<pat::Electron>> electronsHandle;
   edm::Handle           < EcalRecHitCollection > recHitCollectionEBHandle;
   edm::Handle           < EcalRecHitCollection > recHitCollectionEEHandle;
   edm::Handle             < pat::TauCollection > tausHandle;
@@ -234,7 +243,8 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   genEventInfoToken_(mayConsume<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genEventInfoProduct"))),
   PUInfoToken_(consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("PUInfo"))),
   lheEventProductToken_(mayConsume<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheEventProducts"))),
-  inclusiveSecondaryVertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("SecondaryVertices")))
+  inclusiveSecondaryVertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("SecondaryVertices"))),
+  bDiscriminators_(iConfig.getParameter<std::vector<std::string> >("bDiscriminators"))
 {
 
   //now do what ever initialization is needed
@@ -248,6 +258,8 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_svInfo(tree_);
   ntuple_.set_muInfo(tree_);
+  ntuple_.set_eleInfo(tree_);
+  ntuple_.set_bjetInfo(tree_);
 }
 
 
@@ -316,8 +328,6 @@ reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex(const pat::M
   return matchedVertices;
 }
 
-
-
 reco::VertexCollection HeavyNeutralLeptonAnalysis::PrimaryVertex( const reco::VertexCollection &vtx)
 {
   reco::VertexCollection allPVs;
@@ -341,14 +351,13 @@ bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,cons
     }
   return false;
 }
-/* They do not compile
-//===================================== First Muon Gen Match ================================================//
-int HeavyNeutralLeptonAnalysis::MatchGenFirstMuon(const edm::Event& iEvent, reco::TrackRef BestTrack) {
+//===================================== Muon Gen Match ================================================//
+double HeavyNeutralLeptonAnalysis::MatchGenMuon(const edm::Event& iEvent, reco::TrackRef BestTrack, int pdgId) {
   double minDeltaR=999;
   double recoGenDeltaR_ = 0.2;
   int genIndex=-999;
     for(size_t i = 0; i<genHandle->size(); i++){
-      if(abs((*genHandle)[i].pdgId()) == 13 && abs((*genHandle)[i].mother()->pdgId()) == 24) {
+      if(abs((*genHandle)[i].pdgId()) == 13 && abs((*genHandle)[i].mother()->pdgId()) == pdgId) {
 	const reco::Candidate * WBoson = (*genHandle)[i].mother();
 	for(size_t j = 0; j<genHandle->size(); j++){
 	  const reco::Candidate * part = (*genHandle)[j].mother(0) ;
@@ -367,39 +376,39 @@ int HeavyNeutralLeptonAnalysis::MatchGenFirstMuon(const edm::Event& iEvent, reco
   if (minDeltaR<recoGenDeltaR_) return genIndex;
   else return -999;
 }
-//===================================== Second Muon Gen Match ================================================// 
-int HeavyNeutralLeptonAnalysis::MatchGenSecondMuon(const edm::Event& iEvent,reco::TrackRef BestTrack) {
+//===================================== Electron Gen Match ================================================// 
+double HeavyNeutralLeptonAnalysis::MatchGenElectron(const edm::Event& iEvent, const pat::Electron& ele_, int pdgId) {
   double minDeltaR=999;
   double recoGenDeltaR_ = 0.2;
   int genIndex=-999;
-    for(size_t i = 0; i<genHandle->size(); i++){
-      if(abs((*genHandle)[i].pdgId()) == 13 && (*genHandle)[i].mother()->pdgId() == 9900014) {
-	const reco::Candidate * HNL = (*genHandle)[i].mother();
-	for(size_t j = 0; j<genHandle->size(); j++){
-	  const reco::Candidate * part = (*genHandle)[j].mother(0) ;
-	  if(part != nullptr && isAncestor( HNL , part) ){
-	    if( (*genHandle)[j].status() == 1 && abs((*genHandle)[j].pdgId()) == 13 ){
-	      double dR=deltaR(BestTrack->eta(),BestTrack->phi(),(*genHandle)[j].eta(),(*genHandle)[j].phi());
-	      if (dR<minDeltaR) {
-		minDeltaR = dR;
-		genIndex=j;
-	      }// end of DR   
-	    } //end of status==1 && partID==13                                                                                                     
-	  }//isAncestor                                                                                                                            
-	}//end of loop over gen particles                                                                                                          
-      }//end of Idetitfictaion of HNL                                                                                                              
-    }// end of loop over gen particles                                                                                                              
+  for(size_t i = 0; i<genHandle->size(); i++){
+    if(abs((*genHandle)[i].pdgId()) == 11 && abs((*genHandle)[i].mother()->pdgId()) == pdgId) {
+      const reco::Candidate * WBoson = (*genHandle)[i].mother();
+      for(size_t j = 0; j<genHandle->size(); j++){
+	const reco::Candidate * part = (*genHandle)[j].mother(0) ;
+	if(part != nullptr && isAncestor( WBoson , part) ){
+	  if( (*genHandle)[j].status() == 1 && abs((*genHandle)[j].pdgId()) == 11 ){
+	    double dR=deltaR(ele_.eta(),ele_.phi(),(*genHandle)[j].eta(),(*genHandle)[j].phi());
+	    if (dR<minDeltaR) {
+	      minDeltaR = dR;
+	      genIndex = j;
+	    }// end of DR
+	  } //end of status==1 && partID==11
+	}//isAncestor
+      }//end of loop over gen particles
+    }//end of Idetitfictaion of WBoson  
+  }// end of loop over gen particles                                            
   if (minDeltaR<recoGenDeltaR_) return genIndex;
   else return -999;
 }
-*/
+
 //===================================== Displaced Vertex Gen Match ================================================// 
-double HeavyNeutralLeptonAnalysis::MatchGenVertex(const edm::Event& iEvent, reco::Vertex vertex) {
+double HeavyNeutralLeptonAnalysis::MatchGenVertex(const edm::Event& iEvent, reco::Vertex vertex, int pdgId) {
   double minDVertex=999;
   double MinDistance_ = 0.2;
   int genIndex=-999;
   for(size_t i = 0; i<genHandle->size(); i++){
-    if(abs((*genHandle)[i].pdgId()) == 13 && (*genHandle)[i].mother()->pdgId() == 9900014) {
+    if(abs((*genHandle)[i].pdgId()) == pdgId && (*genHandle)[i].mother()->pdgId() == 9900012) {
       const reco::Candidate * HNL = (*genHandle)[i].mother();
       for(size_t j = 0; j<genHandle->size(); j++){
 	const reco::Candidate * part = (*genHandle)[j].mother(0) ;
@@ -421,8 +430,6 @@ double HeavyNeutralLeptonAnalysis::MatchGenVertex(const edm::Event& iEvent, reco
   if (minDVertex<MinDistance_) return genIndex;
   else return -999;
 }
-
-
 // ------------ method called for each event  ------------
 void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
@@ -441,7 +448,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   reco::VertexCollection pvs = PrimaryVertex(*vtxHandle);  
   if(!pvs.size()) return;
   ntuple_.fill_pvInfo(pvs);    
-
   //=============================================================
    //
    //             Trigger 
@@ -449,16 +455,12 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //=============================================================     
    const edm::TriggerResults triggerResults =  *triggerResultsHandle.product();
    const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
-
-   ntuple_.fill_trigInfo(triggerResults, trigNames);
-    
-
-
-   //=============================================================                                                                                   
-   //                                                                                                                                                
-   //                Method for Muon Tree                                           
-   //                                                                                                                                                
-   //=============================================================                                                                                   
+   ntuple_.fill_trigInfo(triggerResults, trigNames);    
+   //=============================================================
+   //
+   //                Method for Muon Tree
+   //
+   //=============================================================
    std::string muon;
    pat::MuonCollection muons;
 
@@ -478,11 +480,10 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 
    for (const pat::Muon mu : goodMuons){
      reco::TrackRef bestTrack = mu.muonBestTrack();
-     //int matching = (isMC) ? MatchGenFirstMuon(iEvent, bestTrack) : -999;
-     //ntuple_.fill_muInfo(mu, matching);
-
-     //I'm  not sure what  MatchGenFirstMuon and MatchGenSecMuon do. It looks like we can easily to a sigle function for both
-     ntuple_.fill_muInfo(mu, pvs.at(0));
+     double matching_1stmu = (isMC) ? MatchGenMuon(iEvent, bestTrack, 24) : -999;
+     double matching_2ndmu = (isMC) ? MatchGenMuon(iEvent, bestTrack, 9900012) : -999;
+     //added the matching
+     ntuple_.fill_muInfo(mu, pvs.at(0) , matching_1stmu , matching_2ndmu);
    }
 
    // lambda function to sort this muons
@@ -490,27 +491,11 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    if(!goodMuons.size()) return;
    if(!looseMuons.size()) return;
    pat::Muon muonHNL = looseMuons[0];
-
-   /*
-     // to add into the fill_muInfo()
-
-   int GenParticleIndex1 = -99;
-   if(isMC )  GenParticleIndex1 = MatchGenFirstMuon(iEvent, tunePTrack);
-   Muon_FirstGenMatch.push_back(GenParticleIndex1);
-   
-   double MatchParticleIndex = -99.99;
-   if(isMC )  MatchParticleIndex = MatchGenSecondMuon(iEvent, tunePTrack);
-   Muon_SecondGenMatch.push_back(MatchParticleIndex);
-   */ 
-   
-   
-
-   //=============================================================                                                                                                       
-   //                                                                                                                                                                     
-   //                Secondary Vertex                                                                                                                                     
-   //                                                                                                                                                                     
-   //=============================================================                                                                                                       
-
+   //=============================================================                    
+   //                     
+   //                Secondary Vertex                     
+   //                     
+   //=============================================================                
    if(secondaryVertexHandle.isValid()){
 
      reco::VertexCollection bestVertices  = getMatchedVertex(muonHNL, *secondaryVertexHandle);
@@ -522,24 +507,39 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        
        float  selIVFIsPVScore = std::sqrt((dx/x)*(dx/x) + (dy/y)*(dy/y) + (dz/z)*(dz/z));       
        if (selIVFIsPVScore < pvCompatibilityScore) continue;
-       ntuple_.fill_svInfo(vtx, pvs.at(0));	 
+       double matching_vtx = (isMC) ? MatchGenVertex(iEvent, vtx , 13) : -999;
+
+       ntuple_.fill_svInfo(vtx, pvs.at(0), matching_vtx);	 
+
      }
 
-       ///  still to be added
-       /*  double GenParticleIndex = -99.99;
-     if(isMC)  GenParticleIndex = MatchGenVertex(iEvent,  bestVertex);
-     VertexMatch.push_back(GenParticleIndex);
-       */
-
-
-     //////////////////////////////////////////////
-   
-
-   EcalRecHitCollection recHitCollectionEB;
+     //////////////////////////////////////////////   
+     EcalRecHitCollection recHitCollectionEB;
    if(recHitCollectionEBHandle.isValid()){ recHitCollectionEB = *recHitCollectionEBHandle;}
-
+   
    EcalRecHitCollection recHitCollectionEE;
    if(recHitCollectionEEHandle.isValid()){ recHitCollectionEE = *recHitCollectionEEHandle;}
+   //============================================================= 
+   //
+   //                Method for electrons
+   //                                                   
+   //============================================================= 
+   // using iterator to get ref for ele
+   for(auto ele = electronsHandle->begin(); ele != electronsHandle->end(); ++ele){
+     if(!(!ele->gsfTrack().isNull() && ele->pt() > 5 && fabs(ele->eta()) < 2.5 ))      continue;
+     
+     double rho = *(rhoHandle.product());
+     
+     auto eleRef = edm::Ref<std::vector<pat::Electron>>(electronsHandle, (ele - electronsHandle->begin()));
+     
+     std::auto_ptr<EcalClusterLazyTools> recHitEcal;
+     recHitEcal.reset(new EcalClusterLazyTools( iEvent, iSetup, recHitEBToken_, recHitEEToken_ ));
+     
+     double matching_1stele = (isMC) ? MatchGenElectron(iEvent, *ele , 24 ) : -999;
+     double matching_2ndele = (isMC) ? MatchGenElectron(iEvent, *ele , 9900012) : -999;
+
+     ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
+   }
 
    pat::TauCollection taus;
    if(tausHandle.isValid()){ taus = *tausHandle;}
@@ -547,41 +547,40 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    pat::PackedCandidateCollection pfCandidates;
    if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
 
-   
-   pat::ElectronCollection electrons;
-   if(electronsHandle.isValid()){ electrons = *electronsHandle;}
-
    //============================================================= 
    //
    //             Jets 
    //       
    //=============================================================
    pat::JetCollection jets;
-
    if(jetsHandle.isValid()){ 
      jets = *jetsHandle;
      for (const pat::Jet jet : jets) {
        if( jet.pt() < 0.0 ) continue;
        if (!( fabs(jet.eta()) < 3 && jet.pt() > 5. )) continue;
        else ntuple_.fill_jetInfo(jet);
+
+       int flavor = std::abs( jet.partonFlavour() );       
+       for( const std::string &bDiscr : bDiscriminators_ )
+	 {
+	   ntuple_.fill_bjetInfo(jet, bDiscr, flavor);
+	 }
+
      }
    }
    //=============================================================
    //
    //            Missing Energy 
    //     
-   //============================================================= 
-   
+   //=============================================================    
    pat::METCollection mets;
    if(metsHandle.isValid()){ 
      mets = *metsHandle;
      const pat::MET met = mets.front();
      ntuple_.fill_metInfo(met);
+   }   
    }
-   
-   }
-   tree_->Fill();
-   
+   tree_->Fill();   
 }
    
 // ------------ method called once each job just before starting event loop  ------------

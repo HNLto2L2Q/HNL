@@ -10,6 +10,12 @@
 <use name="DataFormats/PatCandidates"/>
 <use name="DataFormats/Common"/>
 <use name="FWCore/Framework"/>
+<use name="DataFormats/EcalDetId"/>
+<use name="EgammaAnalysis/ElectronTools"/>
+<use name="Geometry/CaloGeometry"/>
+<use name="Geometry/Records"/>
+<use name="DataFormats/EcalDetId"/>
+<use name="RecoEcal/EgammaCoreTools"/>
 
 <export>
   <lib   name="1"/>

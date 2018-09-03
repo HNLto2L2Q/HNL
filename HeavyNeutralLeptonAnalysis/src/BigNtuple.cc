@@ -160,10 +160,11 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_tracks_dxyz" , &sv_tracks_dxyz_);
     tree->Branch("sv_tracks_Sumcharge" , &sv_tracks_Sumcharge_);
     tree->Branch("sv_tracks_Sumpt" , &sv_tracks_Sumpt_);
+    tree->Branch("sv_match" , &sv_match_);
 }
 
 
-void BigNtuple::fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& pv){
+void BigNtuple::fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& pv , double match){
 
   float  svChi2 = bestVertex.chi2();
   float  svNDof = bestVertex.ndof();
@@ -227,6 +228,7 @@ void BigNtuple::fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& 
   int ch = 0;
   float pt = 0;
 
+  // What is emplace_back(); ?
   sv_tracks_charge_.emplace_back();
   sv_tracks_eta_.emplace_back();
   sv_tracks_phi_.emplace_back();
@@ -246,7 +248,8 @@ void BigNtuple::fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& 
     sv_tracks_dxy_.back().push_back((*tt)->dxy(pv.position()));
     
     ROOT::Math::SVector<double, 3> lxyz1((*tt)->vx()-pv.position().x(), (*tt)->vy()-pv.position().y(), (*tt)->vz()-pv.position().z());
-    float dxyz = (float)ROOT::Math::Mag(lxyz1); // magntude of the vector                                                                                                                 
+    float dxyz = (float)ROOT::Math::Mag(lxyz1); // magntude of the vector
+
     sv_tracks_dxyz_.back().push_back(dxyz);
     ch+=(*tt)->charge();
     pt+=(*tt)->pt();
@@ -254,6 +257,7 @@ void BigNtuple::fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& 
 
   sv_tracks_Sumcharge_.push_back(ch);
   sv_tracks_Sumpt_.push_back(pt);
+  sv_match_.push_back(match);
 }
 
 
@@ -332,15 +336,14 @@ void BigNtuple::fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& 
    tree->Branch("mu_STATofTimeAtIpInOutErr" , &mu_STATofTimeAtIpInOutErr_);
    tree->Branch("mu_STATofTimeAtIpOutIn" , &mu_STATofTimeAtIpOutIn_);
    tree->Branch("mu_STATofTimeAtIpOutInErr" , &mu_STATofTimeAtIpOutInErr_);
-   //tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_, "mu_SecondGenMatch/i");
-   //tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_, "mu_FirstGenMatch/i");
-   
+   tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_);
+   tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_);
 
  }
 
 
 
-void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv){
+void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double match1 , double match2){
 
   mu_isGlobalMuon_.push_back(mu.isGlobalMuon());
   mu_isPF_.push_back(mu.isPFMuon());
@@ -356,24 +359,26 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv){
   mu_eta_.push_back(mu.eta());
   mu_phi_.push_back(mu.phi());
   mu_charge_.push_back(mu.charge());
+  mu_FirstGenMatch_.push_back(match1);
+  mu_SecondGenMatch_.push_back(match2);
 
   reco::TrackRef tunePTrack = mu.muonBestTrack();
 
-  mu_ptTunePMuonBestTrack_.push_back(tunePTrack->pt()); // transverse momentum                                                                                           
-  mu_dPToverPTTunePMuonBestTrack_.push_back(tunePTrack->ptError()/tunePTrack->pt()); // error calculation of transverse momentum                                         
-  mu_pxTunePMuonBestTrack_.push_back(tunePTrack->px()); //px component of the track                                                                                      
-  mu_pyTunePMuonBestTrack_.push_back(tunePTrack->py()); //py component of the track                                                                                      
-  mu_pzTunePMuonBestTrack_.push_back(tunePTrack->pz()); //pz component of the track                                                                                      
-  mu_pTunePMuonBestTrack_.push_back(tunePTrack->p());   //magnitude of momentum vector                                                                                   
+  mu_ptTunePMuonBestTrack_.push_back(tunePTrack->pt()); // transverse momentum                    
+  mu_dPToverPTTunePMuonBestTrack_.push_back(tunePTrack->ptError()/tunePTrack->pt()); // error calculation of transverse momentum
+  mu_pxTunePMuonBestTrack_.push_back(tunePTrack->px()); //px component of the track
+  mu_pyTunePMuonBestTrack_.push_back(tunePTrack->py()); //py component of the track  
+  mu_pzTunePMuonBestTrack_.push_back(tunePTrack->pz()); //pz component of the track
+  mu_pTunePMuonBestTrack_.push_back(tunePTrack->p());   //magnitude of momentum vector
   mu_etaTunePMuonBestTrack_.push_back(tunePTrack->eta());
   mu_phiTunePMuonBestTrack_.push_back(tunePTrack->phi());
   mu_thetaTunePMuonBestTrack_.push_back(tunePTrack->theta());
   mu_chargeTunePMuonBestTrack_.push_back(tunePTrack->charge());
-  mu_absdxyTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))); //transvers  impact parameter  w.r.t. the primary vertex                                 
-  mu_absdxyErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxyError())); //transvers  impact parameter  w.r.t. the primary vertex                                    
+  mu_absdxyTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))); //transvers  impact parameter  w.r.t. the primary vertex
+  mu_absdxyErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxyError())); //transvers  impact parameter  w.r.t. the primary vertex
   mu_absdxySigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))/fabs(tunePTrack->dxyError()));
-  mu_absdzTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))); // longitudinal impact parameter  w.r.t. the primary vertex                                
-  mu_absdzErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dzError())); // longitudinal impact parameter  w.r.t. the primary vertex                                   
+  mu_absdzTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))); // longitudinal impact parameter  w.r.t. the primary vertex
+  mu_absdzErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dzError())); // longitudinal impact parameter  w.r.t. the primary vertex
   mu_absdzSigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))/fabs(tunePTrack->dzError()));
   mu_TrackQuality_.push_back(tunePTrack->quality(reco::TrackBase::highPurity));
 
@@ -391,19 +396,18 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv){
     mu_STAnHits_.push_back(mu.standAloneMuon()->numberOfValidHits());
     mu_STAnLost_.push_back(mu.standAloneMuon()->numberOfLostHits());
     mu_STAnStationsWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().muonStationsWithAnyHits());
-    mu_STAnCscChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithAnyHits()); //csc chambers in track fit                                    
-    mu_STAnDtChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithAnyHits()); //dt chambers in track fit                                       
-    mu_STAnRpcChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithAnyHits()); //rpc chambers in track fit                                    
+    mu_STAnCscChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithAnyHits()); //csc chambers in track fit
+    mu_STAnDtChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithAnyHits()); //dt chambers in track fit 
+    mu_STAnRpcChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithAnyHits()); //rpc chambers in track fit
     mu_STAinnermostStationWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().innermostMuonStationWithAnyHits());
     mu_STAoutermostStationWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().outermostMuonStationWithAnyHits());
-    mu_STAnCscChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithValidHits()); //csc chambers anywhere near track                         
-
-    mu_STAnDtChambersWithValidHit_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithValidHits()); //dt chambers anywhere near track                             
-    mu_STAnRpcChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithValidHits()); //rpc chambers anywhere near track                         
-    mu_STAnValidCscHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonCSCHits()); //CSC hits anywhere near track                                         
-    mu_STAnValidDtHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonDTHits()); //DT hits anywhere near track                                            
-    mu_STAnValidRpcHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonRPCHits()); //RPC hits anywhere near track                                         
-    mu_STAnValidMuonHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonHits()); //muon hits anywhere near track                                          
+    mu_STAnCscChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithValidHits()); //csc chambers anywhere near track
+    mu_STAnDtChambersWithValidHit_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithValidHits()); //dt chambers anywhere near track
+    mu_STAnRpcChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithValidHits()); //rpc chambers anywhere near track
+    mu_STAnValidCscHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonCSCHits()); //CSC hits anywhere near track
+    mu_STAnValidDtHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonDTHits()); //DT hits anywhere near track
+    mu_STAnValidRpcHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonRPCHits()); //RPC hits anywhere near track
+    mu_STAnValidMuonHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonHits()); //muon hits anywhere near track
     mu_STAinnermostStationWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().innermostMuonStationWithValidHits());
     mu_STAoutermostStationWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().outermostMuonStationWithValidHits());
     mu_STAnStationsWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().muonStationsWithValidHits());
@@ -475,8 +479,198 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet){
 
 }
 
+void BigNtuple::set_eleInfo(TTree* tree){
+  /*
+  tree->Branch("ele_Mva",&ele_Mva_);
+  tree->Branch("ele_MvaFall17Iso",&ele_MvaFall17Iso_);
+  tree->Branch("ele_MvaFall17NoIso",&ele_MvaFall17NoIso_);
+  tree->Branch("ele_CutBasedVeto",&ele_CutBasedVeto_);
+  tree->Branch("ele_CutBasedLoose",&ele_CutBasedLoose_);
+  tree->Branch("ele_CutBasedMedium",&ele_CutBasedMedium_);
+  tree->Branch("ele_CutBasedTight",&ele_CutBasedTight_);
+  */
+  tree->Branch("ele_Et",&ele_Et_);
+  tree->Branch("ele_EtFromCaloEn",&ele_EtFromCaloEn_);    
+  tree->Branch("ele_pt",&ele_pt_); 
+  tree->Branch("ele_etaSC",&ele_etaSC_);
+  tree->Branch("ele_phiSC",&ele_phiSC_);
+  tree->Branch("ele_phiWidth",&ele_phiWidth_); 
+  tree->Branch("ele_etaWidth",&ele_etaWidth_); 
+  tree->Branch("ele_energySC",&ele_energySC_);
+  tree->Branch("ele_thetaSC",&ele_thetaSC_);
+  tree->Branch("ele_preshowerEnergySC",&ele_preshowerEnergySC_);    
+  tree->Branch("ele_etaTrack",&ele_etaTrack_); 
+  tree->Branch("ele_phiTrack",&ele_phiTrack_);
+  tree->Branch("ele_thetaTrack",&ele_thetaTrack_);     
+  tree->Branch("ele_x",&ele_x_);
+  tree->Branch("ele_y",&ele_y_);
+  tree->Branch("ele_z",&ele_z_);    
+  tree->Branch("ele_e2x5Max",&ele_e2x5Max_);
+  tree->Branch("ele_e1x5",&ele_e1x5_);
+  tree->Branch("ele_e5x5",&ele_e5x5_);
+  tree->Branch("ele_e2x5MaxOver5x5",&ele_e2x5MaxOver5x5_);
+  tree->Branch("ele_e1x5Over5x5",&ele_e1x5Over5x5_);
+  tree->Branch("ele_sigmaIetaIetaFull5x5",&ele_sigmaIetaIetaFull5x5_);
+  tree->Branch("ele_e2x5MaxFull5x5",&ele_e2x5MaxFull5x5_);
+  tree->Branch("ele_e1x5Full5x5",&ele_e1x5Full5x5_);
+  tree->Branch("ele_e5x5Full5x5",&ele_e5x5Full5x5_);
+  tree->Branch("ele_e2x5MaxOver5x5Full5x5",&ele_e2x5MaxOver5x5Full5x5_);
+  tree->Branch("ele_e1x5Over5x5Full5x5",&ele_e1x5Over5x5Full5x5_);    
+  tree->Branch("ele_zTrackPositionAtVtx",&ele_zTrackPositionAtVtx_);
+  tree->Branch("ele_hadronicOverEm",&ele_hadronicOverEm_);
+  tree->Branch("ele_deltaEtaInSC",&ele_deltaEtaInSC_);
+  tree->Branch("ele_deltaPhiInSC",&ele_deltaPhiInSC_);
+  tree->Branch("ele_deltaEtaInSeedCluster",&ele_deltaEtaInSeedCluster_);
+  tree->Branch("ele_deltaPhiInSeedCluster",&ele_deltaPhiInSeedCluster_);
+  tree->Branch("ele_sigmaIetaIeta",&ele_sigmaIetaIeta_);        
+  tree->Branch("ele_rawId",&ele_rawId_);
+  tree->Branch("ele_ieta",&ele_ieta_);    
+  tree->Branch("ele_e2x5Right",&ele_e2x5Right_);
+  tree->Branch("ele_e2x5Left",&ele_e2x5Left_);
+  tree->Branch("ele_e2x5Top",&ele_e2x5Top_);
+  tree->Branch("ele_e2x5Bottom",&ele_e2x5Bottom_);
+  tree->Branch("ele_eMax",&ele_eMax_);
+  tree->Branch("ele_eRight",&ele_eRight_);
+  tree->Branch("ele_eLeft",&ele_eLeft_);
+  tree->Branch("ele_eTop",&ele_eTop_);
+  tree->Branch("ele_eBottom",&ele_eBottom_);
+  tree->Branch("ele_e3x3",&ele_e3x3_);
+  tree->Branch("ele_frac51",&ele_frac51_);
+  tree->Branch("ele_frac15",&ele_frac15_);           
+  tree->Branch("ele_dxy",&ele_dxy_);
+  tree->Branch("ele_dz",&ele_dz_); 
+  tree->Branch("ele_isEcalDrivenSeed",&ele_isEcalDrivenSeed_);
+  tree->Branch("ele_isPassConversionVeto",&ele_isPassConversionVeto_);
+  tree->Branch("ele_charge",&ele_charge_);
+  tree->Branch("ele_rhoIso",&ele_rhoIso_);
+  tree->Branch("ele_nbOfMissingHits",&ele_nbOfMissingHits_); 
+  tree->Branch("ele_fbrem",&ele_fbrem_);
+  tree->Branch("ele_EoverP",&ele_EoverP_);
+  tree->Branch("ele_Xposition",&ele_Xposition_);   
+  tree->Branch("ele_Yposition",&ele_Yposition_); 
+  tree->Branch("ele_dr03TkSumPt",&ele_dr03TkSumPt_);
+  tree->Branch("ele_hcalDepth1OverEcal",&ele_hcalDepth1OverEcal_);
+  tree->Branch("ele_hcalDepth2OverEcal",&ele_hcalDepth2OverEcal_);
+  tree->Branch("ele_dr03HcalDepth2TowerSumEt",&ele_dr03HcalDepth2TowerSumEt_);
+  tree->Branch("ele_hcalDepth2TowerSumEtNoVeto",&ele_hcalDepth2TowerSumEtNoVeto_); 
+  tree->Branch("ele_hcalDepth1TowerSumEtNoVeto",&ele_hcalDepth1TowerSumEtNoVeto_); 
+  tree->Branch("ele_EcalPlusHcald1iso",&ele_EcalPlusHcald1iso_);
+  tree->Branch("ele_dr03EcalRecHitSumEt",&ele_dr03EcalRecHitSumEt_);
+  tree->Branch("ele_dr03HcalDepth1TowerSumEt",&ele_dr03HcalDepth1TowerSumEt_);
+  tree->Branch("ele_dr03HcalDepth1TowerSumEtBc",&ele_dr03HcalDepth1TowerSumEtBc_);
+  tree->Branch("ele_pfSumPhotonEt",&ele_pfSumPhotonEt_);
+  tree->Branch("ele_pfSumChargedHadronPt",&ele_pfSumChargedHadronPt_); 
+  tree->Branch("ele_pfSumNeutralHadronEt",&ele_pfSumNeutralHadronEt_);
+  tree->Branch("ele_pfSumPUPt",&ele_pfSumPUPt_);  
+  tree->Branch("ele_pfDeltaBeta",&ele_pfDeltaBeta_);
+  tree->Branch("ele_FirstGenMatch",&ele_FirstGenMatch_);
+  tree->Branch("ele_SecondGenMatch", &ele_SecondGenMatch_);
+}
+
+void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, double Rho, double match1, double match2,  std::auto_ptr<EcalClusterLazyTools> recHitEcal){
 
 
+  ele_FirstGenMatch_.push_back(match1);
+  ele_SecondGenMatch_.push_back(match2);
+  ele_Et_.push_back(ele_.superCluster()->energy() * sin(ele_.p4().theta()));
+  ele_EtFromCaloEn_.push_back(ele_.caloEnergy() * sin(ele_.p4().theta()));
+    
+  ele_pt_.push_back(ele_.pt()); 
+  ele_etaSC_.push_back(ele_.superCluster()->eta());    //eta SC
+  ele_phiSC_.push_back(ele_.superCluster()->phi());    //phi SC
+  ele_phiWidth_.push_back(ele_.superCluster()->phiWidth()); 
+  ele_etaWidth_.push_back(ele_.superCluster()->etaWidth()); 
+  ele_energySC_.push_back(ele_.superCluster()->energy()); //energy SC
+  ele_thetaSC_.push_back(ele_.caloPosition().theta()); //theta SC
+  ele_preshowerEnergySC_.push_back(ele_.superCluster()->preshowerEnergy());
+  
+  ele_etaTrack_.push_back(ele_.p4().eta());     //eta track 
+  ele_phiTrack_.push_back(ele_.p4().phi());     //phi track
+  ele_thetaTrack_.push_back(ele_.p4().theta()); //theta track 
+    
+  ele_x_.push_back(ele_.p4().x());
+  ele_y_.push_back(ele_.p4().y());
+  ele_z_.push_back(ele_.p4().z());
+    
+  ele_e2x5Max_.push_back(ele_.e2x5Max());
+  ele_e1x5_.push_back(ele_.e1x5());
+  ele_e5x5_.push_back(ele_.e5x5());
+  ele_e2x5MaxOver5x5_.push_back(ele_.e2x5Max()/ele_.e5x5());
+  ele_e1x5Over5x5_.push_back(ele_.e1x5()/ele_.e5x5());
+  ele_sigmaIetaIetaFull5x5_.push_back(ele_.full5x5_sigmaIetaIeta());
+  ele_e2x5MaxFull5x5_.push_back(ele_.full5x5_e2x5Max());
+  ele_e1x5Full5x5_.push_back(ele_.full5x5_e1x5());
+  ele_e5x5Full5x5_.push_back(ele_.full5x5_e5x5());
+  ele_e2x5MaxOver5x5Full5x5_.push_back(ele_.full5x5_e2x5Max()/ele_.full5x5_e5x5());
+  ele_e1x5Over5x5Full5x5_.push_back(ele_.full5x5_e1x5()/ele_.full5x5_e5x5());
+    
+  ele_zTrackPositionAtVtx_.push_back(ele_.TrackPositionAtVtx().Z());
+  ele_hadronicOverEm_.push_back(ele_.hadronicOverEm());
+  ele_deltaEtaInSC_.push_back(ele_.deltaEtaSuperClusterTrackAtVtx());
+  ele_deltaPhiInSC_.push_back(ele_.deltaPhiSuperClusterTrackAtVtx());
+  ele_deltaEtaInSeedCluster_.push_back(ele_.deltaEtaSeedClusterTrackAtVtx());
+  ele_deltaPhiInSeedCluster_.push_back(ele_.deltaPhiSeedClusterTrackAtCalo());
+  ele_sigmaIetaIeta_.push_back(ele_.sigmaIetaIeta());
+  
+  EBDetId BarrelId = ele_.superCluster()->seed()->seed();
+  
+  ele_rawId_.push_back(BarrelId.rawId());
+  ele_ieta_.push_back(BarrelId.ieta());
+
+  ele_e2x5Right_.push_back(recHitEcal->e2x5Right(*(ele_.superCluster()->seed())));
+  ele_e2x5Left_.push_back(recHitEcal->e2x5Left(*(ele_.superCluster()->seed())));
+  ele_e2x5Top_.push_back(recHitEcal->e2x5Top(*(ele_.superCluster()->seed())));
+  ele_e2x5Bottom_.push_back(recHitEcal->e2x5Bottom(*(ele_.superCluster()->seed())));
+  ele_eMax_.push_back(recHitEcal->eMax(*(ele_.superCluster()->seed())));
+  ele_eRight_.push_back(recHitEcal->eRight(*(ele_.superCluster()->seed())));
+  ele_eLeft_.push_back(recHitEcal->eLeft(*(ele_.superCluster()->seed())));
+  ele_eTop_.push_back(recHitEcal->eTop(*(ele_.superCluster()->seed())));
+  ele_eBottom_.push_back(recHitEcal->eBottom(*(ele_.superCluster()->seed())));
+  ele_e3x3_.push_back(recHitEcal->e3x3(*(ele_.superCluster()->seed())));
+  ele_frac51_.push_back( recHitEcal->e5x1(*(ele_.superCluster()->seed()))/ele_.full5x5_e5x5() );
+  ele_frac15_.push_back( recHitEcal->e1x5(*(ele_.superCluster()->seed()))/ele_.full5x5_e5x5() );
+
+  ele_dxy_.push_back(ele_.gsfTrack()->dxy(pv.position()));   //GSF -> Gaussian Sum Filter
+  ele_dz_.push_back(ele_.gsfTrack()->dz(pv.position())); 
+
+  ele_isEcalDrivenSeed_.push_back(ele_.ecalDrivenSeed());
+  ele_isPassConversionVeto_.push_back(ele_.passConversionVeto());
+  ele_charge_.push_back(ele_.gsfTrack()->charge());
+  ele_rhoIso_.push_back(Rho); //transverse momentum per unit area
+  ele_nbOfMissingHits_.push_back(ele_.gsfTrack()->numberOfLostHits()); 
+  ele_fbrem_.push_back(ele_.fbrem());
+  ele_EoverP_.push_back(ele_.eSeedClusterOverP());
+  ele_Xposition_.push_back(ele_.caloPosition().x());   
+  ele_Yposition_.push_back(ele_.caloPosition().y()); 
+
+    //tracker isolation
+  ele_dr03TkSumPt_.push_back(ele_.dr03TkSumPt());
+    
+    //------------- detector isolation -------------------------
+  ele_hcalDepth1OverEcal_.push_back(ele_.hcalDepth1OverEcal());
+  ele_hcalDepth2OverEcal_.push_back(ele_.hcalDepth2OverEcal());
+  ele_dr03HcalDepth2TowerSumEt_.push_back(ele_.dr03HcalDepth2TowerSumEt());
+  ele_hcalDepth2TowerSumEtNoVeto_.push_back(ele_.isolationVariables03().hcalDepth2TowerSumEt);// hcaldepht2 iso deposit with 
+  // electron footprint removed
+  ele_hcalDepth1TowerSumEtNoVeto_.push_back(ele_.isolationVariables03().hcalDepth1TowerSumEt);// hcaldepht1 iso deposit with 
+  // electron footprint removed
+  ele_EcalPlusHcald1iso_.push_back(ele_.dr03EcalRecHitSumEt() + ele_.dr03HcalDepth1TowerSumEt());
+  ele_dr03EcalRecHitSumEt_.push_back(ele_.dr03EcalRecHitSumEt());
+  ele_dr03HcalDepth1TowerSumEt_.push_back(ele_.dr03HcalDepth1TowerSumEt());
+  ele_dr03HcalDepth1TowerSumEtBc_.push_back(ele_.dr03HcalDepth1TowerSumEtBc());
+  //------------- PF isolation from pat::electron -------------------------
+  ele_pfSumPhotonEt_.push_back(ele_.pfIsolationVariables().sumPhotonEt);
+  ele_pfSumChargedHadronPt_.push_back(ele_.pfIsolationVariables().sumChargedHadronPt); 
+  ele_pfSumNeutralHadronEt_.push_back(ele_.pfIsolationVariables().sumNeutralHadronEt);
+  ele_pfSumPUPt_.push_back(ele_.pfIsolationVariables().sumPUPt);  
+  // deltaBeta
+  double charged   = ele_.pfIsolationVariables().sumPhotonEt;
+  double neutral   = ele_.pfIsolationVariables().sumNeutralHadronEt;
+  double pileup    = ele_.pfIsolationVariables().sumPUPt;
+  double deltaBeta = charged + std::max(0.0, neutral-0.5*pileup);
+  ele_pfDeltaBeta_.push_back(deltaBeta);
+
+}
 
 void BigNtuple::set_metInfo(TTree* tree){
 
@@ -512,4 +706,20 @@ void BigNtuple::fill_metInfo(const pat::MET& met){
 
 }
 
+void BigNtuple::set_bjetInfo(TTree* tree){
+  tree->Branch("jet_btag_pt",&jet_btag_pt);
+  tree->Branch("jet_btag_eta",&jet_btag_eta);
+  tree->Branch("jet_btag_phi",&jet_btag_phi);
+  tree->Branch("jet_btag_flavor",&jet_btag_flavor);
+  tree->Branch("jet_btag_pfCSVv2IVF_discriminator",&jet_btag_pfCSVv2IVF_discriminator);
+}
 
+void BigNtuple::fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscr, int flavor){
+
+  jet_btag_pt.push_back(jet.pt());
+  jet_btag_eta.push_back(jet.eta());
+  jet_btag_phi.push_back(jet.phi());
+  jet_btag_flavor.push_back(flavor);
+  jet_btag_pfCSVv2IVF_discriminator.push_back(jet.bDiscriminator(bDiscr));
+
+}

@@ -18,6 +18,17 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
+#include "Geometry/Records/interface/CaloTopologyRecord.h"
+#include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
+#include "DataFormats/EcalDetId/interface/EcalSubdetector.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
+#include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
 
 class BigNtuple {
 public:
@@ -33,17 +44,23 @@ public:
 	void fill_trigInfo(const edm::TriggerResults& triggerResults, const edm::TriggerNames& trigNames);
 
 	void set_svInfo(TTree* tree);
-        void fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& pv);
+        void fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& pv , double match);
 
 	void set_muInfo(TTree* tree);
-        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv);
+        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double match1 , double match2 );
 	
 	void set_jetInfo(TTree* tree);
 	void fill_jetInfo(const pat::Jet& jet);
 
         void set_metInfo(TTree* tree);
         void fill_metInfo(const pat::MET& met);
-	 
+
+        void set_eleInfo(TTree* tree);
+        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal);
+
+        void set_bjetInfo(TTree* tree);
+	void fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscr, int flavor);
+ 
 	void reset() {
 	  BigNtuple dummy; //create a new one
 	  *this = dummy; //use assignment to reset
@@ -130,7 +147,7 @@ private:
 
 	std::vector<int  > sv_tracks_Sumcharge_;
 	std::vector<float> sv_tracks_Sumpt_;
-
+	std::vector<float> sv_match_;
 
 	//muon infos
 	std::vector<float> mu_en_ ;
@@ -139,6 +156,8 @@ private:
 	std::vector<float> mu_phi_ ;
 	std::vector<float> mu_et_ ;
 	std::vector<float> mu_charge_ ;
+	std::vector<int>   mu_FirstGenMatch_ ;
+	std::vector<int>   mu_SecondGenMatch_ ;
 	std::vector<float> mu_trackiso_ ;
 	std::vector<float> mu_pfSumChargedHadronPt_ ;
 	std::vector<float> mu_pfSumNeutralHadronEt_ ;
@@ -207,8 +226,6 @@ private:
 	std::vector<float>  mu_STATofTimeAtIpInOutErr_ ;
 	std::vector<float>  mu_STATofTimeAtIpOutIn_ ;
 	std::vector<float>  mu_STATofTimeAtIpOutInErr_ ;
-	//std::vector<float>  mu_SecondGenMatch_ ;
-	//std::vector<float>  mu_FirstGenMatch_ ;
 
 	//jet info
 
@@ -235,6 +252,97 @@ private:
 	std::vector<float>   jet_neutralHadronMultiplicity_ ;
 	std::vector<float>   jet_neutralMultiplicity_ ;
 
+	//electron info
+
+	std::vector<float>   ele_Et_;
+	std::vector<float>   ele_EtFromCaloEn_;    
+	std::vector<float>   ele_pt_; 
+	std::vector<float>   ele_etaSC_;
+	std::vector<float>   ele_phiSC_;
+	std::vector<float>   ele_phiWidth_; 
+	std::vector<float>   ele_etaWidth_; 
+	std::vector<float>   ele_energySC_;
+	std::vector<float>   ele_thetaSC_;
+	std::vector<float>   ele_preshowerEnergySC_;
+	std::vector<float>   ele_etaTrack_; 
+	std::vector<float>   ele_phiTrack_;
+	std::vector<float>   ele_thetaTrack_;   
+	std::vector<float>   ele_x_;
+	std::vector<float>   ele_y_;
+	std::vector<float>   ele_z_;  
+	std::vector<float>   ele_e2x5Max_;
+	std::vector<float>   ele_e1x5_;
+	std::vector<float>   ele_e5x5_;
+	std::vector<float>   ele_e2x5MaxOver5x5_;
+	std::vector<float>   ele_e1x5Over5x5_;
+	std::vector<float>   ele_sigmaIetaIetaFull5x5_;
+	std::vector<float>   ele_e2x5MaxFull5x5_;
+	std::vector<float>   ele_e1x5Full5x5_;
+	std::vector<float>   ele_e5x5Full5x5_;
+	std::vector<float>   ele_e2x5MaxOver5x5Full5x5_;
+	std::vector<float>   ele_e1x5Over5x5Full5x5_;  
+	std::vector<float>   ele_zTrackPositionAtVtx_;
+	std::vector<float>   ele_hadronicOverEm_;
+	std::vector<float>   ele_deltaEtaInSC_;
+	std::vector<float>   ele_deltaPhiInSC_;
+	std::vector<float>   ele_deltaEtaInSeedCluster_;
+	std::vector<float>   ele_deltaPhiInSeedCluster_;
+	std::vector<float>   ele_sigmaIetaIeta_;  
+	std::vector<float>   ele_e2x5Right_;
+	std::vector<float>   ele_e2x5Left_;
+	std::vector<float>   ele_e2x5Top_;
+	std::vector<float>   ele_e2x5Bottom_;
+	std::vector<float>   ele_eMax_;
+	std::vector<float>   ele_eRight_;
+	std::vector<float>   ele_eLeft_;
+	std::vector<float>   ele_eTop_;
+	std::vector<float>   ele_eBottom_;
+	std::vector<float>   ele_e3x3_;
+	std::vector<float>   ele_frac51_;
+	std::vector<float>   ele_frac15_;
+	
+	std::vector<int>   ele_rawId_;
+	std::vector<int>   ele_ieta_;
+	std::vector<int>   ele_nbOfMissingHits_;
+	std::vector<int>   ele_charge_;
+	std::vector<bool>  ele_isEcalDrivenSeed_;
+	std::vector<bool>  ele_isPassConversionVeto_;
+  
+	std::vector<float>   ele_dxy_;
+	std::vector<float>   ele_dz_; 
+	std::vector<float>   ele_rhoIso_;
+	std::vector<float>   ele_fbrem_;
+	std::vector<float>   ele_EoverP_;
+	std::vector<float>   ele_Xposition_;   
+	std::vector<float>   ele_Yposition_;   
+	std::vector<float>   ele_dr03TkSumPt_;
+	std::vector<float>   ele_hcalDepth1OverEcal_;
+	std::vector<float>   ele_hcalDepth2OverEcal_;
+	std::vector<float>   ele_dr03HcalDepth2TowerSumEt_;
+	std::vector<float>   ele_hcalDepth2TowerSumEtNoVeto_; 
+	std::vector<float>   ele_hcalDepth1TowerSumEtNoVeto_; 
+	std::vector<float>   ele_EcalPlusHcald1iso_;
+	std::vector<float>   ele_dr03EcalRecHitSumEt_;
+	std::vector<float>   ele_dr03HcalDepth1TowerSumEt_;
+	std::vector<float>   ele_dr03HcalDepth1TowerSumEtBc_;
+	std::vector<float>   ele_pfSumPhotonEt_;
+	std::vector<float>   ele_pfSumChargedHadronPt_; 
+	std::vector<float>   ele_pfSumNeutralHadronEt_;
+	std::vector<float>   ele_pfSumPUPt_;  
+	std::vector<float>   ele_pfDeltaBeta_;
+	std::vector<float>   ele_FirstGenMatch_;
+	std::vector<float>   ele_SecondGenMatch_;
+
+	/*
+	std::vector<float>   ele_Mva_;
+	std::vector<float>   ele_MvaFall17Iso_;
+	std::vector<float>   ele_MvaFall17NoIso_;
+	std::vector<float>   ele_CutBasedVeto_;
+	std::vector<float>   ele_CutBasedLoose_;
+	std::vector<float>   ele_CutBasedMedium_;
+	std::vector<float>   ele_CutBasedTight_;
+	*/
+
 	//MET info
 	
 	float  pfMet_et_ = -1000;
@@ -247,6 +355,13 @@ private:
 	float  pfMet_sumEt_ = -1000;
 	float  caloMet_pt_ = -1000;
 	float  caloMet_phi_ = -1000;
+
+	//bJet info
+	std::vector<int>   jet_btag_flavor;
+	std::vector<float> jet_btag_pfCSVv2IVF_discriminator;
+	std::vector<float> jet_btag_pt;
+	std::vector<float> jet_btag_eta;
+	std::vector<float> jet_btag_phi;
 
 }; 
 

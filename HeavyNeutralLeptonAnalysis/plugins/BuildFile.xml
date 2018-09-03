@@ -29,6 +29,10 @@
 <use name="RecoEgamma/EgammaTools"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="EgammaAnalysis/ElectronTools"/>
+<use name="RecoEcal/EgammaCoreTools"/>
+<use name="Geometry/CaloGeometry"/>
+<use name="Geometry/Records"/>
+<use name="DataFormats/EcalDetId"/>
 <use name="root"/>
 <use name="roottmva"/>
 <use name="rootrflx"/>
