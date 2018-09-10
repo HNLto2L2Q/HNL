@@ -199,12 +199,12 @@ void BigNtuple::set_sv_genInfo(TTree* tree) {
   tree->Branch("had_gen_Phi",&had_gen_Phi_);
   tree->Branch("had_gen_Mass",&had_gen_Mass_);
 
-  tree->Branch("quarks_gen_PID" , &had_gen_PID_);
-  tree->Branch("quarks_gen_Status",&had_gen_Status_);
-  tree->Branch("quarks_gen_Charge",&had_gen_Charge_);
-  tree->Branch("quarks_gen_Pt",&had_gen_Pt_);
-  tree->Branch("quarks_gen_Eta",&had_gen_Eta_);
-  tree->Branch("quarks_gen_Mass",&had_gen_Mass_);
+  tree->Branch("quarks_gen_PID" , &quarks_gen_PID_);
+  tree->Branch("quarks_gen_Status",&quarks_gen_Status_);
+  tree->Branch("quarks_gen_Charge",&quarks_gen_Charge_);
+  tree->Branch("quarks_gen_Pt",&quarks_gen_Pt_);
+  tree->Branch("quarks_gen_Eta",&quarks_gen_Eta_);
+  tree->Branch("quarks_gen_Mass",&quarks_gen_Mass_);
 
 }
 
@@ -300,7 +300,7 @@ void  BigNtuple::fill_sv_genInfo(const reco::GenParticle prt , const reco::Candi
   // quarks @ sv
   if( prt.status() == 23 &&
       prt.mother()->pdgId() == 9900014 &&
-      abs(prt.pdgId()) < 7 ){
+      (abs(prt.pdgId()) != 13 || abs(prt.pdgId()) != 11)  ){
     quarks_gen_PID_.push_back(prt.pdgId() );
     quarks_gen_Status_.push_back(prt.status());
     quarks_gen_Pt_.push_back(prt.pt());
@@ -464,6 +464,218 @@ void BigNtuple::fill_pileupInfo( float npT, float npIT, float PU_Weight, float P
 
 }
 
+
+ void BigNtuple::set_muInfo(TTree* tree){
+   tree->Branch("mu_en" , &mu_en_);
+   tree->Branch("mu_pt" , &mu_pt_);
+   tree->Branch("mu_eta" , &mu_eta_);
+   tree->Branch("mu_phi" , &mu_phi_);
+   tree->Branch("mu_et" , &mu_et_);
+   tree->Branch("mu_rhoIso",&mu_rhoIso_);
+   tree->Branch("mu_charge" , &mu_charge_);
+   tree->Branch("mu_trackiso" , &mu_trackiso_);
+   tree->Branch("mu_pfSumChargedHadronPt" , &mu_pfSumChargedHadronPt_);
+   tree->Branch("mu_pfSumNeutralHadronEt" , &mu_pfSumNeutralHadronEt_);
+   tree->Branch("mu_PFSumPhotonEt" , &mu_PFSumPhotonEt_);
+   tree->Branch("mu_pfSumPUPt" , &mu_pfSumPUPt_);
+   tree->Branch("mu_numberOfValidMuonHits" , &mu_numberOfValidMuonHits_);
+   tree->Branch("mu_emIso" , &mu_emIso_);
+   tree->Branch("mu_hadIso" , &mu_hadIso_);
+   tree->Branch("mu_normalizedChi2" , &mu_normalizedChi2_);
+   tree->Branch("mu_numberOfMatchedStations" , &mu_numberOfMatchedStations_);
+   tree->Branch("mu_numberOfValidPixelHits" , &mu_numberOfValidPixelHits_);
+   tree->Branch("mu_numberOftrackerLayersWithMeasurement" , &mu_numberOftrackerLayersWithMeasurement_);
+   tree->Branch("mu_numberOfpixelLayersWithMeasurement" , &mu_numberOfpixelLayersWithMeasurement_);
+   tree->Branch("mu_TrackQuality" , &mu_TrackQuality_);
+   tree->Branch("mu_InnerTrackQuality" , &mu_InnerTrackQuality_);
+   tree->Branch("mu_pxTunePMuonBestTrack" , &mu_pxTunePMuonBestTrack_);
+   tree->Branch("mu_pyTunePMuonBestTrack" , &mu_pyTunePMuonBestTrack_);
+   tree->Branch("mu_pzTunePMuonBestTrack" , &mu_pzTunePMuonBestTrack_);
+   tree->Branch("mu_pTunePMuonBestTrack" , &mu_pTunePMuonBestTrack_);
+   tree->Branch("mu_etaTunePMuonBestTrack" , &mu_etaTunePMuonBestTrack_);
+   tree->Branch("mu_LXYZ" , &mu_LXYZ_);
+   tree->Branch("mu_LXY" , &mu_LXY_);
+   tree->Branch("mu_ptTunePMuonBestTrack" , &mu_ptTunePMuonBestTrack_);
+   tree->Branch("mu_phiTunePMuonBestTrack" , &mu_phiTunePMuonBestTrack_);
+   tree->Branch("mu_thetaTunePMuonBestTrack" , &mu_thetaTunePMuonBestTrack_);
+   tree->Branch("mu_chargeTunePMuonBestTrack" , &mu_chargeTunePMuonBestTrack_);
+   tree->Branch("mu_dPToverPTTunePMuonBestTrack" , &mu_dPToverPTTunePMuonBestTrack_);
+   tree->Branch("mu_absdxyTunePMuonBestTrack" , &mu_absdxyTunePMuonBestTrack_);
+   tree->Branch("mu_absdxyErrorTunePMuonBestTrack" , &mu_absdxyErrorTunePMuonBestTrack_);
+   tree->Branch("mu_absdxySigTunePMuonBestTrack" , &mu_absdxySigTunePMuonBestTrack_);
+   tree->Branch("mu_absdzTunePMuonBestTrack" , &mu_absdzTunePMuonBestTrack_);
+   tree->Branch("mu_absdzErrorTunePMuonBestTrack" , &mu_absdzErrorTunePMuonBestTrack_);
+   tree->Branch("mu_absdzSigTunePMuonBestTrack" , &mu_absdzSigTunePMuonBestTrack_);
+   tree->Branch("mu_recoDeltaBeta" , &mu_recoDeltaBeta_);
+   tree->Branch("mu_recoiso" , &mu_recoiso_);
+   tree->Branch("mu_isGlobalMuon" , &mu_isGlobalMuon_);
+   tree->Branch("mu_isStandAloneMuon" , &mu_isStandAloneMuon_);
+   tree->Branch("mu_isPF" , &mu_isPF_);
+   tree->Branch("mu_isRPCMuon" , &mu_isRPCMuon_);
+   tree->Branch("mu_isTrackerMuon" , &mu_isTrackerMuon_);
+   tree->Branch("mu_isGoodMuon" , &mu_isGoodMuon_);
+   tree->Branch("mu_isSoftMuon" , &mu_isSoftMuon_);
+   tree->Branch("mu_isLoose" , &mu_isLoose_);
+   tree->Branch("mu_isTightMuon" , &mu_isTightMuon_);
+   tree->Branch("mu_STAnHits" , &mu_STAnHits_);
+   tree->Branch("mu_STAnLost" , &mu_STAnLost_);
+   tree->Branch("mu_STAnStationsWithAnyHits" , &mu_STAnStationsWithAnyHits_);
+   tree->Branch("mu_STAnCscChambersWithAnyHits" , &mu_STAnCscChambersWithAnyHits_);
+   tree->Branch("mu_STAnDtChambersWithAnyHits" , &mu_STAnDtChambersWithAnyHits_);
+   tree->Branch("mu_STAnRpcChambersWithAnyHits" , &mu_STAnRpcChambersWithAnyHits_);
+   tree->Branch("mu_STAinnermostStationWithAnyHits" , &mu_STAinnermostStationWithAnyHits_);
+   tree->Branch("mu_STAoutermostStationWithAnyHits" , &mu_STAoutermostStationWithAnyHits_);
+   tree->Branch("mu_STAnStationsWithValidHits" , &mu_STAnStationsWithValidHits_);
+   tree->Branch("mu_STAnCscChambersWithValidHits" , &mu_STAnCscChambersWithValidHits_);
+   tree->Branch("mu_STAnDtChambersWithValidHit" , &mu_STAnDtChambersWithValidHit_);
+   tree->Branch("mu_STAnRpcChambersWithValidHits" , &mu_STAnRpcChambersWithValidHits_);
+   tree->Branch("mu_STAnValidMuonHits" , &mu_STAnValidMuonHits_);
+   tree->Branch("mu_STAnValidCscHits" , &mu_STAnValidCscHits_);
+   tree->Branch("mu_STAnValidDtHits" , &mu_STAnValidDtHits_);
+   tree->Branch("mu_STAnValidRpcHits" , &mu_STAnValidRpcHits_);
+   tree->Branch("mu_STAinnermostStationWithValidHits" , &mu_STAinnermostStationWithValidHits_);
+   tree->Branch("mu_STAoutermostStationWithValidHits" , &mu_STAoutermostStationWithValidHits_);
+   tree->Branch("mu_STATofDirection" , &mu_STATofDirection_);
+   tree->Branch("mu_STATofNDof" , &mu_STATofNDof_);
+   tree->Branch("mu_STATofTimeAtIpInOut" , &mu_STATofTimeAtIpInOut_);
+   tree->Branch("mu_STATofTimeAtIpInOutErr" , &mu_STATofTimeAtIpInOutErr_);
+   tree->Branch("mu_STATofTimeAtIpOutIn" , &mu_STATofTimeAtIpOutIn_);
+   tree->Branch("mu_STATofTimeAtIpOutInErr" , &mu_STATofTimeAtIpOutInErr_);
+   tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_);
+   tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_);
+
+ }
+
+
+
+void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double Rho ,double match1 , double match2){
+
+  mu_isGlobalMuon_.push_back(mu.isGlobalMuon());
+  mu_isPF_.push_back(mu.isPFMuon());
+  mu_isTrackerMuon_.push_back(mu.isTrackerMuon());
+  mu_isRPCMuon_.push_back(mu.isRPCMuon());
+  mu_isStandAloneMuon_.push_back(mu.isStandAloneMuon());
+  mu_isSoftMuon_.push_back(mu.isSoftMuon(pv));
+  mu_isLoose_.push_back(mu.isLooseMuon());
+  mu_isTightMuon_.push_back(mu.isTightMuon(pv));
+  mu_en_.push_back(mu.energy());
+  mu_et_.push_back(mu.et());
+  mu_pt_.push_back(mu.pt());
+  mu_eta_.push_back(mu.eta());
+  mu_phi_.push_back(mu.phi());
+  mu_charge_.push_back(mu.charge());
+  mu_FirstGenMatch_.push_back(match1);
+  mu_SecondGenMatch_.push_back(match2);
+
+  reco::TrackRef tunePTrack = mu.muonBestTrack();
+
+  mu_ptTunePMuonBestTrack_.push_back(tunePTrack->pt()); // transverse momentum                    
+  mu_dPToverPTTunePMuonBestTrack_.push_back(tunePTrack->ptError()/tunePTrack->pt()); // error calculation of transverse momentum
+  mu_pxTunePMuonBestTrack_.push_back(tunePTrack->px()); //px component of the track
+  mu_pyTunePMuonBestTrack_.push_back(tunePTrack->py()); //py component of the track  
+  mu_pzTunePMuonBestTrack_.push_back(tunePTrack->pz()); //pz component of the track
+  mu_pTunePMuonBestTrack_.push_back(tunePTrack->p());   //magnitude of momentum vector
+  mu_etaTunePMuonBestTrack_.push_back(tunePTrack->eta());
+  mu_phiTunePMuonBestTrack_.push_back(tunePTrack->phi());
+  mu_thetaTunePMuonBestTrack_.push_back(tunePTrack->theta());
+  mu_chargeTunePMuonBestTrack_.push_back(tunePTrack->charge());
+  mu_absdxyTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))); //transvers  impact parameter  w.r.t. the primary vertex
+  mu_absdxyErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxyError())); //transvers  impact parameter  w.r.t. the primary vertex
+  mu_absdxySigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))/fabs(tunePTrack->dxyError()));
+  mu_absdzTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))); // longitudinal impact parameter  w.r.t. the primary vertex
+  mu_absdzErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dzError())); // longitudinal impact parameter  w.r.t. the primary vertex
+  mu_absdzSigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))/fabs(tunePTrack->dzError()));
+  mu_TrackQuality_.push_back(tunePTrack->quality(reco::TrackBase::highPurity));
+
+  mu_rhoIso_.push_back(Rho); //transverse momentum per unit area                                                                                     
+
+  if(mu.globalTrack().isNonnull() ) {
+    mu_normalizedChi2_.push_back(mu.globalTrack()->normalizedChi2());
+    mu_numberOfValidPixelHits_.push_back(mu.innerTrack()->hitPattern().numberOfValidPixelHits());
+    mu_numberOfValidMuonHits_.push_back(mu.globalTrack()->hitPattern().numberOfValidMuonHits());
+    mu_numberOftrackerLayersWithMeasurement_.push_back(mu.innerTrack()->hitPattern().trackerLayersWithMeasurement());
+    mu_numberOfMatchedStations_.push_back(mu.numberOfMatchedStations());
+    mu_numberOfpixelLayersWithMeasurement_.push_back(mu.innerTrack()->hitPattern().pixelLayersWithMeasurement());
+    mu_InnerTrackQuality_.push_back(mu.innerTrack()->quality(reco::TrackBase::highPurity));
+  }
+  else{
+    mu_normalizedChi2_.push_back(-999);
+    mu_numberOfValidPixelHits_.push_back(-999);
+    mu_numberOfValidMuonHits_.push_back(-999);
+    mu_numberOftrackerLayersWithMeasurement_.push_back(-999);
+    mu_numberOfMatchedStations_.push_back(-999);
+    mu_numberOfpixelLayersWithMeasurement_.push_back(-999);
+    mu_InnerTrackQuality_.push_back(-999);
+  }
+
+  if(mu.standAloneMuon().isNonnull() ) {
+    mu_STAnHits_.push_back(mu.standAloneMuon()->numberOfValidHits());
+    mu_STAnLost_.push_back(mu.standAloneMuon()->numberOfLostHits());
+    mu_STAnStationsWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().muonStationsWithAnyHits());
+    mu_STAnCscChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithAnyHits()); //csc chambers in track fit
+    mu_STAnDtChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithAnyHits()); //dt chambers in track fit 
+    mu_STAnRpcChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithAnyHits()); //rpc chambers in track fit
+    mu_STAinnermostStationWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().innermostMuonStationWithAnyHits());
+    mu_STAoutermostStationWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().outermostMuonStationWithAnyHits());
+    mu_STAnCscChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithValidHits()); //csc chambers anywhere near track
+    mu_STAnDtChambersWithValidHit_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithValidHits()); //dt chambers anywhere near track
+    mu_STAnRpcChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithValidHits()); //rpc chambers anywhere near track
+    mu_STAnValidCscHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonCSCHits()); //CSC hits anywhere near track
+    mu_STAnValidDtHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonDTHits()); //DT hits anywhere near track
+    mu_STAnValidRpcHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonRPCHits()); //RPC hits anywhere near track
+    mu_STAnValidMuonHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonHits()); //muon hits anywhere near track
+    mu_STAinnermostStationWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().innermostMuonStationWithValidHits());
+    mu_STAoutermostStationWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().outermostMuonStationWithValidHits());
+    mu_STAnStationsWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().muonStationsWithValidHits());
+  }
+  else{
+    mu_STAnHits_.push_back(-999);
+    mu_STAnLost_.push_back(-999);
+    mu_STAnStationsWithAnyHits_.push_back(-999);
+    mu_STAnCscChambersWithAnyHits_.push_back(-999);
+    mu_STAnDtChambersWithAnyHits_.push_back(-999);
+    mu_STAnRpcChambersWithAnyHits_.push_back(-999);
+    mu_STAinnermostStationWithAnyHits_.push_back(-999);
+    mu_STAoutermostStationWithAnyHits_.push_back(-999);
+    mu_STAnCscChambersWithValidHits_.push_back(-999);
+    mu_STAnDtChambersWithValidHit_.push_back(-999);
+    mu_STAnRpcChambersWithValidHits_.push_back(-999);
+    mu_STAnValidCscHits_.push_back(-999);
+    mu_STAnValidDtHits_.push_back(-999);
+    mu_STAnValidRpcHits_.push_back(-999);
+    mu_STAnValidMuonHits_.push_back(-999);
+    mu_STAinnermostStationWithValidHits_.push_back(-999);
+    mu_STAoutermostStationWithValidHits_.push_back(-999);
+    mu_STAnStationsWithValidHits_.push_back(-999);
+  }
+  
+  reco::MuonTime tofAll = mu.time();
+  mu_STATofDirection_.push_back(tofAll.direction());
+  mu_STATofNDof_.push_back(tofAll.nDof);
+  mu_STATofTimeAtIpInOut_.push_back(tofAll.timeAtIpInOut);
+  mu_STATofTimeAtIpInOutErr_.push_back(tofAll.timeAtIpInOutErr);
+  mu_STATofTimeAtIpOutIn_.push_back(tofAll.timeAtIpOutIn);
+  mu_STATofTimeAtIpOutInErr_.push_back(tofAll.timeAtIpOutInErr);
+  //============= Parameters related to detector isolation =====================                                                               
+  double charged   = mu.pfIsolationR04().sumChargedHadronPt;
+  double neutral   = mu.pfIsolationR04().sumNeutralHadronEt;
+  double pileup    = mu.pfIsolationR04().sumPUPt;
+  double sumPhotonEt = mu.pfIsolationR04().sumPhotonEt; //Sum Et of PF photonds                                                              
+  double Mu_iso = 1.0*(charged  +  neutral + sumPhotonEt )/mu.pt(); //recommended this be < 0.20 (loose) or < 0.12 (tight)                   
+  double deltaBeta = (charged + std::max(0.0, neutral+sumPhotonEt-0.5*pileup))/mu.pt();
+  mu_recoDeltaBeta_.push_back(deltaBeta); //Delta Beta                                                                                        
+  mu_recoiso_.push_back(Mu_iso);
+  mu_emIso_.push_back(mu.isolationR03().emEt);
+  mu_hadIso_.push_back(mu.isolationR03().hadEt);
+  mu_trackiso_.push_back(mu.isolationR03().sumPt);
+  //============= Parameters related to PF isolation =====================                                                                     
+  mu_pfSumPUPt_.push_back(mu.pfIsolationR03().sumPhotonEt);
+  mu_PFSumPhotonEt_.push_back(mu.pfIsolationR03().sumPhotonEt);
+  mu_pfSumChargedHadronPt_.push_back(mu.pfIsolationR03().sumChargedHadronPt);
+  mu_pfSumNeutralHadronEt_.push_back(mu.pfIsolationR03().sumNeutralHadronEt);
+  
+}
+
 void BigNtuple::set_svInfo(TTree* tree){
 
     tree->Branch("sv_mu_TrackSize" , &sv_mu_TrackSize_);
@@ -590,16 +802,6 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
   int ch = 0;
   float pt = 0;
 
-  // What is emplace_back(); ?
-  /*
-  sv_mu_tracks_charge_.emplace_back();
-  sv_mu_tracks_eta_.emplace_back();
-  sv_mu_tracks_phi_.emplace_back();
-  sv_mu_tracks_pt_.emplace_back();
-  sv_mu_tracks_dxySig_.emplace_back();
-  sv_mu_tracks_dxy_.emplace_back();
-  sv_mu_tracks_dxyz_.emplace_back();
-  */
   reco::Vertex::trackRef_iterator tt = bestVertex.tracks_begin();
   for(; tt != bestVertex.tracks_end(); ++tt) {
     
@@ -686,16 +888,6 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   int ch = 0;
   float pt = 0;
 
-  // What is emplace_back(); ?
-  /*
-  sv_ele_tracks_charge_.emplace_back();
-  sv_ele_tracks_eta_.emplace_back();
-  sv_ele_tracks_phi_.emplace_back();
-  sv_ele_tracks_pt_.emplace_back();
-  sv_ele_tracks_dxySig_.emplace_back();
-  sv_ele_tracks_dxy_.emplace_back();
-  sv_ele_tracks_dxyz_.emplace_back();
-  */
   reco::Vertex::trackRef_iterator tt = bestVertex.tracks_begin();
   for(; tt != bestVertex.tracks_end(); ++tt) {
     
@@ -719,168 +911,6 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   sv_ele_match_.push_back(match);
 
 }
-
- void BigNtuple::set_muInfo(TTree* tree){
-   tree->Branch("mu_en" , &mu_en_);
-   tree->Branch("mu_pt" , &mu_pt_);
-   tree->Branch("mu_eta" , &mu_eta_);
-   tree->Branch("mu_phi" , &mu_phi_);
-   tree->Branch("mu_et" , &mu_et_);
-   tree->Branch("mu_charge" , &mu_charge_);
-   tree->Branch("mu_trackiso" , &mu_trackiso_);
-   tree->Branch("mu_pfSumChargedHadronPt" , &mu_pfSumChargedHadronPt_);
-   tree->Branch("mu_pfSumNeutralHadronEt" , &mu_pfSumNeutralHadronEt_);
-   tree->Branch("mu_PFSumPhotonEt" , &mu_PFSumPhotonEt_);
-   tree->Branch("mu_pfSumPUPt" , &mu_pfSumPUPt_);
-   tree->Branch("mu_numberOfValidMuonHits" , &mu_numberOfValidMuonHits_);
-   tree->Branch("mu_emIso" , &mu_emIso_);
-   tree->Branch("mu_hadIso" , &mu_hadIso_);
-   tree->Branch("mu_normalizedChi2" , &mu_normalizedChi2_);
-   tree->Branch("mu_numberOfMatchedStations" , &mu_numberOfMatchedStations_);
-   tree->Branch("mu_numberOfValidPixelHits" , &mu_numberOfValidPixelHits_);
-   tree->Branch("mu_numberOftrackerLayersWithMeasurement" , &mu_numberOftrackerLayersWithMeasurement_);
-   tree->Branch("mu_numberOfpixelLayersWithMeasurement" , &mu_numberOfpixelLayersWithMeasurement_);
-   tree->Branch("mu_TrackQuality" , &mu_TrackQuality_);
-   tree->Branch("mu_InnerTrackQuality" , &mu_InnerTrackQuality_);
-   tree->Branch("mu_pxTunePMuonBestTrack" , &mu_pxTunePMuonBestTrack_);
-   tree->Branch("mu_pyTunePMuonBestTrack" , &mu_pyTunePMuonBestTrack_);
-   tree->Branch("mu_pzTunePMuonBestTrack" , &mu_pzTunePMuonBestTrack_);
-   tree->Branch("mu_pTunePMuonBestTrack" , &mu_pTunePMuonBestTrack_);
-   tree->Branch("mu_etaTunePMuonBestTrack" , &mu_etaTunePMuonBestTrack_);
-   tree->Branch("mu_LXYZ" , &mu_LXYZ_);
-   tree->Branch("mu_LXY" , &mu_LXY_);
-   tree->Branch("mu_ptTunePMuonBestTrack" , &mu_ptTunePMuonBestTrack_);
-   tree->Branch("mu_phiTunePMuonBestTrack" , &mu_phiTunePMuonBestTrack_);
-   tree->Branch("mu_thetaTunePMuonBestTrack" , &mu_thetaTunePMuonBestTrack_);
-   tree->Branch("mu_chargeTunePMuonBestTrack" , &mu_chargeTunePMuonBestTrack_);
-   tree->Branch("mu_dPToverPTTunePMuonBestTrack" , &mu_dPToverPTTunePMuonBestTrack_);
-   tree->Branch("mu_absdxyTunePMuonBestTrack" , &mu_absdxyTunePMuonBestTrack_);
-   tree->Branch("mu_absdxyErrorTunePMuonBestTrack" , &mu_absdxyErrorTunePMuonBestTrack_);
-   tree->Branch("mu_absdxySigTunePMuonBestTrack" , &mu_absdxySigTunePMuonBestTrack_);
-   tree->Branch("mu_absdzTunePMuonBestTrack" , &mu_absdzTunePMuonBestTrack_);
-   tree->Branch("mu_absdzErrorTunePMuonBestTrack" , &mu_absdzErrorTunePMuonBestTrack_);
-   tree->Branch("mu_absdzSigTunePMuonBestTrack" , &mu_absdzSigTunePMuonBestTrack_);
-   tree->Branch("mu_recoDeltaBeta" , &mu_recoDeltaBeta_);
-   tree->Branch("mu_recoiso" , &mu_recoiso_);
-   tree->Branch("mu_isGlobalMuon" , &mu_isGlobalMuon_);
-   tree->Branch("mu_isStandAloneMuon" , &mu_isStandAloneMuon_);
-   tree->Branch("mu_isPF" , &mu_isPF_);
-   tree->Branch("mu_isRPCMuon" , &mu_isRPCMuon_);
-   tree->Branch("mu_isTrackerMuon" , &mu_isTrackerMuon_);
-   tree->Branch("mu_isGoodMuon" , &mu_isGoodMuon_);
-   tree->Branch("mu_isSoftMuon" , &mu_isSoftMuon_);
-   tree->Branch("mu_isLoose" , &mu_isLoose_);
-   tree->Branch("mu_isTightMuon" , &mu_isTightMuon_);
-   tree->Branch("mu_STAnHits" , &mu_STAnHits_);
-   tree->Branch("mu_STAnLost" , &mu_STAnLost_);
-   tree->Branch("mu_STAnStationsWithAnyHits" , &mu_STAnStationsWithAnyHits_);
-   tree->Branch("mu_STAnCscChambersWithAnyHits" , &mu_STAnCscChambersWithAnyHits_);
-   tree->Branch("mu_STAnDtChambersWithAnyHits" , &mu_STAnDtChambersWithAnyHits_);
-   tree->Branch("mu_STAnRpcChambersWithAnyHits" , &mu_STAnRpcChambersWithAnyHits_);
-   tree->Branch("mu_STAinnermostStationWithAnyHits" , &mu_STAinnermostStationWithAnyHits_);
-   tree->Branch("mu_STAoutermostStationWithAnyHits" , &mu_STAoutermostStationWithAnyHits_);
-   tree->Branch("mu_STAnStationsWithValidHits" , &mu_STAnStationsWithValidHits_);
-   tree->Branch("mu_STAnCscChambersWithValidHits" , &mu_STAnCscChambersWithValidHits_);
-   tree->Branch("mu_STAnDtChambersWithValidHit" , &mu_STAnDtChambersWithValidHit_);
-   tree->Branch("mu_STAnRpcChambersWithValidHits" , &mu_STAnRpcChambersWithValidHits_);
-   tree->Branch("mu_STAnValidMuonHits" , &mu_STAnValidMuonHits_);
-   tree->Branch("mu_STAnValidCscHits" , &mu_STAnValidCscHits_);
-   tree->Branch("mu_STAnValidDtHits" , &mu_STAnValidDtHits_);
-   tree->Branch("mu_STAnValidRpcHits" , &mu_STAnValidRpcHits_);
-   tree->Branch("mu_STAinnermostStationWithValidHits" , &mu_STAinnermostStationWithValidHits_);
-   tree->Branch("mu_STAoutermostStationWithValidHits" , &mu_STAoutermostStationWithValidHits_);
-   tree->Branch("mu_STATofDirection" , &mu_STATofDirection_);
-   tree->Branch("mu_STATofNDof" , &mu_STATofNDof_);
-   tree->Branch("mu_STATofTimeAtIpInOut" , &mu_STATofTimeAtIpInOut_);
-   tree->Branch("mu_STATofTimeAtIpInOutErr" , &mu_STATofTimeAtIpInOutErr_);
-   tree->Branch("mu_STATofTimeAtIpOutIn" , &mu_STATofTimeAtIpOutIn_);
-   tree->Branch("mu_STATofTimeAtIpOutInErr" , &mu_STATofTimeAtIpOutInErr_);
-   tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_);
-   tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_);
-
- }
-
-
-
-void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double match1 , double match2){
-
-  mu_isGlobalMuon_.push_back(mu.isGlobalMuon());
-  mu_isPF_.push_back(mu.isPFMuon());
-  mu_isTrackerMuon_.push_back(mu.isTrackerMuon());
-  mu_isRPCMuon_.push_back(mu.isRPCMuon());
-  mu_isStandAloneMuon_.push_back(mu.isStandAloneMuon());
-  mu_isSoftMuon_.push_back(mu.isSoftMuon(pv));
-  mu_isLoose_.push_back(mu.isLooseMuon());
-  mu_isTightMuon_.push_back(mu.isTightMuon(pv));
-  mu_en_.push_back(mu.energy());
-  mu_et_.push_back(mu.et());
-  mu_pt_.push_back(mu.pt());
-  mu_eta_.push_back(mu.eta());
-  mu_phi_.push_back(mu.phi());
-  mu_charge_.push_back(mu.charge());
-  mu_FirstGenMatch_.push_back(match1);
-  mu_SecondGenMatch_.push_back(match2);
-
-  reco::TrackRef tunePTrack = mu.muonBestTrack();
-
-  mu_ptTunePMuonBestTrack_.push_back(tunePTrack->pt()); // transverse momentum                    
-  mu_dPToverPTTunePMuonBestTrack_.push_back(tunePTrack->ptError()/tunePTrack->pt()); // error calculation of transverse momentum
-  mu_pxTunePMuonBestTrack_.push_back(tunePTrack->px()); //px component of the track
-  mu_pyTunePMuonBestTrack_.push_back(tunePTrack->py()); //py component of the track  
-  mu_pzTunePMuonBestTrack_.push_back(tunePTrack->pz()); //pz component of the track
-  mu_pTunePMuonBestTrack_.push_back(tunePTrack->p());   //magnitude of momentum vector
-  mu_etaTunePMuonBestTrack_.push_back(tunePTrack->eta());
-  mu_phiTunePMuonBestTrack_.push_back(tunePTrack->phi());
-  mu_thetaTunePMuonBestTrack_.push_back(tunePTrack->theta());
-  mu_chargeTunePMuonBestTrack_.push_back(tunePTrack->charge());
-  mu_absdxyTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))); //transvers  impact parameter  w.r.t. the primary vertex
-  mu_absdxyErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxyError())); //transvers  impact parameter  w.r.t. the primary vertex
-  mu_absdxySigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dxy(pv.position()))/fabs(tunePTrack->dxyError()));
-  mu_absdzTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))); // longitudinal impact parameter  w.r.t. the primary vertex
-  mu_absdzErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dzError())); // longitudinal impact parameter  w.r.t. the primary vertex
-  mu_absdzSigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))/fabs(tunePTrack->dzError()));
-  mu_TrackQuality_.push_back(tunePTrack->quality(reco::TrackBase::highPurity));
-
-  if(mu.globalTrack().isNonnull() ) {
-    mu_normalizedChi2_.push_back(mu.globalTrack()->normalizedChi2());
-    mu_numberOfValidPixelHits_.push_back(mu.innerTrack()->hitPattern().numberOfValidPixelHits());
-    mu_numberOfValidMuonHits_.push_back(mu.globalTrack()->hitPattern().numberOfValidMuonHits());
-    mu_numberOftrackerLayersWithMeasurement_.push_back(mu.innerTrack()->hitPattern().trackerLayersWithMeasurement());
-    mu_numberOfMatchedStations_.push_back(mu.numberOfMatchedStations());
-    mu_numberOfpixelLayersWithMeasurement_.push_back(mu.innerTrack()->hitPattern().pixelLayersWithMeasurement());
-    mu_InnerTrackQuality_.push_back(mu.innerTrack()->quality(reco::TrackBase::highPurity));
-  }
-
-  if(mu.standAloneMuon().isNonnull() ) {
-    mu_STAnHits_.push_back(mu.standAloneMuon()->numberOfValidHits());
-    mu_STAnLost_.push_back(mu.standAloneMuon()->numberOfLostHits());
-    mu_STAnStationsWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().muonStationsWithAnyHits());
-    mu_STAnCscChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithAnyHits()); //csc chambers in track fit
-    mu_STAnDtChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithAnyHits()); //dt chambers in track fit 
-    mu_STAnRpcChambersWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithAnyHits()); //rpc chambers in track fit
-    mu_STAinnermostStationWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().innermostMuonStationWithAnyHits());
-    mu_STAoutermostStationWithAnyHits_.push_back(mu.standAloneMuon()->hitPattern().outermostMuonStationWithAnyHits());
-    mu_STAnCscChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().cscStationsWithValidHits()); //csc chambers anywhere near track
-    mu_STAnDtChambersWithValidHit_.push_back(mu.standAloneMuon()->hitPattern().dtStationsWithValidHits()); //dt chambers anywhere near track
-    mu_STAnRpcChambersWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().rpcStationsWithValidHits()); //rpc chambers anywhere near track
-    mu_STAnValidCscHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonCSCHits()); //CSC hits anywhere near track
-    mu_STAnValidDtHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonDTHits()); //DT hits anywhere near track
-    mu_STAnValidRpcHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonRPCHits()); //RPC hits anywhere near track
-    mu_STAnValidMuonHits_.push_back(mu.standAloneMuon()->hitPattern().numberOfValidMuonHits()); //muon hits anywhere near track
-    mu_STAinnermostStationWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().innermostMuonStationWithValidHits());
-    mu_STAoutermostStationWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().outermostMuonStationWithValidHits());
-    mu_STAnStationsWithValidHits_.push_back(mu.standAloneMuon()->hitPattern().muonStationsWithValidHits());
-  }
-
-  reco::MuonTime tofAll = mu.time();
-  mu_STATofDirection_.push_back(tofAll.direction());
-  mu_STATofNDof_.push_back(tofAll.nDof);
-  mu_STATofTimeAtIpInOut_.push_back(tofAll.timeAtIpInOut);
-  mu_STATofTimeAtIpInOutErr_.push_back(tofAll.timeAtIpInOutErr);
-  mu_STATofTimeAtIpOutIn_.push_back(tofAll.timeAtIpOutIn);
-  mu_STATofTimeAtIpOutInErr_.push_back(tofAll.timeAtIpOutInErr);
-}
-
 
 
 void BigNtuple::set_jetInfo(TTree* tree){
@@ -939,15 +969,7 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet){
 }
 
 void BigNtuple::set_eleInfo(TTree* tree){
-  /*
-  tree->Branch("ele_Mva",&ele_Mva_);
-  tree->Branch("ele_MvaFall17Iso",&ele_MvaFall17Iso_);
-  tree->Branch("ele_MvaFall17NoIso",&ele_MvaFall17NoIso_);
-  tree->Branch("ele_CutBasedVeto",&ele_CutBasedVeto_);
-  tree->Branch("ele_CutBasedLoose",&ele_CutBasedLoose_);
-  tree->Branch("ele_CutBasedMedium",&ele_CutBasedMedium_);
-  tree->Branch("ele_CutBasedTight",&ele_CutBasedTight_);
-  */
+
   tree->Branch("ele_Et",&ele_Et_);
   tree->Branch("ele_EtFromCaloEn",&ele_EtFromCaloEn_);    
   tree->Branch("ele_pt",&ele_pt_); 

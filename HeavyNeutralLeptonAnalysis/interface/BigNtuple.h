@@ -59,7 +59,7 @@ public:
         void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match , double score);
 
 	void set_muInfo(TTree* tree);
-        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double match1 , double match2 );
+        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
 	
 	void set_jetInfo(TTree* tree);
 	void fill_jetInfo(const pat::Jet& jet);
@@ -344,6 +344,7 @@ private:
 	std::vector<int>   mu_FirstGenMatch_ ;
 	std::vector<int>   mu_SecondGenMatch_ ;
 	std::vector<float> mu_trackiso_ ;
+	std::vector<float> mu_rhoIso_;
 	std::vector<float> mu_pfSumChargedHadronPt_ ;
 	std::vector<float> mu_pfSumNeutralHadronEt_ ;
 	std::vector<float> mu_PFSumPhotonEt_ ;

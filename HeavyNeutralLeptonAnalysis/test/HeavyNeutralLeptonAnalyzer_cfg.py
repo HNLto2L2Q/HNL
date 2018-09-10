@@ -1,10 +1,10 @@
 from os import path as path
 import FWCore.ParameterSet.Config as cms
 
-debugLevel         = 5
+debugLevel    = -1 
 
-isMC_ = True
-isMCSignal_ = False
+isMC_         = True
+isMCSignal_   = True
 
 jec_tag_DATA  = 'JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK4PFchs'
 jec_tag_MC    = 'JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK4PFchs'
@@ -108,7 +108,6 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             vtxSrc                = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                             rho                   = cms.InputTag("fixedGridRhoFastjetAll"),
                                             muonSrc               = cms.InputTag("slimmedMuons"),
-                                            timeTag               = cms.untracked.InputTag('muons', 'combined'),
                                             electronSrc           = cms.InputTag("slimmedElectrons"),
                                             recHitCollectionEBSrc = cms.InputTag("reducedEgamma","reducedEBRecHits"),
                                             recHitCollectionEESrc = cms.InputTag("reducedEgamma","reducedEERecHits"),
