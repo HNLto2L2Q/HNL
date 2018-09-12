@@ -33,8 +33,8 @@ class VertexAssociation {
 
   std::string getName() { return name; }
   // score
-  const std::pair<const reco::Vertex, const float> getBestVertex(edm::Handle< pat::MuonCollection >&, const std::string&);
-  float		getVertexScore(edm::Handle< pat::MuonCollection >&, const reco::Vertex & , const std::string &);    
+  const std::pair<const reco::Vertex, const float> getBestVertex(const pat::Electron & , const std::string&);
+  float		getVertexScore(const pat::Electron & , const reco::Vertex & , const std::string &);    
   
  private:
   reco::Vertex		    primaryVertex;
@@ -47,32 +47,20 @@ class VertexAssociation {
 };
 //void VertexAssociation::addMuon(const  pat::MuonCollection & muon) { muonCollection.push_back(muon); }
 void VertexAssociation::addVertex(const  reco::Vertex & vertex) { vertexCollection.push_back(vertex); }
-float VertexAssociation::getVertexScore(edm::Handle< pat::MuonCollection >& muon, const reco::Vertex & vertex, const std::string & algo) {
+float VertexAssociation::getVertexScore(const pat::Electron & electron , const reco::Vertex & vertex, const std::string & algo) {
   float  score   = 0;
-  double muon_pt = 999;
-  double muon_eta = 999;
-  double muon_phi = 999;
-  pat::MuonCollection::const_iterator mu = muon->begin();
-  for(; mu != muon->end(); ++mu) {
-    reco::TrackRef tunePTrack = mu->muonBestTrack();
-    if(tunePTrack->pt() < muon_pt && 
-       tunePTrack->pt() > 5 && 
-       mu->isGlobalMuon() && 
-       mu->isPFMuon() && 
-       fabs(tunePTrack->eta()) < 2.4){
-      muon_pt  = tunePTrack->pt();
-      muon_eta = tunePTrack->eta();
-      muon_phi = tunePTrack->phi();
-    }
-  }
-  if (debug > 3)   std::cout << "[DEBUG 3] [SVA] Muon pT=" << muon_pt << " Muon Eta: " << muon_eta <<" Muon Phi "<< muon_phi << std::endl;
+  double ele_pt = electron.pt();
+  double ele_eta = electron.eta();
+  double ele_phi = electron.phi();
+
+  if (debug > 3)   std::cout << "[DEBUG 3] [SVA] electron pT=" << ele_pt << " electron Eta: " << ele_eta <<" electron Phi "<< ele_phi << std::endl;
   if (debug > 3) std::cout << "[DEBUG 3] [SVA] iterating over tracks" << std::endl;
   reco::Vertex::trackRef_iterator tt = vertex.tracks_begin();
   for(; tt != vertex.tracks_end(); ++tt) {
     float   eta = (*tt)->eta();
     float   phi = (*tt)->phi();    
     if (debug > 4)    std::cout << "[DEBUG 4] [SVA] Track Eta=" << eta << " Phi: " << phi <<  std::endl;
-    float   dR		   = reco::deltaR(muon_eta, muon_phi, eta, phi);
+    float   dR		   = reco::deltaR(ele_eta, ele_phi, eta, phi);
     if (dR > 1) // was 0.4
       continue;
     else 
@@ -82,7 +70,7 @@ float VertexAssociation::getVertexScore(edm::Handle< pat::MuonCollection >& muon
   return score;
 }
 
-const std::pair<const reco::Vertex, const float> VertexAssociation::getBestVertex(edm::Handle<pat::MuonCollection>& muon, const std::string & algo) {
+const std::pair<const reco::Vertex, const float> VertexAssociation::getBestVertex(const pat::Electron &  electron, const std::string & algo) {
   // keep track of the best vertex
   float		bestScore = -1;
   reco::Vertex	bestVertex;
@@ -90,7 +78,7 @@ const std::pair<const reco::Vertex, const float> VertexAssociation::getBestVerte
   if (debug > 1) std::cout << "[DEBUG 1] [SVA] iterating over Vertices" << std::endl;
   reco::VertexCollection::const_iterator ss = vertexCollection.begin();
   for(; ss != vertexCollection.end(); ++ss) {
-    float score = getVertexScore(muon, *ss, algo);
+    float score = getVertexScore(electron, *ss, algo);
     
     if (score > bestScore) {  // was bestScore
       bestScore	 = score;
@@ -103,6 +91,8 @@ const std::pair<const reco::Vertex, const float> VertexAssociation::getBestVerte
     return vertexPair;  // we find at least one vertex with a track within dR = 1.0
   }
 
-  const std::pair<const reco::Vertex, const float> vertexPair(primaryVertex, 0);
-  return vertexPair;
+  else {
+    const std::pair<const reco::Vertex, const float> vertexPair(primaryVertex, 0);
+    return vertexPair;
+  }
 }

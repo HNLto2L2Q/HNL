@@ -1,7 +1,18 @@
 from os import path as path
 import FWCore.ParameterSet.Config as cms
 
-debugLevel         = -1
+debugLevel    = -1 
+
+isMC_         = True
+isMCSignal_   = True
+
+jec_tag_DATA  = 'JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK4PFchs'
+jec_tag_MC    = 'JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK4PFchs'
+jec_file_DATA = 'sqlite_file:Summer16_23Sep2016AllV4_DATA.db'
+jec_file_MC   = 'sqlite_file:Summer16_23Sep2016V4_MC.db'
+jec_tag       = jec_tag_MC if isMC_ else jec_tag_DATA
+jec_file      = jec_file_MC if isMC_ else jec_file_DATA
+algorithm     = "AK4PFchs"
 
 process = cms.Process("AnalysisProc")
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -35,23 +46,74 @@ process.source = cms.Source("PoolSource",
 #'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root'
 #'root://cms-xrd-global.cern.ch//store/mc/RunIIFall17MiniAOD/DYJetsToLL_M-50_Zpt-150toInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/RECOSIMstep_94X_mc2017_realistic_v10-v1/50000/EE9CC3E0-0DED-E711-BCAC-00E081CB560C.root'
 'root://cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/4E597432-24BE-E611-ACBB-00266CFFBFC0.root'
+#'root://cms-xrd-global.cern.ch//store/data/Run2016G/SingleMuon/MINIAOD/23Sep2016-v1/1110000/72446D9C-D89C-E611-9060-002590A3C984.root'
 ))
 process.TFileService = cms.Service("TFileService", fileName = cms.string("HeavyNeutralLepton.root"))
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
 
+from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
+
+addElectronSequence(process)
+
+process.load("CondCore.CondDB.CondDB_cfi")
+process.jec = cms.ESSource("PoolDBESSource",
+      DBParameters = cms.PSet(
+        messageLevel = cms.untracked.int32(0)
+        ),
+                           timetype = cms.string('runnumber'),
+                           toGet = cms.VPSet(
+      cms.PSet(
+         record = cms.string('JetCorrectionsRecord'),
+         tag    = cms.string(jec_tag),
+         label  = cms.untracked.string('AK4PFchs')
+         ),
+      ),
+      connect = cms.string(jec_file)
+)
+#make sure we use the db source and not the global tag
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
+process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
+    toGet = cms.VPSet(cms.PSet(
+        record = cms.string('JetCorrectionsRecord'),
+        data = cms.vstring('JetCorrectorParametersCollection/AK4PFchs')
+    )
+    ),
+    verbose = cms.untracked.bool(True)
+)
+
+
+process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
+
+process.jetCorrFactors = process.updatedPatJetCorrFactors.clone(
+    src = cms.InputTag("slimmedJets"),
+    levels = ['L1FastJet', 
+              'L2Relative', 
+              'L3Absolute',
+              'L2L3Residual'],
+    payload = 'AK4PFchs' ) 
+
+process.slimmedJetsJEC = process.updatedPatJets.clone(
+    jetSource = cms.InputTag("slimmedJets"),
+    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("jetCorrFactors"))
+    )
+
+
+#process.ak4PFJetsCHSL1FastL2L3 = process.ak4PFCHSJetsL1.clone(correctors = ['ak4PFL1FastL2L3Corrector'])
+#process.correctJets           = cms.Sequence(process.ak4PFL1FastL2L3CorrectorChain * process.ak4PFJetsCHSL1FastL2L3)
+
 process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             debugLevel            = cms.int32(debugLevel),
-                                            isMC = cms.bool(True),
+                                            isMC                  = cms.bool(isMC_),
+                                            isMCSignal            = cms.bool(isMCSignal_),
                                             vtxSrc                = cms.InputTag("offlineSlimmedPrimaryVertices"),
                                             rho                   = cms.InputTag("fixedGridRhoFastjetAll"),
                                             muonSrc               = cms.InputTag("slimmedMuons"),
-                                            timeTag               = cms.untracked.InputTag('muons', 'combined'),
                                             electronSrc           = cms.InputTag("slimmedElectrons"),
                                             recHitCollectionEBSrc = cms.InputTag("reducedEgamma","reducedEBRecHits"),
                                             recHitCollectionEESrc = cms.InputTag("reducedEgamma","reducedEERecHits"),
                                             tauSrc                = cms.InputTag("slimmedTaus"),
                                             packCandSrc           = cms.InputTag("packedPFCandidates"),
-                                            jetSrc                = cms.InputTag("slimmedJets"),
+                                            jetSrc                = cms.InputTag("slimmedJetsJEC"),
                                             pfMETSrc              = cms.InputTag("slimmedMETs"),
                                             triggerResultSrc      = cms.InputTag("TriggerResults","","HLT"),
                                             metFilterResultSrc    = cms.InputTag("TriggerResults","","PAT"),
@@ -60,11 +122,22 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             PUInfo                = cms.InputTag("slimmedAddPileupInfo"),
                                             lheEventProducts      = cms.InputTag("externalLHEProducer"),
                                             SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"),
-                                            bDiscriminators       = cms.vstring("pfCombinedInclusiveSecondaryVertexV2BJetTags")
+                                            bDiscriminators       = cms.vstring("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+                     electronsMva          = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values"),
+                                            electronsVeto  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
+                                            electronsLoose = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose"),
+                                            electronsMedium= cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium"),
+                                            electronsTight = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-tight")
                                             )
 
 #process.HeavyNeutralLepton.outputFileName  = cms.untracked.string('HeavyNeutralLepton.root')
 #process.HeavyNeutralLepton.genTreeName     = cms.untracked.string('Tree')
 
 
-process.p = cms.Path(process.displacedInclusiveVertexing  *  process.HeavyNeutralLepton)
+process.p = cms.Path(
+    process.displacedInclusiveVertexing 
+    *process.ele_Sequence
+    *process.jetCorrFactors
+    *process.slimmedJetsJEC
+    *process.HeavyNeutralLepton
+    )

@@ -29,6 +29,8 @@
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterTools.h"
 #include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
+#include "DataFormats/PatCandidates/interface/GenericParticle.h"
+#include "DataFormats/Common/interface/Handle.h"
 
 class BigNtuple {
 public:
@@ -37,17 +39,27 @@ public:
 	void set_evtInfo(TTree* tree);
 	void fill_evtInfo(const edm::EventID& id);
 
+	void set_pv_genInfo(TTree* tree);
+        void fill_pv_genInfo(const reco::GenParticle prt , const reco::Candidate*  mom);
+
+	void set_sv_genInfo(TTree* tree);
+        void fill_sv_genInfo(const reco::GenParticle prt , const reco::Candidate*  mom);
+
 	void set_pvInfo(TTree* tree);
 	void fill_pvInfo(const reco::VertexCollection& pvs);
 
 	void set_trigInfo(TTree* tree);
 	void fill_trigInfo(const edm::TriggerResults& triggerResults, const edm::TriggerNames& trigNames);
 
+	void set_pileupInfo(TTree* tree);
+        void fill_pileupInfo( float npT, float npIT, float pu_Weight, float pu_WeightUp, float pu_WeightDown);
+
 	void set_svInfo(TTree* tree);
-        void fill_svInfo(const reco::Vertex& bestVertex, const reco::Vertex& pv , double match);
+        void fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
+        void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match , double score);
 
 	void set_muInfo(TTree* tree);
-        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double match1 , double match2 );
+        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
 	
 	void set_jetInfo(TTree* tree);
 	void fill_jetInfo(const pat::Jet& jet);
@@ -57,6 +69,10 @@ public:
 
         void set_eleInfo(TTree* tree);
         void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal);
+
+
+        void set_eleIDInfo(TTree* tree);
+        void fill_eleIDInfo(float ele_mva , bool ele_veto , bool ele_loose , bool ele_medium , bool ele_tight);
 
         void set_bjetInfo(TTree* tree);
 	void fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscr, int flavor);
@@ -70,6 +86,12 @@ private:
 	unsigned int lumi_ = 0;
 	unsigned int run_ = 0;
 	unsigned long long evt_ = 0;
+
+	float npT_ = 0; 
+	float npIT_ = 0;
+	float pu_Weight_ = 0;
+	float pu_WeightUp_ = 0;
+	float pu_WeightDown_ = 0;
 	
 	// primary vertex infos  -- they shouldn't be vector 
 	float pvX_ = -1000;
@@ -88,15 +110,135 @@ private:
 	float pvSumPtSq_ = -1000;
 	int numberPV_    = -1000;
 
+	//gen infos mu @ pv
+	std::vector<int>     mu_gen_PID1_;
+	std::vector<int>     mu_gen_Status1_;
+	std::vector<int>     mu_gen_Charge1_;
+	std::vector<float>   mu_gen_Pt1_;
+	std::vector<float>   mu_gen_Eta1_;
+	std::vector<float>   mu_gen_Phi1_;
+	std::vector<float>   mu_gen_VX1_;
+	std::vector<float>   mu_gen_VY1_;
+	std::vector<float>   mu_gen_VZ1_;
+	std::vector<float>   mu_gen_Lxy1_;
+	std::vector<float>   mu_gen_Lxyz1_;
+	std::vector<int>     mu_gen_MomPID1_;
+	std::vector<int>     mu_gen_MomStatus1_;
+	std::vector<float>   mu_gen_MomMass1_;
+	std::vector<int>     mu_gen_MomCharge1_;
+	std::vector<float>   mu_gen_MomPt1_;
+	std::vector<float>   mu_gen_MomEta1_;
+	std::vector<float>   mu_gen_MomPhi1_;
+	std::vector<float>   mu_gen_MomBeta1_;
+	std::vector<float>   mu_gen_MomGamma1_;
+	std::vector<float>   mu_gen_MomLxyz1_;
+	std::vector<float>   mu_gen_MomLz1_;
+	std::vector<float>   mu_gen_MomLxy1_;
+
+	//gen Info mu @ sv
+	std::vector<int>     mu_gen_PID2_;
+	std::vector<int>     mu_gen_Status2_;
+	std::vector<int>     mu_gen_Charge2_;
+	std::vector<float>   mu_gen_Pt2_;
+	std::vector<float>   mu_gen_Eta2_;
+	std::vector<float>   mu_gen_Phi2_;
+	std::vector<float>   mu_gen_VX2_;
+	std::vector<float>   mu_gen_VY2_;
+	std::vector<float>   mu_gen_VZ2_;
+	std::vector<float>   mu_gen_Lxy2_;
+	std::vector<float>   mu_gen_Lxyz2_;
+	std::vector<int>     mu_gen_MomPID2_;
+	std::vector<float>   mu_gen_MomMass2_;
+	std::vector<int>     mu_gen_MomCharge2_;
+	std::vector<int>     mu_gen_MomStatus2_;
+	std::vector<float>   mu_gen_MomPt2_;
+	std::vector<float>   mu_gen_MomEta2_;
+	std::vector<float>   mu_gen_MomPhi2_;
+	std::vector<float>   mu_gen_MomBeta2_;
+	std::vector<float>   mu_gen_MomGamma2_;
+	std::vector<float>   mu_gen_MomLxyz2_;
+	std::vector<float>   mu_gen_MomLz2_;
+	std::vector<float>   mu_gen_MomLxy2_;
+	std::vector<float>   mu_gen_MomCTau02_;
+
+	//gen infos ele @ pv
+	std::vector<int>     ele_gen_PID1_;
+	std::vector<int>     ele_gen_Status1_;
+	std::vector<int>     ele_gen_Charge1_;
+	std::vector<float>   ele_gen_Pt1_;
+	std::vector<float>   ele_gen_Eta1_;
+	std::vector<float>   ele_gen_Phi1_;
+	std::vector<float>   ele_gen_VX1_;
+	std::vector<float>   ele_gen_VY1_;
+	std::vector<float>   ele_gen_VZ1_;
+	std::vector<float>   ele_gen_Lxy1_;
+	std::vector<float>   ele_gen_Lxyz1_;
+	std::vector<int>     ele_gen_MomPID1_;
+	std::vector<int>     ele_gen_MomStatus1_;
+	std::vector<float>   ele_gen_MomMass1_;
+	std::vector<int>     ele_gen_MomCharge1_;
+	std::vector<float>   ele_gen_MomPt1_;
+	std::vector<float>   ele_gen_MomEta1_;
+	std::vector<float>   ele_gen_MomPhi1_;
+	std::vector<float>   ele_gen_MomBeta1_;
+	std::vector<float>   ele_gen_MomGamma1_;
+	std::vector<float>   ele_gen_MomLxyz1_;
+	std::vector<float>   ele_gen_MomLz1_;
+	std::vector<float>   ele_gen_MomLxy1_;
+
+	//gen Info ele @ sv
+	std::vector<int>     ele_gen_PID2_;
+	std::vector<int>     ele_gen_Status2_;
+	std::vector<int>     ele_gen_Charge2_;
+	std::vector<float>   ele_gen_Pt2_;
+	std::vector<float>   ele_gen_Eta2_;
+	std::vector<float>   ele_gen_Phi2_;
+	std::vector<float>   ele_gen_VX2_;
+	std::vector<float>   ele_gen_VY2_;
+	std::vector<float>   ele_gen_VZ2_;
+	std::vector<float>   ele_gen_Lxy2_;
+	std::vector<float>   ele_gen_Lxyz2_;
+	std::vector<int>     ele_gen_MomPID2_;
+	std::vector<float>   ele_gen_MomMass2_;
+	std::vector<int>     ele_gen_MomCharge2_;
+	std::vector<int>     ele_gen_MomStatus2_;
+	std::vector<float>   ele_gen_MomPt2_;
+	std::vector<float>   ele_gen_MomEta2_;
+	std::vector<float>   ele_gen_MomPhi2_;
+	std::vector<float>   ele_gen_MomBeta2_;
+	std::vector<float>   ele_gen_MomGamma2_;
+	std::vector<float>   ele_gen_MomLxyz2_;
+	std::vector<float>   ele_gen_MomLz2_;
+	std::vector<float>   ele_gen_MomLxy2_;
+	std::vector<float>   ele_gen_MomCTau02_;
+
+	// final state hadrons
+	std::vector<int>     had_gen_PID_;
+	std::vector<int>     had_gen_Status_;
+	std::vector<int>     had_gen_Charge_;
+	std::vector<float>   had_gen_Pt_;
+	std::vector<float>   had_gen_Eta_;
+	std::vector<float>   had_gen_Phi_;
+	std::vector<float>   had_gen_Mass_;
+
+	//quarks @ gen
+	std::vector<int>     quarks_gen_PID_;
+	std::vector<int>     quarks_gen_Status_;
+	std::vector<int>     quarks_gen_Charge_;
+	std::vector<float>   quarks_gen_Pt_;
+	std::vector<float>   quarks_gen_Eta_;
+	std::vector<float>   quarks_gen_Phi_;
+	std::vector<float>   quarks_gen_Mass_;
+
 	//trigger infos
 
-	bool passIsoTk18_  = 0;
-	bool passIsoTk20_  = 0;
-	bool passIsoTk22_  = 0;
-	bool passIsoTk24_  = 0;
-	bool passIsoTk27_  = 0;
-	bool passIsoTk17e_ = 0;
-	bool passIsoTk22e_ = 0;
+	bool passIsoMuTk18_  = 0;
+	bool passIsoMuTk20_  = 0;
+	bool passIsoMuTk22_  = 0;
+	bool passIsoMuTk24_  = 0;
+	bool passIsoMuTk27_  = 0;
+	bool passIsoMuTk17e_ = 0;
+	bool passIsoMuTk22e_ = 0;
 	
 	bool passIsoMu18_  = 0;
 	bool passIsoMu20_  = 0;
@@ -115,39 +257,82 @@ private:
 	bool passDoubleMu17TrkIsoTkMu8_   = 0;
 	bool passDoubleTkMu17TrkIsoTkMu8_ = 0;
 
+	bool passIsoEle27_              = 0;
+	bool passNonIsoEle115_          = 0;
+	bool passDoubleEle23andEle12DZ_ = 0;
+	bool passDoubleEle23andEle12_   = 0;
+
+	bool passDoubleEle33TrkMW_      = 0;
+	bool passDoubleEle33MW_         = 0;
+	bool passDoubleEle33_           = 0;
+
+	bool passDoubleMu33Ele33_       = 0;
+
  
-	//secondary verteces info
+	//secondary verteces info due to mu
+	std::vector<int>   sv_mu_TrackSize_;
+	std::vector<float> sv_mu_LXYSig_;
+	std::vector<float> sv_mu_LXYZSig_;
+	std::vector<float> sv_mu_LXY_;
+	std::vector<float> sv_mu_LXYZ_;
+	std::vector<float> sv_mu_mass_;
+	std::vector<int>   sv_mu_charge_;
+	std::vector<float> sv_mu_eta_;
+	std::vector<float> sv_mu_phi_;
+	std::vector<float> sv_mu_pt_;
+	std::vector<float> sv_mu_p_;
+	std::vector<float> sv_mu_Beta_;
+	std::vector<float> sv_mu_Gamma_;
+	std::vector<float> sv_mu_CTau0_;
+	std::vector<float> sv_mu_NDof_;
+	std::vector<float> sv_mu_Chi2_;
+	std::vector<float> sv_mu_Angle3D_;
+	std::vector<float> sv_mu_Angle2D_;
 
-	std::vector<int>   sv_TrackSize_;
-	std::vector<float> sv_LXYSig_;
-	std::vector<float> sv_LXYZSig_;
-	std::vector<float> sv_LXY_;
-	std::vector<float> sv_LXYZ_;
-	std::vector<float> sv_mass_;
-	std::vector<int>   sv_charge_;
-	std::vector<float> sv_eta_;
-	std::vector<float> sv_phi_;
-	std::vector<float> sv_pt_;
-	std::vector<float> sv_p_;
-	std::vector<float> sv_Beta_;
-	std::vector<float> sv_Gamma_;
-	std::vector<float> sv_CTau0_;
-	std::vector<float> sv_NDof_;
-	std::vector<float> sv_Chi2_;
-	std::vector<float> sv_Angle3D_;
-	std::vector<float> sv_Angle2D_;
+	std::vector<int  >  sv_mu_tracks_charge_;
+	std::vector<float>  sv_mu_tracks_eta_;
+	std::vector<float>  sv_mu_tracks_phi_;
+	std::vector<float>  sv_mu_tracks_pt_;
+	std::vector<float>  sv_mu_tracks_dxySig_;
+	std::vector<float>  sv_mu_tracks_dxy_;
+	std::vector<float>  sv_mu_tracks_dxyz_;
 
-	std::vector<std::vector<int  > > sv_tracks_charge_;
-	std::vector<std::vector<float> > sv_tracks_eta_;
-	std::vector<std::vector<float> > sv_tracks_phi_;
-	std::vector<std::vector<float> > sv_tracks_pt_;
-	std::vector<std::vector<float> > sv_tracks_dxySig_;
-	std::vector<std::vector<float> > sv_tracks_dxy_;
-	std::vector<std::vector<float> > sv_tracks_dxyz_;
+	std::vector<int  > sv_mu_tracks_Sumcharge_;
+	std::vector<float> sv_mu_tracks_Sumpt_;
+	std::vector<float> sv_mu_match_;
 
-	std::vector<int  > sv_tracks_Sumcharge_;
-	std::vector<float> sv_tracks_Sumpt_;
-	std::vector<float> sv_match_;
+	//secondary verteces info due to ele
+	std::vector<int>   sv_ele_TrackSize_;
+	std::vector<float> sv_ele_LXYSig_;
+	std::vector<float> sv_ele_LXYZSig_;
+	std::vector<float> sv_ele_LXY_;
+	std::vector<float> sv_ele_LXYZ_;
+	std::vector<float> sv_ele_mass_;
+	std::vector<int>   sv_ele_charge_;
+	std::vector<float> sv_ele_eta_;
+	std::vector<float> sv_ele_phi_;
+	std::vector<float> sv_ele_pt_;
+	std::vector<float> sv_ele_p_;
+	std::vector<float> sv_ele_Beta_;
+	std::vector<float> sv_ele_Gamma_;
+	std::vector<float> sv_ele_CTau0_;
+	std::vector<float> sv_ele_NDof_;
+	std::vector<float> sv_ele_Chi2_;
+	std::vector<float> sv_ele_Angle3D_;
+	std::vector<float> sv_ele_Angle2D_;
+
+	std::vector<int  >  sv_ele_tracks_charge_;
+	std::vector<float>  sv_ele_tracks_eta_;
+	std::vector<float>  sv_ele_tracks_phi_;
+	std::vector<float>  sv_ele_tracks_pt_;
+	std::vector<float>  sv_ele_tracks_dxySig_;
+	std::vector<float>  sv_ele_tracks_dxy_;
+	std::vector<float>  sv_ele_tracks_dxyz_;
+
+	std::vector<int  > sv_ele_tracks_Sumcharge_;
+	std::vector<float> sv_ele_tracks_Sumpt_;
+	std::vector<float> sv_ele_match_;
+	std::vector<float> sv_ele_score_;
 
 	//muon infos
 	std::vector<float> mu_en_ ;
@@ -159,6 +344,7 @@ private:
 	std::vector<int>   mu_FirstGenMatch_ ;
 	std::vector<int>   mu_SecondGenMatch_ ;
 	std::vector<float> mu_trackiso_ ;
+	std::vector<float> mu_rhoIso_;
 	std::vector<float> mu_pfSumChargedHadronPt_ ;
 	std::vector<float> mu_pfSumNeutralHadronEt_ ;
 	std::vector<float> mu_PFSumPhotonEt_ ;
@@ -333,6 +519,12 @@ private:
 	std::vector<float>   ele_FirstGenMatch_;
 	std::vector<float>   ele_SecondGenMatch_;
 
+	std::vector<float>   ele_Mva2016_;
+	std::vector<float>   ele_CutVeto_; 
+	std::vector<float>   ele_CutLoose_;
+	std::vector<float>   ele_CutMedium_;
+	std::vector<float>   ele_CutTight_;
+
 	/*
 	std::vector<float>   ele_Mva_;
 	std::vector<float>   ele_MvaFall17Iso_;
@@ -357,11 +549,11 @@ private:
 	float  caloMet_phi_ = -1000;
 
 	//bJet info
-	std::vector<int>   jet_btag_flavor;
-	std::vector<float> jet_btag_pfCSVv2IVF_discriminator;
-	std::vector<float> jet_btag_pt;
-	std::vector<float> jet_btag_eta;
-	std::vector<float> jet_btag_phi;
+	std::vector<int>   jet_btag_flavor_;
+	std::vector<float> jet_btag_pfCSVv2IVF_discriminator_;
+	std::vector<float> jet_btag_pt_;
+	std::vector<float> jet_btag_eta_;
+	std::vector<float> jet_btag_phi_;
 
 }; 
 

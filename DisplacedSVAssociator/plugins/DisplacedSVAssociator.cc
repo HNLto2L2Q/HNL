@@ -36,6 +36,7 @@
 // kinematics
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "DataFormats/PatCandidates/interface/Electron.h"
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "HNL/DisplacedSVAssociator/interface/VertexAssociation.h"
 
