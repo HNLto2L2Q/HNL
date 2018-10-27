@@ -63,31 +63,6 @@ from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
 addElectronSequence(process)
 
 process.load("CondCore.CondDB.CondDB_cfi")
-process.jec = cms.ESSource("PoolDBESSource",
-      DBParameters = cms.PSet(
-        messageLevel = cms.untracked.int32(0)
-        ),
-                           timetype = cms.string('runnumber'),
-                           toGet = cms.VPSet(
-      cms.PSet(
-         record = cms.string('JetCorrectionsRecord'),
-         tag    = cms.string(jec_tag),
-         label  = cms.untracked.string('AK4PFchs')
-         ),
-      ),
-      connect = cms.string(jec_file)
-)
-#make sure we use the db source and not the global tag
-process.es_prefer_jec = cms.ESPrefer('PoolDBESSource','jec')
-process.get = cms.EDAnalyzer("EventSetupRecordDataGetter",
-    toGet = cms.VPSet(cms.PSet(
-        record = cms.string('JetCorrectionsRecord'),
-        data = cms.vstring('JetCorrectorParametersCollection/AK4PFchs')
-    )
-    ),
-    verbose = cms.untracked.bool(True)
-)
-
 
 process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
 
