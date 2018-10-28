@@ -271,6 +271,18 @@ private:
  
 	//secondary verteces info due to mu
 	std::vector<int>   sv_mu_TrackSize_;
+	std::vector<float> sv_mu_Xpos_;
+	std::vector<float> sv_mu_Ypos_;
+	std::vector<float> sv_mu_Zpos_;
+	std::vector<float> sv_mu_xError_;
+	std::vector<float> sv_mu_yError_;
+	std::vector<float> sv_mu_zError_;
+	std::vector<float> sv_mu_pvX_;
+	std::vector<float> sv_mu_pvY_;
+	std::vector<float> sv_mu_pvZ_;
+	std::vector<float> sv_mu_pvXError_;
+	std::vector<float> sv_mu_pvYError_;
+	std::vector<float> sv_mu_pvZError_;
 	std::vector<float> sv_mu_LXYSig_;
 	std::vector<float> sv_mu_LXYZSig_;
 	std::vector<float> sv_mu_LXY_;
@@ -303,6 +315,18 @@ private:
 
 	//secondary verteces info due to ele
 	std::vector<int>   sv_ele_TrackSize_;
+	std::vector<float> sv_ele_Xpos_;
+	std::vector<float> sv_ele_Ypos_;
+	std::vector<float> sv_ele_Zpos_;
+	std::vector<float> sv_ele_xError_;
+	std::vector<float> sv_ele_yError_;
+	std::vector<float> sv_ele_zError_;
+	std::vector<float> sv_ele_pvX_;
+	std::vector<float> sv_ele_pvY_;
+	std::vector<float> sv_ele_pvZ_;
+	std::vector<float> sv_ele_pvXError_;
+	std::vector<float> sv_ele_pvYError_;
+	std::vector<float> sv_ele_pvZError_;
 	std::vector<float> sv_ele_LXYSig_;
 	std::vector<float> sv_ele_LXYZSig_;
 	std::vector<float> sv_ele_LXY_;

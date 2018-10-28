@@ -680,6 +680,18 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double
 void BigNtuple::set_svInfo(TTree* tree){
 
     tree->Branch("sv_mu_TrackSize" , &sv_mu_TrackSize_);
+    tree->Branch("sv_mu_Xpos" , &sv_mu_Xpos_);
+    tree->Branch("sv_mu_Ypos" , &sv_mu_Ypos_);
+    tree->Branch("sv_mu_Zpos" , &sv_mu_Zpos_);
+    tree->Branch("sv_mu_xError" , &sv_mu_xError_);
+    tree->Branch("sv_mu_yError" , &sv_mu_yError_);
+    tree->Branch("sv_mu_zError" , &sv_mu_zError_);
+    tree->Branch("sv_mu_pvX" , &sv_mu_pvX_);
+    tree->Branch("sv_mu_pvY" , &sv_mu_pvY_);
+    tree->Branch("sv_mu_pvZ" , &sv_mu_pvZ_);
+    tree->Branch("sv_mu_pvXError" , &sv_mu_pvXError_);
+    tree->Branch("sv_mu_pvYError" , &sv_mu_pvYError_);
+    tree->Branch("sv_mu_pvZError" , &sv_mu_pvZError_);
     tree->Branch("sv_mu_LXYSig" , &sv_mu_LXYSig_);
     tree->Branch("sv_mu_LXYZSig" , &sv_mu_LXYZSig_);
     tree->Branch("sv_mu_LXY" , &sv_mu_LXY_);
@@ -709,6 +721,18 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_mu_match" , &sv_mu_match_);
 
     tree->Branch("sv_ele_TrackSize" , &sv_ele_TrackSize_);
+    tree->Branch("sv_ele_Xpos" , &sv_ele_Xpos_);
+    tree->Branch("sv_ele_Ypos" , &sv_ele_Ypos_);
+    tree->Branch("sv_ele_Zpos" , &sv_ele_Zpos_);
+    tree->Branch("sv_ele_xError" , &sv_ele_xError_);
+    tree->Branch("sv_ele_yError" , &sv_ele_yError_);
+    tree->Branch("sv_ele_zError" , &sv_ele_zError_);
+    tree->Branch("sv_ele_pvX" , &sv_ele_pvX_);
+    tree->Branch("sv_ele_pvY" , &sv_ele_pvY_);
+    tree->Branch("sv_ele_pvZ" , &sv_ele_pvZ_);
+    tree->Branch("sv_ele_pvXError" , &sv_ele_pvXError_);
+    tree->Branch("sv_ele_pvYError" , &sv_ele_pvYError_);
+    tree->Branch("sv_ele_pvZError" , &sv_ele_pvZError_);
     tree->Branch("sv_ele_LXYSig" , &sv_ele_LXYSig_);
     tree->Branch("sv_ele_LXYZSig" , &sv_ele_LXYZSig_);
     tree->Branch("sv_ele_LXY" , &sv_ele_LXY_);
@@ -783,6 +807,18 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
   float  svAngle2D = pvToVertex2D.Angle(svMom2D);
 
   sv_mu_TrackSize_.push_back(bestVertex.nTracks());
+  sv_mu_Xpos_.push_back(x);
+  sv_mu_Ypos_.push_back(y);
+  sv_mu_Zpos_.push_back(z);
+  sv_mu_xError_.push_back(svxE);
+  sv_mu_yError_.push_back(svyE);
+  sv_mu_zError_.push_back(svzE);
+  sv_mu_pvX_.push_back(pv.x());
+  sv_mu_pvY_.push_back(pv.y());
+  sv_mu_pvZ_.push_back(pv.z());
+  sv_mu_pvXError_.push_back(pvxE);
+  sv_mu_pvYError_.push_back(pvyE);
+  sv_mu_pvZError_.push_back(pvzE);
   sv_mu_LXY_.push_back(std::sqrt( dx * dx + dy * dy ));
   sv_mu_LXYZ_.push_back(std::sqrt( dx * dx + dy * dy + dz * dz ));
   sv_mu_LXYSig_.push_back(std::sqrt( dx * dx + dy * dy ) / std::sqrt(xE * xE + yE * yE));
@@ -868,6 +904,18 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   float  svAngle2D = pvToVertex2D.Angle(svMom2D);
 
   sv_ele_TrackSize_.push_back(bestVertex.nTracks());
+  sv_ele_Xpos_.push_back(x);
+  sv_ele_Ypos_.push_back(y);
+  sv_ele_Zpos_.push_back(z);
+  sv_ele_xError_.push_back(svxE);
+  sv_ele_yError_.push_back(svyE);
+  sv_ele_zError_.push_back(svzE);
+  sv_ele_pvX_.push_back(pv.x());
+  sv_ele_pvY_.push_back(pv.y());
+  sv_ele_pvZ_.push_back(pv.z());
+  sv_ele_pvXError_.push_back(pvxE);
+  sv_ele_pvYError_.push_back(pvyE);
+  sv_ele_pvZError_.push_back(pvzE);
   sv_ele_LXY_.push_back(std::sqrt( dx * dx + dy * dy ));
   sv_ele_LXYZ_.push_back(std::sqrt( dx * dx + dy * dy + dz * dz ));
   sv_ele_LXYSig_.push_back(std::sqrt( dx * dx + dy * dy ) / std::sqrt(xE * xE + yE * yE));
