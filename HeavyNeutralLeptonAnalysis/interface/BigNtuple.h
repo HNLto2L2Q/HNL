@@ -231,6 +231,9 @@ private:
 	std::vector<float>   quarks_gen_Mass_;
 
 	//trigger infos
+	bool passMu3_PFJet40_    = 0;
+	bool passMu8_TrkIsoVVL_  = 0;
+	bool passMu17_TrkIsoVVL_ = 0;
 
 	bool passIsoMuTk18_  = 0;
 	bool passIsoMuTk20_  = 0;
@@ -376,6 +379,9 @@ private:
 	std::vector<int>   mu_numberOfValidMuonHits_ ;
 	std::vector<float> mu_emIso_ ;
 	std::vector<float> mu_hadIso_ ;
+	std::vector<float> mu_segmentCompatibilityMuonBestTrack_;
+	std::vector<float> mu_trkKinkMuonBestTrack_;
+	std::vector<float> mu_chi2LocalPositionMuonBestTrack_;
 	std::vector<float> mu_normalizedChi2_ ;
 	std::vector<int>   mu_numberOfMatchedStations_ ;
 	std::vector<int>   mu_numberOfValidPixelHits_ ;
@@ -383,6 +389,7 @@ private:
 	std::vector<int>   mu_numberOfpixelLayersWithMeasurement_ ;
 	std::vector<int>   mu_TrackQuality_ ;
 	std::vector<int>   mu_InnerTrackQuality_ ;
+	std::vector<float> mu_InnerTrackValidFraction_;
 	std::vector<float> mu_pxTunePMuonBestTrack_ ;
 	std::vector<float> mu_pyTunePMuonBestTrack_ ;
 	std::vector<float> mu_pzTunePMuonBestTrack_ ;
@@ -548,6 +555,12 @@ private:
 	std::vector<float>   ele_CutLoose_;
 	std::vector<float>   ele_CutMedium_;
 	std::vector<float>   ele_CutTight_;
+	std::vector<float>   ele_isEB_;
+	std::vector<float>   ele_isEE_;
+	std::vector<float>   ele_eSuperClusterOverP_;
+	std::vector<float>   ele_ecalEnergy_;
+	std::vector<float>   ele_dEtaInSeed_;
+	std::vector<float>   ele_InvMinusPInv_;
 
 	/*
 	std::vector<float>   ele_Mva_;

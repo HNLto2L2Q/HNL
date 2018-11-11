@@ -364,7 +364,10 @@ void BigNtuple::fill_pvInfo(const reco::VertexCollection& pvs){
 
 
 void BigNtuple::set_trigInfo(TTree* tree){
-  
+
+    tree->Branch("passMu3_PFJet40"   , &passMu3_PFJet40_   , "passMu3_PFJet40/O");
+    tree->Branch("passMu8_TrkIsoVVL" , &passMu8_TrkIsoVVL_ , "passMu8_TrkIsoVVL/O"); 
+    tree->Branch("passMu17_TrkIsoVVL", &passMu17_TrkIsoVVL_, "passMu17_TrkIsoVVL/O");  
     tree->Branch("passIsoMuTk18" , &passIsoMuTk18_, "passIsoMuTk18/O");
     tree->Branch("passIsoMuTk20" , &passIsoMuTk20_, "passIsoMuTk20/O");
     tree->Branch("passIsoMuTk22" , &passIsoMuTk22_, "passIsoMuTk22/O");
@@ -403,6 +406,10 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
     const std::string &name = trigNames.triggerName(i);
     bool fired = triggerResults.accept(i);
     if(!fired) continue;
+
+    passMu3_PFJet40_    |= name.find("HLT_Mu3_PFJet40_v")    != std::string::npos;
+    passMu8_TrkIsoVVL_  |= name.find("HLT_Mu8_TrkIsoVVL_v")  != std::string::npos;
+    passMu17_TrkIsoVVL_ |= name.find("HLT_Mu17_TrkIsoVVL_v") != std::string::npos;
 
     passIsoMuTk18_  |=  name.find("HLT_IsoTkMu18_v") != std::string::npos;
     passIsoMuTk20_  |=  name.find("HLT_IsoTkMu20_v") != std::string::npos;
@@ -482,6 +489,9 @@ void BigNtuple::fill_pileupInfo( float npt, float npit, float pu_weight, float p
    tree->Branch("mu_numberOfValidMuonHits" , &mu_numberOfValidMuonHits_);
    tree->Branch("mu_emIso" , &mu_emIso_);
    tree->Branch("mu_hadIso" , &mu_hadIso_);
+   tree->Branch("mu_segmentCompatibilityMuonBestTrack" ,&mu_segmentCompatibilityMuonBestTrack_);
+   tree->Branch("mu_trkKinkMuonBestTrack" ,&mu_trkKinkMuonBestTrack_);
+   tree->Branch("mu_chi2LocalPositionMuonBestTrack" ,&mu_chi2LocalPositionMuonBestTrack_);
    tree->Branch("mu_normalizedChi2" , &mu_normalizedChi2_);
    tree->Branch("mu_numberOfMatchedStations" , &mu_numberOfMatchedStations_);
    tree->Branch("mu_numberOfValidPixelHits" , &mu_numberOfValidPixelHits_);
@@ -489,6 +499,7 @@ void BigNtuple::fill_pileupInfo( float npt, float npit, float pu_weight, float p
    tree->Branch("mu_numberOfpixelLayersWithMeasurement" , &mu_numberOfpixelLayersWithMeasurement_);
    tree->Branch("mu_TrackQuality" , &mu_TrackQuality_);
    tree->Branch("mu_InnerTrackQuality" , &mu_InnerTrackQuality_);
+   tree->Branch("mu_InnerTrackValidFraction" ,& mu_InnerTrackValidFraction_);
    tree->Branch("mu_pxTunePMuonBestTrack" , &mu_pxTunePMuonBestTrack_);
    tree->Branch("mu_pyTunePMuonBestTrack" , &mu_pyTunePMuonBestTrack_);
    tree->Branch("mu_pzTunePMuonBestTrack" , &mu_pzTunePMuonBestTrack_);
@@ -598,6 +609,7 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double
     mu_numberOfMatchedStations_.push_back(mu.numberOfMatchedStations());
     mu_numberOfpixelLayersWithMeasurement_.push_back(mu.innerTrack()->hitPattern().pixelLayersWithMeasurement());
     mu_InnerTrackQuality_.push_back(mu.innerTrack()->quality(reco::TrackBase::highPurity));
+    mu_InnerTrackValidFraction_.push_back(mu.innerTrack()->validFraction());
   }
   else{
     mu_normalizedChi2_.push_back(-999);
@@ -669,6 +681,9 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double
   mu_emIso_.push_back(mu.isolationR03().emEt);
   mu_hadIso_.push_back(mu.isolationR03().hadEt);
   mu_trackiso_.push_back(mu.isolationR03().sumPt);
+  mu_segmentCompatibilityMuonBestTrack_.push_back(mu.segmentCompatibility());
+  mu_trkKinkMuonBestTrack_.push_back(mu.combinedQuality().trkKink);
+  mu_chi2LocalPositionMuonBestTrack_.push_back(mu.combinedQuality().chi2LocalPosition);
   //============= Parameters related to PF isolation =====================                                                                     
   mu_pfSumPUPt_.push_back(mu.pfIsolationR03().sumPhotonEt);
   mu_PFSumPhotonEt_.push_back(mu.pfIsolationR03().sumPhotonEt);
@@ -1095,10 +1110,24 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_pfDeltaBeta",&ele_pfDeltaBeta_);
   tree->Branch("ele_FirstGenMatch",&ele_FirstGenMatch_);
   tree->Branch("ele_SecondGenMatch", &ele_SecondGenMatch_);
+  tree->Branch("ele_isEB" ,&ele_isEB_);
+  tree->Branch("ele_isEE" ,&ele_isEE_);
+  tree->Branch("ele_eSuperClusterOverP" ,&ele_eSuperClusterOverP_);
+  tree->Branch("ele_ecalEnergy" ,&ele_ecalEnergy_);
+  tree->Branch("ele_dEtaInSeed" ,&ele_dEtaInSeed_); 
+  tree->Branch("ele_InvMinusPInv" ,&ele_InvMinusPInv_);
+
+
 }
 
 void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, double Rho, double match1, double match2,  std::auto_ptr<EcalClusterLazyTools> recHitEcal){
 
+  float dEtaInSeed;
+
+    if(ele_.superCluster().isNonnull() and ele_.superCluster()->seed().isNonnull()) 
+      dEtaInSeed = ele_.deltaEtaSuperClusterTrackAtVtx() - ele_.superCluster()->eta() + ele_.superCluster()->seed()->eta();
+
+    else dEtaInSeed =  std::numeric_limits<float>::max();
 
   ele_FirstGenMatch_.push_back(match1);
   ele_SecondGenMatch_.push_back(match2);
@@ -1117,7 +1146,14 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
   ele_etaTrack_.push_back(ele_.p4().eta());     //eta track 
   ele_phiTrack_.push_back(ele_.p4().phi());     //phi track
   ele_thetaTrack_.push_back(ele_.p4().theta()); //theta track 
-    
+
+  ele_isEB_.push_back(ele_.isEB());
+  ele_isEE_.push_back(ele_.isEE());
+  ele_eSuperClusterOverP_.push_back(ele_.eSuperClusterOverP());    
+  ele_ecalEnergy_.push_back(ele_.ecalEnergy());
+  ele_dEtaInSeed_.push_back(std::abs(dEtaInSeed));
+  ele_InvMinusPInv_.push_back(std::abs(1.0 - ele_.eSuperClusterOverP())/ele_.ecalEnergy());
+
   ele_x_.push_back(ele_.p4().x());
   ele_y_.push_back(ele_.p4().y());
   ele_z_.push_back(ele_.p4().z());
@@ -1167,7 +1203,7 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
   ele_isPassConversionVeto_.push_back(ele_.passConversionVeto());
   ele_charge_.push_back(ele_.gsfTrack()->charge());
   ele_rhoIso_.push_back(Rho); //transverse momentum per unit area
-  ele_nbOfMissingHits_.push_back(ele_.gsfTrack()->numberOfLostHits()); 
+  ele_nbOfMissingHits_.push_back(ele_.gsfTrack()->hitPattern().numberOfLostHits(reco::HitPattern::MISSING_INNER_HITS)); 
   ele_fbrem_.push_back(ele_.fbrem());
   ele_EoverP_.push_back(ele_.eSeedClusterOverP());
   ele_Xposition_.push_back(ele_.caloPosition().x());   
