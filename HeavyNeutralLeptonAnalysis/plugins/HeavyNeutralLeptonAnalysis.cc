@@ -341,6 +341,7 @@ reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Muon(const p
     //cout <<"new vertex"<<endl;
     for(reco::Vertex::trackRef_iterator tt = ss->tracks_begin(); tt != ss->tracks_end(); ++tt) {
       //cout<<"Track " << (*tt)->pt() << "  "<< (*tt)->eta()<< " " << (*tt)->phi() <<endl;
+      cout <<"2nd high pT"<< cand->pseudoTrack().pt() <<endl;
       float   dpt    = fabs(cand->pseudoTrack().pt() - tt->castTo<reco::TrackRef>()->pt()) / tt->castTo<reco::TrackRef>()->pt();
       //cout << "match " << (cand->pseudoTrack().pt() == tt->castTo<reco::TrackRef>()->pt()) <<" dpt = " << dpt << endl;
       if( (cand->pseudoTrack().pt() == tt->castTo<reco::TrackRef>()->pt()) || dpt < 0.001) { //Options here: innerTrack, globalTrack, muonBestTrack, outerTrack, pickyTrack, track
@@ -579,9 +580,9 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      //added the matching
      ntuple_.fill_muInfo(mu, pvs.at(0) , rho ,matching_1stmu , matching_2ndmu);
    }
-
+   
    // lambda function to sort this muons
-   std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.pt() < b.pt(); });
+   std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.pt() > b.pt(); });
      //////////////////////////////////////////////   
    EcalRecHitCollection recHitCollectionEB;
    if(recHitCollectionEBHandle.isValid()){ recHitCollectionEB = *recHitCollectionEBHandle;}
@@ -629,8 +630,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //============================================================= 
    if(secondaryVertexHandle.isValid()){
      //sv due to muon
-     if(looseMuons.size()){
-       pat::Muon muonHNL = looseMuons[0];
+     if(looseMuons.size() > 1){
+       pat::Muon muonHNL = looseMuons[1];
        reco::VertexCollection bestVertices_mu  = getMatchedVertex_Muon(muonHNL, *secondaryVertexHandle);
        // check if SV doesn't match with the PV
        for (const reco::Vertex& vtx_mu : bestVertices_mu){
