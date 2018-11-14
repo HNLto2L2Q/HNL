@@ -621,7 +621,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 
    }
    // lambda function to sort this electrons
-   std::sort(looseElectrons.begin(), looseElectrons.end(), [](pat::Electron a, pat::Electron b) {return a.pt() < b.pt(); });
+   std::sort(looseElectrons.begin(), looseElectrons.end(), [](pat::Electron a, pat::Electron b) {return a.pt() > b.pt(); });
    //=============================================================                    
    //                     
    //                Secondary Vertex                     
@@ -643,8 +643,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        }
      }
      //sv due to electron
-     if(looseElectrons.size()){
-       pat::Electron electronHNL = looseElectrons[0];       
+     if(looseElectrons.size() > 1){
+       pat::Electron electronHNL = looseElectrons[1];       
        VertexAssociation JVAIVF("IVF", pvs.at(0), debug);
        reco::VertexCollection::const_iterator vtxIter = secondaryVertexHandle->begin();
        for(; vtxIter != secondaryVertexHandle->end(); ++vtxIter ) {
