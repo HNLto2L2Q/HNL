@@ -580,7 +580,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      ntuple_.fill_muInfo(mu, pvs.at(0) , rho ,matching_1stmu , matching_2ndmu);
    }
    
-   // lambda function to sort this muons
+   // lambda function to sort this loose muons
    std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.pt() > b.pt(); });
      //////////////////////////////////////////////   
    EcalRecHitCollection recHitCollectionEB;
