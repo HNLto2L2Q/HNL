@@ -56,7 +56,7 @@ public:
 
 	void set_svInfo(TTree* tree);
         void fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
-        void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match , double score);
+        void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
 
 	void set_muInfo(TTree* tree);
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
@@ -304,13 +304,21 @@ private:
 	std::vector<float> sv_mu_Angle3D_;
 	std::vector<float> sv_mu_Angle2D_;
 
-	std::vector<int  >  sv_mu_tracks_charge_;
-	std::vector<float>  sv_mu_tracks_eta_;
-	std::vector<float>  sv_mu_tracks_phi_;
-	std::vector<float>  sv_mu_tracks_pt_;
-	std::vector<float>  sv_mu_tracks_dxySig_;
-	std::vector<float>  sv_mu_tracks_dxy_;
-	std::vector<float>  sv_mu_tracks_dxyz_;
+	//std::vector<int  >  sv_mu_tracks_charge_;
+	//std::vector<float>  sv_mu_tracks_eta_;
+	//std::vector<float>  sv_mu_tracks_phi_;
+	//std::vector<float>  sv_mu_tracks_pt_;
+	//std::vector<float>  sv_mu_tracks_dxySig_;
+	//std::vector<float>  sv_mu_tracks_dxy_;
+	//std::vector<float>  sv_mu_tracks_dxyz_;
+
+	std::vector<std::vector<int  > > sv_mu_tracks_charge_;
+	std::vector<std::vector<float> > sv_mu_tracks_eta_;
+	std::vector<std::vector<float> > sv_mu_tracks_phi_;
+	std::vector<std::vector<float> > sv_mu_tracks_pt_;
+	std::vector<std::vector<float> > sv_mu_tracks_dxySig_;
+	std::vector<std::vector<float> > sv_mu_tracks_dxy_;
+	std::vector<std::vector<float> > sv_mu_tracks_dxyz_;
 
 	std::vector<int  > sv_mu_tracks_Sumcharge_;
 	std::vector<float> sv_mu_tracks_Sumpt_;
@@ -348,18 +356,17 @@ private:
 	std::vector<float> sv_ele_Angle3D_;
 	std::vector<float> sv_ele_Angle2D_;
 
-	std::vector<int  >  sv_ele_tracks_charge_;
-	std::vector<float>  sv_ele_tracks_eta_;
-	std::vector<float>  sv_ele_tracks_phi_;
-	std::vector<float>  sv_ele_tracks_pt_;
-	std::vector<float>  sv_ele_tracks_dxySig_;
-	std::vector<float>  sv_ele_tracks_dxy_;
-	std::vector<float>  sv_ele_tracks_dxyz_;
+	std::vector<std::vector<int  > > sv_ele_tracks_charge_;
+	std::vector<std::vector<float> > sv_ele_tracks_eta_;
+	std::vector<std::vector<float> > sv_ele_tracks_phi_;
+	std::vector<std::vector<float> > sv_ele_tracks_pt_;
+	std::vector<std::vector<float> > sv_ele_tracks_dxySig_;
+	std::vector<std::vector<float> > sv_ele_tracks_dxy_;
+	std::vector<std::vector<float> > sv_ele_tracks_dxyz_;
 
 	std::vector<int  > sv_ele_tracks_Sumcharge_;
 	std::vector<float> sv_ele_tracks_Sumpt_;
 	std::vector<float> sv_ele_match_;
-	std::vector<float> sv_ele_score_;
 
 	//muon infos
 	std::vector<float> mu_en_ ;
@@ -454,8 +461,10 @@ private:
 	std::vector<float>   jet_theta_ ;
 	std::vector<float>   jet_en_ ;
 	std::vector<float>   jet_chargedEmEnergy_ ;
+	std::vector<float>   jet_chargedEmEnergyFraction_ ;
 	std::vector<float>   jet_neutralEmEnergyFraction_ ;
 	std::vector<float>   jet_chargedHadronEnergy_ ;
+	std::vector<float>   jet_chargedHadronEnergyFraction_ ;
 	std::vector<float>   jet_neutralHadronEnergyFraction_ ;
 	std::vector<float>   jet_chargedMuEnergy_ ;
 	std::vector<float>   jet_chargedMuEnergyFraction_ ;
