@@ -304,18 +304,11 @@ private:
 	std::vector<float> sv_mu_Angle3D_;
 	std::vector<float> sv_mu_Angle2D_;
 
-	//std::vector<int  >  sv_mu_tracks_charge_;
-	//std::vector<float>  sv_mu_tracks_eta_;
-	//std::vector<float>  sv_mu_tracks_phi_;
-	//std::vector<float>  sv_mu_tracks_pt_;
-	//std::vector<float>  sv_mu_tracks_dxySig_;
-	//std::vector<float>  sv_mu_tracks_dxy_;
-	//std::vector<float>  sv_mu_tracks_dxyz_;
-
 	std::vector<std::vector<int  > > sv_mu_tracks_charge_;
 	std::vector<std::vector<float> > sv_mu_tracks_eta_;
 	std::vector<std::vector<float> > sv_mu_tracks_phi_;
 	std::vector<std::vector<float> > sv_mu_tracks_pt_;
+	std::vector<std::vector<float> > sv_mu_tracks_en_;
 	std::vector<std::vector<float> > sv_mu_tracks_dxySig_;
 	std::vector<std::vector<float> > sv_mu_tracks_dxy_;
 	std::vector<std::vector<float> > sv_mu_tracks_dxyz_;
@@ -360,6 +353,7 @@ private:
 	std::vector<std::vector<float> > sv_ele_tracks_eta_;
 	std::vector<std::vector<float> > sv_ele_tracks_phi_;
 	std::vector<std::vector<float> > sv_ele_tracks_pt_;
+	std::vector<std::vector<float> > sv_ele_tracks_en_;
 	std::vector<std::vector<float> > sv_ele_tracks_dxySig_;
 	std::vector<std::vector<float> > sv_ele_tracks_dxy_;
 	std::vector<std::vector<float> > sv_ele_tracks_dxyz_;

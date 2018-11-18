@@ -728,6 +728,7 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_mu_tracks_eta" , &sv_mu_tracks_eta_);
     tree->Branch("sv_mu_tracks_phi" , &sv_mu_tracks_phi_);
     tree->Branch("sv_mu_tracks_pt" , &sv_mu_tracks_pt_);
+    tree->Branch("sv_mu_tracks_en" , &sv_mu_tracks_en_);
     tree->Branch("sv_mu_tracks_dxySig" , &sv_mu_tracks_dxySig_);
     tree->Branch("sv_mu_tracks_dxy" , &sv_mu_tracks_dxy_);
     tree->Branch("sv_mu_tracks_dxyz" , &sv_mu_tracks_dxyz_);
@@ -769,6 +770,7 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_ele_tracks_eta" , &sv_ele_tracks_eta_);
     tree->Branch("sv_ele_tracks_phi" , &sv_ele_tracks_phi_);
     tree->Branch("sv_ele_tracks_pt" , &sv_ele_tracks_pt_);
+    tree->Branch("sv_ele_tracks_en" , &sv_ele_tracks_en_);
     tree->Branch("sv_ele_tracks_dxySig" , &sv_ele_tracks_dxySig_);
     tree->Branch("sv_ele_tracks_dxy" , &sv_ele_tracks_dxy_);
     tree->Branch("sv_ele_tracks_dxyz" , &sv_ele_tracks_dxyz_);
@@ -856,6 +858,7 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
   sv_mu_tracks_eta_.emplace_back();
   sv_mu_tracks_phi_.emplace_back();
   sv_mu_tracks_pt_.emplace_back();
+  sv_mu_tracks_en_.emplace_back();
   sv_mu_tracks_dxySig_.emplace_back();
   sv_mu_tracks_dxy_.emplace_back();
   sv_mu_tracks_dxyz_.emplace_back();
@@ -867,6 +870,7 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
     sv_mu_tracks_eta_.back().push_back((*tt)->eta());
     sv_mu_tracks_phi_.back().push_back((*tt)->phi());
     sv_mu_tracks_pt_.back().push_back((*tt)->pt());
+    sv_mu_tracks_en_.back().push_back((*tt)->p());
     sv_mu_tracks_dxySig_.back().push_back(fabs((*tt)->dxy(pv.position()))/fabs((*tt)->dxyError()));
     sv_mu_tracks_dxy_.back().push_back((*tt)->dxy(pv.position()));
 
@@ -961,6 +965,7 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   sv_ele_tracks_eta_.emplace_back();
   sv_ele_tracks_phi_.emplace_back();
   sv_ele_tracks_pt_.emplace_back();
+  sv_ele_tracks_en_.emplace_back();
   sv_ele_tracks_dxySig_.emplace_back();
   sv_ele_tracks_dxy_.emplace_back();
   sv_ele_tracks_dxyz_.emplace_back();
@@ -972,6 +977,7 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
     sv_ele_tracks_eta_.back().push_back((*tt)->eta());
     sv_ele_tracks_phi_.back().push_back((*tt)->phi());
     sv_ele_tracks_pt_.back().push_back((*tt)->pt());
+    sv_ele_tracks_en_.back().push_back((*tt)->p());
     sv_ele_tracks_dxySig_.back().push_back(fabs((*tt)->dxy(pv.position()))/fabs((*tt)->dxyError()));
     sv_ele_tracks_dxy_.back().push_back((*tt)->dxy(pv.position()));
 
