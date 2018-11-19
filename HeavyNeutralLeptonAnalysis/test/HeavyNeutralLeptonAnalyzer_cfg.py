@@ -5,6 +5,7 @@ debugLevel    = -1
 
 isMC_         = True
 isMCSignal_   = False
+hasLHE_       = True #Only for MC with Matrix Element generators
 
 jec_tag_DATA  = 'JetCorrectorParametersCollection_Summer16_23Sep2016AllV4_DATA_AK4PFchs'
 jec_tag_MC    = 'JetCorrectorParametersCollection_Summer16_23Sep2016V4_MC_AK4PFchs'
@@ -56,6 +57,13 @@ process.source = cms.Source("PoolSource",
 #'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17/displaced/HeavyNeutrino_lljj_M-1_V-0.00836660026534_e_onshell_pre2017_leptonFirst_NLO/heavyNeutrino_96.root'
 ))
 process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output.root"))
+process.load('HNL.HeavyNeutralLeptonAnalysis.MetaNtuplizer_cfi')
+process.metaTree.isMC = isMC_
+process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
+process.metaTree.globalTag = GT
+process.metaTree.args = cms.string('') #FILL ME!
+process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
+
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
 
 from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
