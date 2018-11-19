@@ -728,6 +728,7 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_mu_tracks_eta" , &sv_mu_tracks_eta_);
     tree->Branch("sv_mu_tracks_phi" , &sv_mu_tracks_phi_);
     tree->Branch("sv_mu_tracks_pt" , &sv_mu_tracks_pt_);
+    tree->Branch("sv_mu_tracks_en" , &sv_mu_tracks_en_);
     tree->Branch("sv_mu_tracks_dxySig" , &sv_mu_tracks_dxySig_);
     tree->Branch("sv_mu_tracks_dxy" , &sv_mu_tracks_dxy_);
     tree->Branch("sv_mu_tracks_dxyz" , &sv_mu_tracks_dxyz_);
@@ -769,13 +770,13 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_ele_tracks_eta" , &sv_ele_tracks_eta_);
     tree->Branch("sv_ele_tracks_phi" , &sv_ele_tracks_phi_);
     tree->Branch("sv_ele_tracks_pt" , &sv_ele_tracks_pt_);
+    tree->Branch("sv_ele_tracks_en" , &sv_ele_tracks_en_);
     tree->Branch("sv_ele_tracks_dxySig" , &sv_ele_tracks_dxySig_);
     tree->Branch("sv_ele_tracks_dxy" , &sv_ele_tracks_dxy_);
     tree->Branch("sv_ele_tracks_dxyz" , &sv_ele_tracks_dxyz_);
     tree->Branch("sv_ele_tracks_Sumcharge" , &sv_ele_tracks_Sumcharge_);
     tree->Branch("sv_ele_tracks_Sumpt" , &sv_ele_tracks_Sumpt_);
     tree->Branch("sv_ele_match" , &sv_ele_match_);
-    tree->Branch("sv_ele_score" , &sv_ele_score_);
 
 }
 
@@ -853,21 +854,31 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
 
   int ch = 0;
   float pt = 0;
+  sv_mu_tracks_charge_.emplace_back();
+  sv_mu_tracks_eta_.emplace_back();
+  sv_mu_tracks_phi_.emplace_back();
+  sv_mu_tracks_pt_.emplace_back();
+  sv_mu_tracks_en_.emplace_back();
+  sv_mu_tracks_dxySig_.emplace_back();
+  sv_mu_tracks_dxy_.emplace_back();
+  sv_mu_tracks_dxyz_.emplace_back();
 
   reco::Vertex::trackRef_iterator tt = bestVertex.tracks_begin();
   for(; tt != bestVertex.tracks_end(); ++tt) {
-    
-    sv_mu_tracks_charge_.push_back((*tt)->charge());
-    sv_mu_tracks_eta_.push_back((*tt)->eta());
-    sv_mu_tracks_phi_.push_back((*tt)->phi());
-    sv_mu_tracks_pt_.push_back((*tt)->pt());
-    sv_mu_tracks_dxySig_.push_back(fabs((*tt)->dxy(pv.position()))/fabs((*tt)->dxyError()));
-    sv_mu_tracks_dxy_.push_back((*tt)->dxy(pv.position()));
-    
+
+    sv_mu_tracks_charge_.back().push_back((*tt)->charge());
+    sv_mu_tracks_eta_.back().push_back((*tt)->eta());
+    sv_mu_tracks_phi_.back().push_back((*tt)->phi());
+    sv_mu_tracks_pt_.back().push_back((*tt)->pt());
+    sv_mu_tracks_en_.back().push_back((*tt)->p());
+    sv_mu_tracks_dxySig_.back().push_back(fabs((*tt)->dxy(pv.position()))/fabs((*tt)->dxyError()));
+    sv_mu_tracks_dxy_.back().push_back((*tt)->dxy(pv.position()));
+
     ROOT::Math::SVector<double, 3> lxyz1((*tt)->vx()-pv.position().x(), (*tt)->vy()-pv.position().y(), (*tt)->vz()-pv.position().z());
     float dxyz = (float)ROOT::Math::Mag(lxyz1); // magntude of the vector
 
-    sv_mu_tracks_dxyz_.push_back(dxyz);
+    sv_mu_tracks_dxyz_.back().push_back(dxyz);
+
     ch+=(*tt)->charge();
     pt+=(*tt)->pt();
   }
@@ -878,7 +889,7 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
 
 }
 
-void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv , double match, double score){
+void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv , double match){
 
   float  svChi2 = bestVertex.chi2();
   float  svNDof = bestVertex.ndof();
@@ -947,25 +958,34 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   sv_ele_Chi2_.push_back(svChi2);
   sv_ele_Angle3D_.push_back(svAngle3D);
   sv_ele_Angle2D_.push_back(svAngle2D);
-  sv_ele_score_.push_back(score);
 
   int ch = 0;
   float pt = 0;
+  sv_ele_tracks_charge_.emplace_back();
+  sv_ele_tracks_eta_.emplace_back();
+  sv_ele_tracks_phi_.emplace_back();
+  sv_ele_tracks_pt_.emplace_back();
+  sv_ele_tracks_en_.emplace_back();
+  sv_ele_tracks_dxySig_.emplace_back();
+  sv_ele_tracks_dxy_.emplace_back();
+  sv_ele_tracks_dxyz_.emplace_back();
 
   reco::Vertex::trackRef_iterator tt = bestVertex.tracks_begin();
   for(; tt != bestVertex.tracks_end(); ++tt) {
     
-    sv_ele_tracks_charge_.push_back((*tt)->charge());
-    sv_ele_tracks_eta_.push_back((*tt)->eta());
-    sv_ele_tracks_phi_.push_back((*tt)->phi());
-    sv_ele_tracks_pt_.push_back((*tt)->pt());
-    sv_ele_tracks_dxySig_.push_back(fabs((*tt)->dxy(pv.position()))/fabs((*tt)->dxyError()));
-    sv_ele_tracks_dxy_.push_back((*tt)->dxy(pv.position()));
+    sv_ele_tracks_charge_.back().push_back((*tt)->charge());
+    sv_ele_tracks_eta_.back().push_back((*tt)->eta());
+    sv_ele_tracks_phi_.back().push_back((*tt)->phi());
+    sv_ele_tracks_pt_.back().push_back((*tt)->pt());
+    sv_ele_tracks_en_.back().push_back((*tt)->p());
+    sv_ele_tracks_dxySig_.back().push_back(fabs((*tt)->dxy(pv.position()))/fabs((*tt)->dxyError()));
+    sv_ele_tracks_dxy_.back().push_back((*tt)->dxy(pv.position()));
+
     
     ROOT::Math::SVector<double, 3> lxyz1((*tt)->vx()-pv.position().x(), (*tt)->vy()-pv.position().y(), (*tt)->vz()-pv.position().z());
     float dxyz = (float)ROOT::Math::Mag(lxyz1); // magntude of the vector
 
-    sv_ele_tracks_dxyz_.push_back(dxyz);
+    sv_ele_tracks_dxyz_.back().push_back(dxyz);
     ch+=(*tt)->charge();
     pt+=(*tt)->pt();
   }
@@ -987,8 +1007,10 @@ void BigNtuple::set_jetInfo(TTree* tree){
   tree->Branch("jet_theta" , &jet_theta_);
   tree->Branch("jet_en" , &jet_en_);
   tree->Branch("jet_chargedEmEnergy" , &jet_chargedEmEnergy_);
+  tree->Branch("jet_chargedEmEnergyFraction" ,&jet_chargedEmEnergyFraction_);
   tree->Branch("jet_neutralEmEnergyFraction" , &jet_neutralEmEnergyFraction_);
   tree->Branch("jet_chargedHadronEnergy" , &jet_chargedHadronEnergy_);
+  tree->Branch("jet_chargedHadronEnergyFraction" , &jet_chargedHadronEnergyFraction_);
   tree->Branch("jet_neutralHadronEnergyFraction" , &jet_neutralHadronEnergyFraction_);
   tree->Branch("jet_chargedMuEnergy" , &jet_chargedMuEnergy_);
   tree->Branch("jet_chargedMuEnergyFraction" , &jet_chargedMuEnergyFraction_);
@@ -1000,7 +1022,7 @@ void BigNtuple::set_jetInfo(TTree* tree){
   tree->Branch("jet_neutralHadronEnergy" , &jet_neutralHadronEnergy_);
   tree->Branch("jet_neutralHadronMultiplicity" , &jet_neutralHadronMultiplicity_);
   tree->Branch("jet_neutralMultiplicity" , &jet_neutralMultiplicity_);
-
+  tree->Branch("jet_chargedMultiplicity" , &jet_chargedMultiplicity_);
 }
 
 
@@ -1015,8 +1037,10 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet){
   jet_theta_.push_back(jet.theta());
   jet_en_.push_back(jet.energy());
   jet_chargedEmEnergy_.push_back(jet.chargedEmEnergy());
+  jet_chargedEmEnergyFraction_.push_back(jet.chargedEmEnergyFraction());
   jet_neutralEmEnergyFraction_.push_back(jet.neutralEmEnergyFraction());
   jet_chargedHadronEnergy_.push_back(jet.chargedHadronEnergy());
+  jet_chargedHadronEnergyFraction_.push_back(jet.chargedHadronEnergyFraction());
   jet_neutralHadronEnergyFraction_.push_back(jet.neutralHadronEnergyFraction());
   jet_chargedMuEnergy_.push_back(jet.chargedMuEnergy());
   jet_chargedMuEnergyFraction_.push_back(jet.chargedMuEnergyFraction());
@@ -1029,7 +1053,6 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet){
   jet_neutralHadronEnergy_.push_back(jet.neutralHadronEnergy());
   jet_neutralHadronMultiplicity_.push_back(jet.neutralHadronMultiplicity());
   jet_neutralMultiplicity_.push_back(jet.neutralMultiplicity());
-
 }
 
 void BigNtuple::set_eleInfo(TTree* tree){
