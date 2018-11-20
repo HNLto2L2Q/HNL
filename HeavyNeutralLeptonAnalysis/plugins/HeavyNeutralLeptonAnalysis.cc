@@ -684,7 +684,9 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //       
    //=============================================================
    pat::JetCollection jets;
-   if(jetsHandle.isValid()){ 
+   //if(jetsHandle.isValid()){
+   // not that this only for mu channel 
+   if(jetsHandle.isValid() && sv.size()){ 
      jets = *jetsHandle;
      for (const pat::Jet jet : jets) {
        if( jet.pt() < 0.0 ) continue;
@@ -703,7 +705,9 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //     
    //=============================================================    
    pat::METCollection mets;
-   if(metsHandle.isValid()){ 
+   // not that this only for mu channel
+   //if(metsHandle.isValid()){
+   if(metsHandle.isValid() && sv.size()){ 
      mets = *metsHandle;
      const pat::MET met = mets.front();
      ntuple_.fill_metInfo(met);
