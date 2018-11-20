@@ -54,8 +54,10 @@ public:
 	void set_pileupInfo(TTree* tree);
         void fill_pileupInfo( float npt, float npit, float pu_weight, float pu_weightup, float pu_weightdown);
 
-	void set_svInfo(TTree* tree);
+	void set_sv_mu_Info(TTree* tree);
         void fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
+
+        void set_sv_ele_Info(TTree* tree);
         void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
 
 	void set_muInfo(TTree* tree);

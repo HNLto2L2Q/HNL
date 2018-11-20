@@ -270,9 +270,10 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_trigInfo(tree_);
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_muInfo(tree_);
-  ntuple_.set_eleInfo(tree_);
-  ntuple_.set_eleIDInfo(tree_);
-  ntuple_.set_svInfo(tree_);
+  //ntuple_.set_eleInfo(tree_);
+  //ntuple_.set_eleIDInfo(tree_);
+  ntuple_.set_sv_mu_Info(tree_);
+  //ntuple_.set_sv_ele_Info(tree_);
   ntuple_.set_jetInfo(tree_);
   ntuple_.set_metInfo(tree_);
   ntuple_.set_bjetInfo(tree_);
@@ -567,37 +568,24 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        }*/
    //=============================================================
    //
-   //                Method for Muon Tree
+   //                Select Muon To Fill
    //
    //=============================================================
    std::string muon;
    pat::MuonCollection muons;
-
-   vector<pat::Muon> goodMuons;
    vector<pat::Muon> looseMuons;
-  
    if(muonsHandle.isValid()){ 
      muons = *muonsHandle;
      for (const pat::Muon mu : muons) {
        if( mu.pt() < 0.0 ) continue;
        if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
-       goodMuons.push_back(mu);
        if (!mu.isLooseMuon()) continue;
        looseMuons.push_back(mu);
      }
    }
-
-   for (const pat::Muon mu : goodMuons){
-     double rho = *(rhoHandle.product());
-     reco::TrackRef bestTrack = mu.muonBestTrack();
-     double matching_1stmu = (isMC && isMCSignal) ? MatchGenMuon(iEvent, bestTrack, 24) : -999;
-     double matching_2ndmu = (isMC && isMCSignal) ? MatchGenMuon(iEvent, bestTrack, 9900012) : -999;
-     //added the matching
-     ntuple_.fill_muInfo(mu, pvs.at(0) , rho ,matching_1stmu , matching_2ndmu);
-   }
-   
    // lambda function to sort this muons
    std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.pt() > b.pt(); });
+
      //////////////////////////////////////////////   
    EcalRecHitCollection recHitCollectionEB;
    if(recHitCollectionEBHandle.isValid()){ recHitCollectionEB = *recHitCollectionEBHandle;}
@@ -643,11 +631,13 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //                Secondary Vertex                     
    //                     
    //============================================================= 
+   vector<reco::VertexCollection> sv;
    if(secondaryVertexHandle.isValid()){
      //sv due to muon
      if(looseMuons.size() > 1){
        pat::Muon muonHNL = looseMuons[1];
        reco::VertexCollection bestVertices_mu  = getMatchedVertex_Muon(muonHNL, *secondaryVertexHandle);
+       sv.push_back(bestVertices_mu);
        // check if SV doesn't match with the PV
        for (const reco::Vertex& vtx_mu : bestVertices_mu){
 	 float x  = vtx_mu.x(), y = vtx_mu.y(), z = vtx_mu.z();
@@ -659,6 +649,18 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 ntuple_.fill_sv_mu_Info(vtx_mu, pvs.at(0), matching_vtx);	 
        }
      }
+     //file muon branches with events contain sv
+     if(sv.size()){
+       for (const pat::Muon mu : looseMuons){
+	 double rho = *(rhoHandle.product());
+	 reco::TrackRef bestTrack = mu.muonBestTrack();
+	 double matching_1stmu = (isMC && isMCSignal) ? MatchGenMuon(iEvent, bestTrack, 24) : -999;
+	 double matching_2ndmu = (isMC && isMCSignal) ? MatchGenMuon(iEvent, bestTrack, 9900012) : -999;
+	 //added the matching
+	 ntuple_.fill_muInfo(mu, pvs.at(0) , rho ,matching_1stmu , matching_2ndmu);
+       }
+     }
+     
      //sv due to electron
      if(looseElectrons.size() > 1){
        pat::Electron electronHNL = looseElectrons[1];       
@@ -673,6 +675,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 ntuple_.fill_sv_ele_Info(vtx_ele, pvs.at(0), matching_vtx );
        }
      }
+
+
    }
    //============================================================= 
    //
@@ -719,9 +723,11 @@ void
 HeavyNeutralLeptonAnalysis::beginJob()
 {
   if(isMC){
+
     Lumiweights_     = edm::LumiReWeighting("puData_2016_central.root","MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
     LumiweightsUp_   = edm::LumiReWeighting("puData_2016_up.root",     "MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
     LumiweightsDown_ = edm::LumiReWeighting("puData_2016_down.root",   "MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
+
   }
 }
 

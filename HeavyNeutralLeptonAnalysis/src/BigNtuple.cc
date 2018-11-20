@@ -692,7 +692,7 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double
   
 }
 
-void BigNtuple::set_svInfo(TTree* tree){
+  void BigNtuple::set_sv_mu_Info(TTree* tree){
 
     tree->Branch("sv_mu_TrackSize" , &sv_mu_TrackSize_);
     tree->Branch("sv_mu_Xpos" , &sv_mu_Xpos_);
@@ -735,6 +735,8 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_mu_tracks_Sumcharge" , &sv_mu_tracks_Sumcharge_);
     tree->Branch("sv_mu_tracks_Sumpt" , &sv_mu_tracks_Sumpt_);
     tree->Branch("sv_mu_match" , &sv_mu_match_);
+  }
+void BigNtuple::set_sv_ele_Info(TTree* tree){
 
     tree->Branch("sv_ele_TrackSize" , &sv_ele_TrackSize_);
     tree->Branch("sv_ele_Xpos" , &sv_ele_Xpos_);
@@ -779,7 +781,6 @@ void BigNtuple::set_svInfo(TTree* tree){
     tree->Branch("sv_ele_match" , &sv_ele_match_);
 
 }
-
 
 void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv , double match){
 
