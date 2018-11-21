@@ -38,7 +38,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(50)
 )
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
@@ -61,7 +61,7 @@ process.load('HNL.HeavyNeutralLeptonAnalysis.MetaNtuplizer_cfi')
 process.metaTree.isMC = isMC_
 process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
 process.metaTree.globalTag = GT
-process.metaTree.args = cms.string('') #FILL ME!
+process.metaTree.args = cms.string('USELESS') #FILL ME!
 process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
 
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
@@ -113,7 +113,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             lheEventProducts      = cms.InputTag("externalLHEProducer"),
                                             SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"),
                                             bDiscriminators       = cms.vstring("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
-                     electronsMva          = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values"),
+                                            electronsMva          = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values"),
                                             electronsVeto  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
                                             electronsLoose = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose"),
                                             electronsMedium= cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium"),
@@ -121,7 +121,8 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             )
 
 process.p = cms.Path(
-    process.displacedInclusiveVertexing 
+    process.metaTree
+    *process.displacedInclusiveVertexing 
     *process.ele_Sequence
     *process.jetCorrFactors
     *process.slimmedJetsJEC

@@ -43,6 +43,7 @@
 #include <iostream>
 #include <sstream> 
 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
 
@@ -71,17 +72,17 @@ private:
   edm::InputTag weights_src_;
   edm::EDGetTokenT< LHEEventProduct > weights_srcToken_;
   edm::EDGetTokenT< LHERunInfoProduct > header_token_;
+  edm::EDGetTokenT< std::vector<PileupSummaryInfo> > pu_token_;
 
   TTree *meta_tree_;
   std::map<std::string, std::string> to_json_;
   bool string_dumped_, isMC_, hasLhe_, useWeighted_, triedWeighted_;
-  MonitorElement *pu_distro_;
-  MonitorElement *pu_distro_w_;
+  TH1F *pu_distro_;
   unsigned int lumi_;
   unsigned int run_;
   unsigned long long processed_ = 0;
   long long processedWeighted_ = 0; 
-	vector<double> sumw_;
+  vector<double> sumw_;
 };
 
 //
@@ -98,7 +99,8 @@ private:
 MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   weights_src_(iConfig.getParameter<edm::InputTag>("weightsSrc") ),
   weights_srcToken_(consumes<LHEEventProduct>(weights_src_)),	
-	header_token_(consumes<LHERunInfoProduct,edm::InRun>(weights_src_)),
+  header_token_(consumes<LHERunInfoProduct,edm::InRun>(weights_src_)),
+  pu_token_(consumes< std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puSrc"))),
   string_dumped_(false),
   isMC_(iConfig.getParameter<bool>("isMC")),
 	hasLhe_(iConfig.getParameter<bool>("hasLHE")),
@@ -113,6 +115,16 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   to_json_.insert(std::make_pair<std::string, std::string>("tuple_date", iConfig.getParameter<std::string>("date"))); 
   to_json_.insert(std::make_pair<std::string, std::string>("tuple_globalTag", iConfig.getParameter<std::string>("globalTag")));
   to_json_.insert(std::make_pair<std::string, std::string>("tuple_args", iConfig.getParameter<std::string>("args")));
+
+  edm::Service<TFileService> fs;
+  meta_tree_ = fs->make<TTree>( "meta"  , "File Meta Information");
+  meta_tree_->Branch("run", &run_);
+  meta_tree_->Branch("lumi", &lumi_);
+  meta_tree_->Branch("processed", &processed_);
+  meta_tree_->Branch("processedWeighted", &processedWeighted_);
+  meta_tree_->Branch("sum_weigts", &sumw_);
+
+  pu_distro_   = fs->make<TH1F>("PUDistribution", "PUDistribution", 100, 0, 100);
 }
 
 //
@@ -122,20 +134,29 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
 // ------------ method called once each job just after ending the event loop  ------------
 void MetaNtuplizer::beginJob()
 {
-  edm::Service<TFileService> fs;
 
-  meta_tree_ = fs->make<TTree>( "meta"  , "File Meta Information");
-  meta_tree_->Branch("run", &run_);
-  meta_tree_->Branch("lumi", &lumi_);
-  meta_tree_->Branch("processed", &processed_);
-  meta_tree_->Branch("processedWeighted", &processedWeighted_);
-  meta_tree_->Branch("sum_weigts", &sumw_);
 }
 
 void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 {
 	processed_++;
 	double weight = 1.;
+
+	int npu = -1;
+	if(isMC_) {
+	  edm::Handle< std::vector<PileupSummaryInfo> > pu_info;
+	  iEvent.getByToken(pu_token_, pu_info);
+
+	  for(const auto& PVI : *pu_info) {
+	      int BX = PVI.getBunchCrossing();
+	      if(BX == 0) {
+		npu = PVI.getTrueNumInteractions();
+		pu_distro_->Fill(npu);
+		break;
+	      }
+	  }
+	}
+
 	if(hasLhe_) //lheinfo.isValid() && lheinfo->weights().size() > 0)
 	{
 		edm::Handle<LHEEventProduct> lheinfo;
@@ -171,16 +192,6 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 void MetaNtuplizer::endJob() 
 {
   edm::Service<TFileService> fs;
-  fs->file().cd();
-
-  if(isMC_){
-    //std::cout<< "accessing DQM Store!" << std::endl;
-    DQMStore& dqmStore = (*edm::Service<DQMStore>());
-    pu_distro_ = dqmStore.get("PUDistribution");
-    pu_distro_->getTH1F()->Write();
-    pu_distro_w_ = dqmStore.get("PUDistribution_w");
-    pu_distro_w_->getTH1F()->Write();
-  }
 
   std::stringstream stream;
   stream << "{" << std::endl;

@@ -61,6 +61,7 @@ metaTree = cms.EDAnalyzer(
     'MetaNtuplizer',
     isMC=cms.bool(False),
     weightsSrc = cms.InputTag('externalLHEProducer'),
+    puSrc = cms.InputTag('slimmedAddPileupInfo'),
     commit=cms.string( git_version()),
     user=cms.string(   get_user()),
     cmsswVersion= cms.string( cmssw_version()),
