@@ -727,11 +727,9 @@ void
 HeavyNeutralLeptonAnalysis::beginJob()
 {
   if(isMC){
-
-    Lumiweights_     = edm::LumiReWeighting("puData_2016_central.root","MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
-    LumiweightsUp_   = edm::LumiReWeighting("puData_2016_up.root",     "MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
-    LumiweightsDown_ = edm::LumiReWeighting("puData_2016_down.root",   "MCpileUp_25ns_Recent2016.root", "pileup", "pileup");
-
+    Lumiweights_     = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_central.root", "pileup", "pileup");
+    LumiweightsUp_   = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_up.root", "pileup", "pileup");
+    LumiweightsDown_ = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_down.root", "pileup", "pileup");
   }
 }
 

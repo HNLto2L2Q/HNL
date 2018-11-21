@@ -1,4 +1,6 @@
 #include "HNL/HeavyNeutralLeptonAnalysis/interface/BigNtuple.h"
+#include "DataFormats/BTauReco/interface/TrackIPTagInfo.h"
+#include "DataFormats/BTauReco/interface/SecondaryVertexTagInfo.h" 
 #include "TVector3.h"
 using namespace std;
 
@@ -717,6 +719,10 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double
     tree->Branch("sv_mu_phi" , &sv_mu_phi_);
     tree->Branch("sv_mu_pt" , &sv_mu_pt_);
     tree->Branch("sv_mu_p" , &sv_mu_p_);
+    tree->Branch("sv_mu_px" , &sv_mu_px_);
+    tree->Branch("sv_mu_py" , &sv_mu_py_);
+    tree->Branch("sv_mu_pz" , &sv_mu_pz_);
+    tree->Branch("sv_mu_energy" , &sv_mu_energy_);
     tree->Branch("sv_mu_Beta" , &sv_mu_Beta_);
     tree->Branch("sv_mu_Gamma" , &sv_mu_Gamma_);
     tree->Branch("sv_mu_CTau0" , &sv_mu_CTau0_);
@@ -735,6 +741,10 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv , double
     tree->Branch("sv_mu_tracks_Sumcharge" , &sv_mu_tracks_Sumcharge_);
     tree->Branch("sv_mu_tracks_Sumpt" , &sv_mu_tracks_Sumpt_);
     tree->Branch("sv_mu_match" , &sv_mu_match_);
+    tree->Branch("sv_mu_dir_x" , & sv_mu_dir_x_);
+    tree->Branch("sv_mu_dir_y" , & sv_mu_dir_y_);
+    tree->Branch("sv_mu_dir_z" , & sv_mu_dir_z_);
+
   }
 void BigNtuple::set_sv_ele_Info(TTree* tree){
 
@@ -761,6 +771,10 @@ void BigNtuple::set_sv_ele_Info(TTree* tree){
     tree->Branch("sv_ele_phi" , &sv_ele_phi_);
     tree->Branch("sv_ele_pt" , &sv_ele_pt_);
     tree->Branch("sv_ele_p" , &sv_ele_p_);
+    tree->Branch("sv_ele_px" , &sv_ele_px_);
+    tree->Branch("sv_ele_py" , &sv_ele_py_);
+    tree->Branch("sv_ele_pz" , &sv_ele_pz_);
+    tree->Branch("sv_ele_energy" , &sv_ele_energy_);
     tree->Branch("sv_ele_Beta" , &sv_ele_Beta_);
     tree->Branch("sv_ele_Gamma" , &sv_ele_Gamma_);
     tree->Branch("sv_ele_CTau0" , &sv_ele_CTau0_);
@@ -779,6 +793,9 @@ void BigNtuple::set_sv_ele_Info(TTree* tree){
     tree->Branch("sv_ele_tracks_Sumcharge" , &sv_ele_tracks_Sumcharge_);
     tree->Branch("sv_ele_tracks_Sumpt" , &sv_ele_tracks_Sumpt_);
     tree->Branch("sv_ele_match" , &sv_ele_match_);
+    tree->Branch("sv_ele_dir_x" , & sv_ele_dir_x_);
+    tree->Branch("sv_ele_dir_y" , & sv_ele_dir_y_);
+    tree->Branch("sv_ele_dir_z" , & sv_ele_dir_z_);
 
 }
 
@@ -823,6 +840,14 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
   float  svAngle3D = pvToVertex3D.Angle(svMom3D);
   float  svAngle2D = pvToVertex2D.Angle(svMom2D);
 
+  GlobalVector dir(bestVertex.position().X() - pv.position().X(),
+		   bestVertex.position().Y() - pv.position().Y(),
+		   bestVertex.position().Z() - pv.position().Z());
+
+  sv_mu_dir_x_.push_back(dir.x());
+  sv_mu_dir_y_.push_back(dir.y());
+  sv_mu_dir_z_.push_back(dir.z());
+
   sv_mu_TrackSize_.push_back(bestVertex.nTracks());
   sv_mu_Xpos_.push_back(x);
   sv_mu_Ypos_.push_back(y);
@@ -845,6 +870,10 @@ void BigNtuple::fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vert
   sv_mu_phi_.push_back(bestVertex.p4().phi());
   sv_mu_pt_.push_back(bestVertex.p4().pt());
   sv_mu_p_.push_back(bestVertex.p4().P());
+  sv_mu_px_.push_back(bestVertex.p4().px());
+  sv_mu_py_.push_back(bestVertex.p4().py());
+  sv_mu_pz_.push_back(bestVertex.p4().pz());
+  sv_mu_energy_.push_back(bestVertex.p4().energy());
   sv_mu_Beta_.push_back(beta_mom);
   sv_mu_Gamma_.push_back(gamma_mom);
   sv_mu_CTau0_.push_back(std::sqrt( dx * dx + dy * dy + dz * dz) / (beta_mom * gamma_mom));
@@ -930,6 +959,14 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   float  svAngle3D = pvToVertex3D.Angle(svMom3D);
   float  svAngle2D = pvToVertex2D.Angle(svMom2D);
 
+  GlobalVector dir(bestVertex.position().X() - pv.position().X(),
+                   bestVertex.position().Y() - pv.position().Y(),
+                   bestVertex.position().Z() - pv.position().Z());
+
+  sv_ele_dir_x_.push_back(dir.x());
+  sv_ele_dir_y_.push_back(dir.y());
+  sv_ele_dir_z_.push_back(dir.z());
+
   sv_ele_TrackSize_.push_back(bestVertex.nTracks());
   sv_ele_Xpos_.push_back(x);
   sv_ele_Ypos_.push_back(y);
@@ -952,6 +989,10 @@ void BigNtuple::fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Ver
   sv_ele_phi_.push_back(bestVertex.p4().phi());
   sv_ele_pt_.push_back(bestVertex.p4().pt());
   sv_ele_p_.push_back(bestVertex.p4().P());
+  sv_ele_px_.push_back(bestVertex.p4().px());
+  sv_ele_py_.push_back(bestVertex.p4().py());
+  sv_ele_pz_.push_back(bestVertex.p4().pz());
+  sv_ele_energy_.push_back(bestVertex.p4().energy());
   sv_ele_Beta_.push_back(beta_mom);
   sv_ele_Gamma_.push_back(gamma_mom);
   sv_ele_CTau0_.push_back(std::sqrt( dx * dx + dy * dy + dz * dz) / (beta_mom * gamma_mom));

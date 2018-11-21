@@ -298,6 +298,10 @@ private:
 	std::vector<float> sv_mu_phi_;
 	std::vector<float> sv_mu_pt_;
 	std::vector<float> sv_mu_p_;
+	std::vector<float> sv_mu_px_;
+	std::vector<float> sv_mu_py_;
+	std::vector<float> sv_mu_pz_;
+	std::vector<float> sv_mu_energy_;
 	std::vector<float> sv_mu_Beta_;
 	std::vector<float> sv_mu_Gamma_;
 	std::vector<float> sv_mu_CTau0_;
@@ -314,6 +318,10 @@ private:
 	std::vector<std::vector<float> > sv_mu_tracks_dxySig_;
 	std::vector<std::vector<float> > sv_mu_tracks_dxy_;
 	std::vector<std::vector<float> > sv_mu_tracks_dxyz_;
+
+	std::vector<float> sv_mu_dir_x_;
+	std::vector<float> sv_mu_dir_y_;
+	std::vector<float> sv_mu_dir_z_;
 
 	std::vector<int  > sv_mu_tracks_Sumcharge_;
 	std::vector<float> sv_mu_tracks_Sumpt_;
@@ -343,6 +351,10 @@ private:
 	std::vector<float> sv_ele_phi_;
 	std::vector<float> sv_ele_pt_;
 	std::vector<float> sv_ele_p_;
+	std::vector<float> sv_ele_px_;
+	std::vector<float> sv_ele_py_;
+	std::vector<float> sv_ele_pz_;
+	std::vector<float> sv_ele_energy_;
 	std::vector<float> sv_ele_Beta_;
 	std::vector<float> sv_ele_Gamma_;
 	std::vector<float> sv_ele_CTau0_;
@@ -359,6 +371,10 @@ private:
 	std::vector<std::vector<float> > sv_ele_tracks_dxySig_;
 	std::vector<std::vector<float> > sv_ele_tracks_dxy_;
 	std::vector<std::vector<float> > sv_ele_tracks_dxyz_;
+
+	std::vector<float> sv_ele_dir_x_;
+	std::vector<float> sv_ele_dir_y_;
+	std::vector<float> sv_ele_dir_z_;
 
 	std::vector<int  > sv_ele_tracks_Sumcharge_;
 	std::vector<float> sv_ele_tracks_Sumpt_;
