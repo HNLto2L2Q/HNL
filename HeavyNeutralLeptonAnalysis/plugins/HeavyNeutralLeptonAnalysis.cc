@@ -270,10 +270,10 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_trigInfo(tree_);
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_muInfo(tree_);
-  //ntuple_.set_eleInfo(tree_);
-  //ntuple_.set_eleIDInfo(tree_);
+  ntuple_.set_eleInfo(tree_);
+  ntuple_.set_eleIDInfo(tree_);
   ntuple_.set_sv_mu_Info(tree_);
-  //ntuple_.set_sv_ele_Info(tree_);
+  ntuple_.set_sv_ele_Info(tree_);
   ntuple_.set_jetInfo(tree_);
   ntuple_.set_metInfo(tree_);
   ntuple_.set_bjetInfo(tree_);
@@ -323,26 +323,14 @@ void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
 //===================================== vertex matching mu ================================================//   
 reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Muon(const pat::Muon & muon, const reco::VertexCollection& vertexCollection){
   reco::VertexCollection  matchedVertices;
-  //cout<<muon.pfCandidateRef().isNull() << "  " <<muon.pfCandidateRef().isAvailable()<<endl;
-  //cout << "Orig PTR: Num " << muon.numberOfSourceCandidatePtrs() 
-  //     << " first : " << muon.sourceCandidatePtr(0).isAvailable() << " " << muon.sourceCandidatePtr(0).isNonnull() << endl;
   const pat::PackedCandidate* cand = dynamic_cast<const pat::PackedCandidate*>(muon.sourceCandidatePtr(0).get());
-  //cout << "Packed: " << cand << endl;
   if(!cand) {
     cout << "THIS SHOULD NEVER HAPPEN! No packed candidated associated to muon?!" << endl;
   }
-  //cout << "Packed: " << cand->hasTrackDetails() << " " << (cand->charge() != 0) << " " <<  (cand->numberOfHits() > 0) << endl;
-  //if(!(cand->hasTrackDetails() && cand->charge() != 0 && cand->numberOfHits() > 0)) {
-  //cout << "THIS SHOULD NEVER HAPPEN! Muon without track or matched to neutral?!" << endl;
-  //}
-  //cout << cand->pseudoTrack().pt() << " " << cand->pseudoTrack().eta() << " " << cand->pseudoTrack().phi() << endl;
   for(reco::VertexCollection::const_iterator ss = vertexCollection.begin(); ss != vertexCollection.end(); ++ss) {    
-    //cout <<"new vertex"<<endl;
     for(reco::Vertex::trackRef_iterator tt = ss->tracks_begin(); tt != ss->tracks_end(); ++tt) {
-      //cout<<"Track " << (*tt)->pt() << "  "<< (*tt)->eta()<< " " << (*tt)->phi() <<endl;
       float   dpt    = fabs(cand->pseudoTrack().pt() - tt->castTo<reco::TrackRef>()->pt());
-      //cout << "match " << (cand->pseudoTrack().pt() == tt->castTo<reco::TrackRef>()->pt()) <<" dpt = " << dpt << endl;
-      if( (cand->pseudoTrack().pt() == tt->castTo<reco::TrackRef>()->pt()) || dpt < 0.001) { //Options here: innerTrack, globalTrack, muonBestTrack, outerTrack, pickyTrack, track
+      if( (cand->pseudoTrack().pt() == tt->castTo<reco::TrackRef>()->pt()) || dpt < 0.001) {
         matchedVertices.push_back(*ss);
 	break;
       }
@@ -358,7 +346,7 @@ reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Electron(con
       for(edm::Ref<pat::PackedCandidateCollection> cand : ele.associatedPackedPFCandidates()){
 	float   dpt    = fabs(cand->pt() -  tt->castTo<reco::TrackRef>()->pt());
 	float   deta   = fabs(cand->eta() - tt->castTo<reco::TrackRef>()->eta());
-	if(dpt < 0.001 && deta < 0.1 && cand->charge() != 0){
+	if(dpt < 0.001 && deta < 0.001 && cand->charge() != 0){  //Je: to check! are those values ok? Don't we have a safer way to make the match as for the muons
 	    matchedVertices.push_back(*ss);
 	    break;
 	  }
@@ -642,7 +630,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        for (const reco::Vertex& vtx_mu : bestVertices_mu){
 	 float x  = vtx_mu.x(), y = vtx_mu.y(), z = vtx_mu.z();
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();	 
-	 //float  selIVFIsPVScore = std::sqrt((dx/x)*(dx/x) + (dy/y)*(dy/y) + (dz/z)*(dz/z));       
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
 	 double matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(iEvent, vtx_mu , 13) : -999;	 
@@ -668,7 +655,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        for (const reco::Vertex& vtx_ele : bestVertices_ele){
 	 float x  = vtx_ele.x(), y = vtx_ele.y(), z = vtx_ele.z();
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
-	 //float  selIVFIsPVScore = std::sqrt((dx/x)*(dx/x) + (dy/y)*(dy/y) + (dz/z)*(dz/z));
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
 	 double matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(iEvent, vtx_ele , 11) : -999;
@@ -684,8 +670,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //       
    //=============================================================
    pat::JetCollection jets;
-   //if(jetsHandle.isValid()){
-   // not that this only for mu channel 
    if(jetsHandle.isValid() && sv.size()){ 
      jets = *jetsHandle;
      for (const pat::Jet jet : jets) {
@@ -705,8 +689,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //     
    //=============================================================    
    pat::METCollection mets;
-   // not that this only for mu channel
-   //if(metsHandle.isValid()){
    if(metsHandle.isValid() && sv.size()){ 
      mets = *metsHandle;
      const pat::MET met = mets.front();
@@ -724,13 +706,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    
 // ------------ method called once each job just before starting event loop  ------------
 void 
-HeavyNeutralLeptonAnalysis::beginJob()
-{
-  if(isMC){/*
-    Lumiweights_     = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_central.root", "pileup", "pileup");
-    LumiweightsUp_   = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_up.root", "pileup", "pileup");
-    LumiweightsDown_ = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_down.root", "pileup", "pileup");*/
-  }
+HeavyNeutralLeptonAnalysis::beginJob(){
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
