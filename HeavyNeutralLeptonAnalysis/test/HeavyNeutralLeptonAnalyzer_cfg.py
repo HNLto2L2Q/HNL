@@ -1,6 +1,8 @@
 from os import path as path
 import FWCore.ParameterSet.Config as cms
 
+from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD#MET correction
+
 debugLevel    = -1 
 
 isMC_         = True
@@ -93,8 +95,10 @@ process.jetCorrFactors = process.updatedPatJetCorrFactors.clone(
 process.slimmedJetsJEC = process.updatedPatJets.clone(
     jetSource = cms.InputTag("slimmedJets"),
     jetCorrFactorsSource = cms.VInputTag(cms.InputTag("jetCorrFactors"))
+    labelName = "NewJEC"
     )
 
+runMetCorAndUncFromMiniAOD(process, isData = !isMC_is, jetCollUnskimmed = NewJEC, postfix="NewJEC")
 
 #process.ak4PFJetsCHSL1FastL2L3 = process.ak4PFCHSJetsL1.clone(correctors = ['ak4PFL1FastL2L3Corrector'])
 #process.correctJets           = cms.Sequence(process.ak4PFL1FastL2L3CorrectorChain * process.ak4PFJetsCHSL1FastL2L3)
@@ -104,7 +108,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             isMC                  = cms.bool(isMC_),
                                             isMCSignal            = cms.bool(isMCSignal_),
                                             vtxSrc                = cms.InputTag("offlineSlimmedPrimaryVertices"),
-                                            rho                   = cms.InputTag("fixedGridRhoFastjetAll"),
+                                            rho                   = cms.InputTag("fixedGridRhoFastjetAll"),#cambiato tag?
                                             muonSrc               = cms.InputTag("slimmedMuons"),
                                             electronSrc           = cms.InputTag("slimmedElectrons"),
                                             recHitCollectionEBSrc = cms.InputTag("reducedEgamma","reducedEBRecHits"),
@@ -123,10 +127,9 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             bDiscbb = cms.vstring("pfDeepCSVJetTags:probb"),
                                             bDiscbbb = cms.vstring("pfDeepCSVJetTags:probbb"),
                                             bDiscbc = cms.vstring("pfDeepCSVJetTags:probc"),
-                                            electronsMva          = cms.InputTag("egmPhotonIDs:mvaPhoID-RunIIFall17-v1-wp90"),
+                                            electronsMva          = cms.InputTag("mvaEleID-Fall17-noIso-V1-wp90"),
                                             electronsVeto  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto"),
                                             electronsLoose = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-loose"),
-
                                             electronsMedium= cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-medium"),
                                             electronsTight = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-tight")
                                             )
