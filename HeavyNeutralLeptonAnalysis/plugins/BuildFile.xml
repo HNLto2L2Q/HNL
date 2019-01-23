@@ -1,5 +1,3 @@
-
-
 <use name="HNL/HeavyNeutralLeptonAnalysis"/>
 <use name="FWCore/Framework"/>
 <use name="FWCore/ParameterSet"/>
@@ -16,7 +14,8 @@
 <use name="TrackingTools/IPTools"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="PhysicsTools/UtilAlgos"/>
-<use name="UserCode/llvv_fwk"/>
+<use name="PhysicsTools/Utilities"/>
+#<use name="UserCode/llvv_fwk"/>
 <use name="DataFormats/Luminosity"/>
 <use name="FWCore/Services"/>
 <use name="DQMServices/Core"/>
@@ -33,6 +32,7 @@
 <use name="Geometry/CaloGeometry"/>
 <use name="Geometry/Records"/>
 <use name="DataFormats/EcalDetId"/>
+<use name="DataFormats/FWLite"/>
 <use name="root"/>
 <use name="roottmva"/>
 <use name="rootrflx"/>
