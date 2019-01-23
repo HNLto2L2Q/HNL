@@ -149,9 +149,9 @@ private:
   float npT = -1;
   float npIT = -1;
 
-  edm::LumiReWeighting Lumiweights_;
-  edm::LumiReWeighting LumiweightsUp_;
-  edm::LumiReWeighting LumiweightsDown_;
+  //edm::LumiReWeighting Lumiweights_;
+  //edm::LumiReWeighting LumiweightsUp_;
+  //edm::LumiReWeighting LumiweightsDown_;
 
   bool   isMC;
   bool   isMCSignal;
@@ -542,11 +542,11 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      }
    }
    // calculate weight using above code  
-   float pu_weight     = Lumiweights_.weight(npT);
-   float pu_weightUp   = LumiweightsUp_.weight(npT);
-   float pu_weightDown = LumiweightsDown_.weight(npT);
+   //float pu_weight     = Lumiweights_.weight(npT);
+   //float pu_weightUp   = LumiweightsUp_.weight(npT);
+   //float pu_weightDown = LumiweightsDown_.weight(npT);
 
-   ntuple_.fill_pileupInfo(npT, npIT, pu_weight, pu_weightUp, pu_weightDown);
+   //ntuple_.fill_pileupInfo(npT, npIT, pu_weight, pu_weightUp, pu_weightDown);
 
    }   
    //============================================================= 
@@ -726,10 +726,10 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 void 
 HeavyNeutralLeptonAnalysis::beginJob()
 {
-  if(isMC){
+  if(isMC){/*
     Lumiweights_     = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_central.root", "pileup", "pileup");
     LumiweightsUp_   = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_up.root", "pileup", "pileup");
-    LumiweightsDown_ = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_down.root", "pileup", "pileup");
+    LumiweightsDown_ = edm::LumiReWeighting("MCpileUp_25ns_Recent2016.root","puData_2016_down.root", "pileup", "pileup");*/
   }
 }
 

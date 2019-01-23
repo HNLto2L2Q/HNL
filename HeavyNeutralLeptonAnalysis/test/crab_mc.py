@@ -10,7 +10,7 @@ config.section_('JobType')
 config.JobType.psetName = 'HeavyNeutralLeptonAnalyzer_cfg.py'
 config.JobType.pluginName = 'Analysis'
 #config.JobType.inputFiles = ['MC_Recent_25ns_2015.root','pileUpData_fromJson.root'] #data files for PileUp reweighting
-config.JobType.inputFiles = ['MCpileUp_25ns_Recent2016.root','puData_2016_central.root', 'puData_2016_up.root', 'puData_2016_down.root', 'Summer16_23Sep2016V4_MC.db'] #data files for PileUp reweighting
+#config.JobType.inputFiles = ['MCpileUp_25ns_Recent2016.root','puData_2016_central.root', 'puData_2016_up.root', 'puData_2016_down.root', 'Summer16_23Sep2016V4_MC.db'] #data files for PileUp reweighting
 config.JobType.outputFiles = ['Analysis_output.root']
 
 config.section_('Data')
@@ -55,53 +55,59 @@ if __name__ == '__main__':
 
 config.General.requestName = 'Analysis_ttbar_DiLepton'
 config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+config.Data.inputDataset = '/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+#'/TTJets_DiLept_genMET-150_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM' 
+#'/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
 p = Process(target=submit, args=(config,))
 p.start()
 p.join()
 
 
 #
-config.General.requestName = 'Analysis_ttbar_DiLepton_ext1'
-config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
-p = Process(target=submit, args=(config,))
-p.start()
-p.join()
+#config.General.requestName = 'Analysis_ttbar_DiLepton_ext1'
+#config.Data.unitsPerJob = 1
+#config.Data.inputDataset = '/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/RunIISpring18MiniAOD-100X_upgrade2018_realistic_v10-v1/MINIAODSIM'
+#'/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+#p = Process(target=submit, args=(config,))
+#p.start()
+#p.join()
 
 
 
 #
 config.General.requestName = 'Analysis_ttbar_SingleLeptFromT'
 config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+config.Data.inputDataset = '/TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM' 
+#'/TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
 p = Process(target=submit, args=(config,))
 p.start()
 p.join()
 
 
 #
-config.General.requestName = 'Analysis_ttbar_SingleLeptFromT_ext1'
-config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
-p = Process(target=submit, args=(config,))
-p.start()
-p.join()
+#config.General.requestName = 'Analysis_ttbar_SingleLeptFromT_ext1'
+#config.Data.unitsPerJob = 1
+#config.Data.inputDataset = '/TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAOD-94X_mc2017_realistic_v10-v1/MINIAODSIM'#??????
+#'/TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+#p = Process(target=submit, args=(config,))
+#p.start()
+#p.join()
 
 config.General.requestName = 'Analysis_ttbar_SingleLeptFromTbar'
 config.Data.unitsPerJob = 1 
-config.Data.inputDataset = '/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+config.Data.inputDataset = '/TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+#'/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
 p = Process(target=submit, args=(config,)) 
 p.start() 
 p.join()
 
 #
-config.General.requestName = 'Analysis_ttbar_SingleLeptFromTbar_ext1'
-config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
-p = Process(target=submit, args=(config,))
-p.start()
-p.join()
+#config.General.requestName = 'Analysis_ttbar_SingleLeptFromTbar_ext1'
+#config.Data.unitsPerJob = 1
+#config.Data.inputDataset = '/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'#??????
+#p = Process(target=submit, args=(config,))
+#p.start()
+#p.join()
 
 
 config.General.requestName = 'Analysis_SinglTop_s_channel_leptonDecays'
@@ -115,14 +121,16 @@ p.join()
 #
 config.General.requestName = 'Analysis_SingleTop_tW_top_inclusivedecay'
 config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+config.Data.inputDataset = '/ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'#???
+#'/ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
 p = Process(target=submit, args=(config,))
 p.start()
 p.join()
 #
 config.General.requestName = 'Analysis_SingleTop_tW_antitop_inclusivedecay'
 config.Data.unitsPerJob = 1
-config.Data.inputDataset = '/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+config.Data.inputDataset = '/ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/MINIAODSIM'
+#'/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
 p = Process(target=submit, args=(config,))
 p.start()
 p.join()
