@@ -40,10 +40,10 @@ public:
 	void fill_evtInfo(const edm::EventID& id);
 
 	void set_pv_genInfo(TTree* tree);
-        void fill_pv_genInfo(const reco::GenParticle prt , const reco::Candidate*  mom);
+        void fill_pv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
 
 	void set_sv_genInfo(TTree* tree);
-        void fill_sv_genInfo(const reco::GenParticle prt , const reco::Candidate*  mom);
+        void fill_sv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
 
 	void set_pvInfo(TTree* tree);
 	void fill_pvInfo(const reco::VertexCollection& pvs);
@@ -51,8 +51,6 @@ public:
 	void set_trigInfo(TTree* tree);
 	void fill_trigInfo(const edm::TriggerResults& triggerResults, const edm::TriggerNames& trigNames);
 
-	void set_pileupInfo(TTree* tree);
-        void fill_pileupInfo( float npt, float npit, float pu_weight, float pu_weightup, float pu_weightdown);
 
 	void set_sv_mu_Info(TTree* tree);
         void fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
@@ -89,12 +87,6 @@ private:
 	unsigned int run_ = 0;
 	unsigned long long evt_ = 0;
 
-	std::vector<float> npT_ ; 
-	std::vector<float> npIT_ ;
-	std::vector<float> pu_Weight_ ;
-	std::vector<float> pu_WeightUp_ ;
-	std::vector<float> pu_WeightDown_ ;
-	
 	// primary vertex infos  -- they shouldn't be vector 
 	float pvX_ = -1000;
 	float pvY_ = -1000;
@@ -105,132 +97,52 @@ private:
 	float pvMass_ = -1000;
 	float pvLxy_  = -1000;
 	float pvLxyz_ = -1000;
-	float pvLxySig_  = -1000;
-	float pvLxyzSig_ = -1000;
+	float pvLxySigma_  = -1000;
+	float pvLxyzSigma_ = -1000;
 	float pvChi2_ = -1000;
 	int pvNTrack_ = -1000;
 	float pvSumPtSq_ = -1000;
 	int numberPV_    = -1000;
 
 	//gen infos mu @ pv
-	std::vector<int>     mu_gen_PID1_;
-	std::vector<int>     mu_gen_Status1_;
-	std::vector<int>     mu_gen_Charge1_;
-	std::vector<float>   mu_gen_Pt1_;
-	std::vector<float>   mu_gen_Eta1_;
-	std::vector<float>   mu_gen_Phi1_;
-	std::vector<float>   mu_gen_VX1_;
-	std::vector<float>   mu_gen_VY1_;
-	std::vector<float>   mu_gen_VZ1_;
-	std::vector<float>   mu_gen_Lxy1_;
-	std::vector<float>   mu_gen_Lxyz1_;
-	std::vector<int>     mu_gen_MomPID1_;
-	std::vector<int>     mu_gen_MomStatus1_;
-	std::vector<float>   mu_gen_MomMass1_;
-	std::vector<int>     mu_gen_MomCharge1_;
-	std::vector<float>   mu_gen_MomPt1_;
-	std::vector<float>   mu_gen_MomEta1_;
-	std::vector<float>   mu_gen_MomPhi1_;
-	std::vector<float>   mu_gen_MomBeta1_;
-	std::vector<float>   mu_gen_MomGamma1_;
-	std::vector<float>   mu_gen_MomLxyz1_;
-	std::vector<float>   mu_gen_MomLz1_;
-	std::vector<float>   mu_gen_MomLxy1_;
+	int     lep1_gen_PID     = -1000;
+	int     lep1_gen_Charge  = -1000;
+	float   lep1_gen_Pt      = -1000;
+	float   lep1_gen_Eta     = -1000;
+	float   lep1_gen_Phi     = -1000;
+	float   lep1_gen_vx      = -1000;
+	float   lep1_gen_vy      = -1000;
+	float   lep1_gen_vz      = -1000;
+	float   lep1_gen_Lxy     = -1000;
+	float   lep1_gen_Lxyz    = -1000;
+	int     HNL_gen_PID      = -1000;
+	float   HNL_gen_Mass     = -1000;
+	int     HNL_gen_Charge   = -1000;
+	float   HNL_gen_Pt       = -1000;
+	float   HNL_gen_Eta      = -1000;
+	float   HNL_gen_Phi      = -1000;
 
 	//gen Info mu @ sv
-	std::vector<int>     mu_gen_PID2_;
-	std::vector<int>     mu_gen_Status2_;
-	std::vector<int>     mu_gen_Charge2_;
-	std::vector<float>   mu_gen_Pt2_;
-	std::vector<float>   mu_gen_Eta2_;
-	std::vector<float>   mu_gen_Phi2_;
-	std::vector<float>   mu_gen_VX2_;
-	std::vector<float>   mu_gen_VY2_;
-	std::vector<float>   mu_gen_VZ2_;
-	std::vector<float>   mu_gen_Lxy2_;
-	std::vector<float>   mu_gen_Lxyz2_;
-	std::vector<int>     mu_gen_MomPID2_;
-	std::vector<float>   mu_gen_MomMass2_;
-	std::vector<int>     mu_gen_MomCharge2_;
-	std::vector<int>     mu_gen_MomStatus2_;
-	std::vector<float>   mu_gen_MomPt2_;
-	std::vector<float>   mu_gen_MomEta2_;
-	std::vector<float>   mu_gen_MomPhi2_;
-	std::vector<float>   mu_gen_MomBeta2_;
-	std::vector<float>   mu_gen_MomGamma2_;
-	std::vector<float>   mu_gen_MomLxyz2_;
-	std::vector<float>   mu_gen_MomLz2_;
-	std::vector<float>   mu_gen_MomLxy2_;
-	std::vector<float>   mu_gen_MomCTau02_;
-
-	//gen infos ele @ pv
-	std::vector<int>     ele_gen_PID1_;
-	std::vector<int>     ele_gen_Status1_;
-	std::vector<int>     ele_gen_Charge1_;
-	std::vector<float>   ele_gen_Pt1_;
-	std::vector<float>   ele_gen_Eta1_;
-	std::vector<float>   ele_gen_Phi1_;
-	std::vector<float>   ele_gen_VX1_;
-	std::vector<float>   ele_gen_VY1_;
-	std::vector<float>   ele_gen_VZ1_;
-	std::vector<float>   ele_gen_Lxy1_;
-	std::vector<float>   ele_gen_Lxyz1_;
-	std::vector<int>     ele_gen_MomPID1_;
-	std::vector<int>     ele_gen_MomStatus1_;
-	std::vector<float>   ele_gen_MomMass1_;
-	std::vector<int>     ele_gen_MomCharge1_;
-	std::vector<float>   ele_gen_MomPt1_;
-	std::vector<float>   ele_gen_MomEta1_;
-	std::vector<float>   ele_gen_MomPhi1_;
-	std::vector<float>   ele_gen_MomBeta1_;
-	std::vector<float>   ele_gen_MomGamma1_;
-	std::vector<float>   ele_gen_MomLxyz1_;
-	std::vector<float>   ele_gen_MomLz1_;
-	std::vector<float>   ele_gen_MomLxy1_;
-
-	//gen Info ele @ sv
-	std::vector<int>     ele_gen_PID2_;
-	std::vector<int>     ele_gen_Status2_;
-	std::vector<int>     ele_gen_Charge2_;
-	std::vector<float>   ele_gen_Pt2_;
-	std::vector<float>   ele_gen_Eta2_;
-	std::vector<float>   ele_gen_Phi2_;
-	std::vector<float>   ele_gen_VX2_;
-	std::vector<float>   ele_gen_VY2_;
-	std::vector<float>   ele_gen_VZ2_;
-	std::vector<float>   ele_gen_Lxy2_;
-	std::vector<float>   ele_gen_Lxyz2_;
-	std::vector<int>     ele_gen_MomPID2_;
-	std::vector<float>   ele_gen_MomMass2_;
-	std::vector<int>     ele_gen_MomCharge2_;
-	std::vector<int>     ele_gen_MomStatus2_;
-	std::vector<float>   ele_gen_MomPt2_;
-	std::vector<float>   ele_gen_MomEta2_;
-	std::vector<float>   ele_gen_MomPhi2_;
-	std::vector<float>   ele_gen_MomBeta2_;
-	std::vector<float>   ele_gen_MomGamma2_;
-	std::vector<float>   ele_gen_MomLxyz2_;
-	std::vector<float>   ele_gen_MomLz2_;
-	std::vector<float>   ele_gen_MomLxy2_;
-	std::vector<float>   ele_gen_MomCTau02_;
+	int     lep2_gen_PID     = -1000;
+	int     lep2_gen_Charge  = -1000;
+	float   lep2_gen_Pt      = -1000;
+	float   lep2_gen_Eta     = -1000;
+	float   lep2_gen_Phi     = -1000;
+	float   lep2_gen_vx      = -1000;
+	float   lep2_gen_vy      = -1000;
+	float   lep2_gen_vz      = -1000;
+	float   lep2_gen_MomLxyz = -1000;
+	float   lep2_gen_MomLz   = -1000;
+	float   lep2_gen_MomLxy  = -1000;
+	float   lep2_gen_MomCTau0= -1000;
 
 	// final state hadrons
-	std::vector<int>     had_gen_PID_;
-	std::vector<int>     had_gen_Status_;
-	std::vector<int>     had_gen_Charge_;
-	std::vector<float>   had_gen_Pt_;
-	std::vector<float>   had_gen_Eta_;
-	std::vector<float>   had_gen_Phi_;
-	std::vector<float>   had_gen_Mass_;
-
-	//quarks @ gen
-	std::vector<int>     quarks_gen_PID_;
-	std::vector<int>     quarks_gen_Status_;
-	std::vector<int>     quarks_gen_Charge_;
-	std::vector<float>   quarks_gen_Pt_;
-	std::vector<float>   quarks_gen_Eta_;
-	std::vector<float>   quarks_gen_Phi_;
-	std::vector<float>   quarks_gen_Mass_;
+	std::vector<int>     daugh_gen_PID_;
+	std::vector<int>     daugh_gen_Charge_;
+	std::vector<float>   daugh_gen_Pt_;
+	std::vector<float>   daugh_gen_Eta_;
+	std::vector<float>   daugh_gen_Phi_;
+	std::vector<float>   daugh_gen_Mass_;
 
 	//trigger infos
 	bool passMu3_PFJet40_    = 0;

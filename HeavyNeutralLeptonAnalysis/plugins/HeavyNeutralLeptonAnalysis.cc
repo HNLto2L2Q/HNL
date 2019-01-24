@@ -16,7 +16,6 @@
 //
 //
 
-
 // system include files
 #include <memory>
 #include <vector>
@@ -149,10 +148,6 @@ private:
   float npT = -1;
   float npIT = -1;
 
-  //edm::LumiReWeighting Lumiweights_;
-  //edm::LumiReWeighting LumiweightsUp_;
-  //edm::LumiReWeighting LumiweightsDown_;
-
   bool   isMC;
   bool   isMCSignal;
 
@@ -249,7 +244,9 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   PUInfoToken_(consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("PUInfo"))),
   lheEventProductToken_(mayConsume<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheEventProducts"))),
   inclusiveSecondaryVertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("SecondaryVertices"))),
-  bDiscriminators_(iConfig.getParameter<std::vector<std::string> >("bDiscriminators")),
+  bDiscbb_(iConfig.getParameter<std::vector<std::string> >("bDiscbb")),
+  bDiscbbb_(iConfig.getParameter<std::vector<std::string> >("bDiscbbb")),
+  bDiscbc_(iConfig.getParameter<std::vector<std::string> >("bDiscbc")),
   eleMvaToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("electronsMva"))),
   eleVetoToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsVeto"))),
   eleLooseToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsLoose"))),
@@ -458,6 +455,8 @@ double HeavyNeutralLeptonAnalysis::MatchGenVertex(const edm::Event& iEvent, reco
   if (minDVertex<MinDistance_) return genIndex;
   else return -999;
 }
+
+
 // ------------ method called for each event  ------------
 void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
@@ -471,32 +470,40 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   //                 Gen level Info
   //
   //=============================================================
-  if(isMC && isMCSignal){
+  if(isMCSignal){
     // mu && ele @ pv
-    for(size_t i = 0; i<genHandle->size(); i++){
-      if(abs((*genHandle)[i].pdgId()) == 9900012 && abs((*genHandle)[i].mother()->pdgId()) == 24) {
-	const reco::Candidate * WBoson = (*genHandle)[i].mother();
-	for(size_t j = 0; j<genHandle->size(); j++){
-	  const reco::Candidate * part = (*genHandle)[j].mother(0) ;
-	  if(part != nullptr && isAncestor( WBoson , part) ){
-	    ntuple_.fill_pv_genInfo( (*genHandle)[j] , WBoson);	    
+    auto genParticles = &(genHandle.product());
+    reco::GenParticle majN;
+
+    for(auto& genPart: genParticles){
+      if ((genPart.pdgId() == 9900012 or genPart.pdgId() == 9900014 or genPart.pdgId() == 9900016) and genPart.isLastCopy()){
+	majN = genPart;
+	ntuple_.fill_pv_genInfo(genPart,genParticles);
+	break;
+      }
+    }
+
+    vector<reco::GenParticle> finalParticles;
+    for(auto& genPart: genParticles){
+      if (genPart.status()==1 and genPart.isLastCopy()){
+	if (find(finalParticles.begin(), finalParticles.end(), genPart!=finalParticles.end())) continue;
+	if (isAncestor(majN,genPart)){
+	    
+	  if (genPart.mother(0).pdgId()==111 and (genPart.mother(0).isLastCopy())){
+	    if (find(finalParticles.begin(), finalParticles.end(), genPart.mother(0)!=finalParticles.end())){
+	      final_particles.push_back(genPart.mother(0));
+	    }	      
+	  }
+	  else{
+	    final_particles.push_back(genPart);
 	  }
 	}
       }
     }
-    //mu && ele @ sv
-    for(size_t i = 0; i<genHandle->size(); i++){
-      if(abs((*genHandle)[i].pdgId()) < 5 && abs((*genHandle)[i].mother()->pdgId()) == 9900012) {
-        const reco::Candidate * HNL = (*genHandle)[i].mother();
-        for(size_t j = 0; j<genHandle->size(); j++){
-          const reco::Candidate * part = (*genHandle)[j].mother(0) ;
-          if(part != nullptr && isAncestor( HNL , part) ){
-            ntuple_.fill_sv_genInfo( (*genHandle)[j] , HNL);
-          }
-        }
-      }
-    }
+    ntuple_.fill_sv_genInfo(majN,finalParticles);
   }
+
+
   //============================================================= 
   //
   //                 Primary Vertex
@@ -514,46 +521,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    const edm::TriggerResults triggerResults =  *triggerResultsHandle.product();
    const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
    ntuple_.fill_trigInfo(triggerResults, trigNames);    
-   //=============================================================
-   //
-   //               Pile Up Info
-   //
-   //=============================================================
-   if(isMC){
-     
-   std::vector<PileupSummaryInfo>::const_iterator PVI;
-   for(PVI = puInfoH->begin(); PVI != puInfoH->end(); ++PVI) {
-     int BX = PVI->getBunchCrossing();
-     if(BX == 0) {
-       npT = PVI->getTrueNumInteractions();
-       npIT = PVI->getPU_NumInteractions();
-     }
-   }
-   // calculate weight using above code  
-   //float pu_weight     = Lumiweights_.weight(npT);
-   //float pu_weightUp   = LumiweightsUp_.weight(npT);
-   //float pu_weightDown = LumiweightsDown_.weight(npT);
 
-   //ntuple_.fill_pileupInfo(npT, npIT, pu_weight, pu_weightUp, pu_weightDown);
-
-   }   
-   //============================================================= 
-   //
-   //                LHE Info
-   //
-   //=============================================================
-   /*
-   if (isMC)
-     {
-       if(lheEPHandle.isValid()){
-	 mon.fillHisto ("nup", "", lheEPHandle->hepeup ().NUP, 1);
-	 //if (lheEPHandle->hepeup().NUP > 5)  continue;   to be check
-	 mon.fillHisto ("nupfilt", "", lheEPHandle->hepeup ().NUP, 1);
-       }
-       else{
-	 printf("Handle to externalLHEProducer is invalid");
-       }
-       }*/
    //=============================================================
    //
    //                Select Muon To Fill
@@ -565,7 +533,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    if(muonsHandle.isValid()){ 
      muons = *muonsHandle;
      for (const pat::Muon mu : muons) {
-       if( mu.pt() < 0.0 ) continue;
        if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
        if (!mu.isLooseMuon()) continue;
        looseMuons.push_back(mu);
@@ -574,22 +541,23 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    // lambda function to sort this muons
    std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.pt() > b.pt(); });
 
-     //////////////////////////////////////////////   
-   EcalRecHitCollection recHitCollectionEB;
-   if(recHitCollectionEBHandle.isValid()){ recHitCollectionEB = *recHitCollectionEBHandle;}
-   
-   EcalRecHitCollection recHitCollectionEE;
-   if(recHitCollectionEEHandle.isValid()){ recHitCollectionEE = *recHitCollectionEEHandle;}
    //============================================================= 
    //
    //                Method for electrons
    //                                                   
    //============================================================= 
+
+   EcalRecHitCollection recHitCollectionEB;
+   if(recHitCollectionEBHandle.isValid()){ recHitCollectionEB = *recHitCollectionEBHandle;}
+
+   EcalRecHitCollection recHitCollectionEE;
+   if(recHitCollectionEEHandle.isValid()){ recHitCollectionEE = *recHitCollectionEEHandle;}
+
    vector<pat::Electron>  looseElectrons;
    // using iterator to get ref for ele
    for(auto ele = electronsHandle->begin(); ele != electronsHandle->end(); ++ele){
      if(ele->gsfTrack().isNull() || ele->pt() < 5 || fabs(ele->eta()) > 2.5 )      continue;
-     
+    
      double rho = *(rhoHandle.product());
      
      auto eleRef = edm::Ref<std::vector<pat::Electron>>(electronsHandle, (ele - electronsHandle->begin()));
@@ -677,7 +645,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        if (!( fabs(jet.eta()) < 3 && jet.pt() > 5. )) continue;
        else ntuple_.fill_jetInfo(jet);
        int flavor = std::abs( jet.partonFlavour() );       
-       for( const std::string &bDiscr : bDiscriminators_ )
+       for( const std::string &bDiscr : bDiscbb_ )
 	 {
 	   ntuple_.fill_bjetInfo(jet, bDiscr, flavor);
 	 }
