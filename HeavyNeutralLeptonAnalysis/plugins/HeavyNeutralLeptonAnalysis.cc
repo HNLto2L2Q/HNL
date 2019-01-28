@@ -474,7 +474,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   if(isMCSignal){
     // mu && ele @ pv
     
-    std::vector<reco::GenParticle> genParticles = genHandle.product();
+    std::vector<reco::GenParticle> genParticles = *(genHandle.product());
     reco::GenParticle majN;
 
     for(auto& genPart: genParticles){
@@ -488,8 +488,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
     vector<reco::GenParticle> finalParticles;
     for(auto& genPart: genParticles){
       if (genPart.status()==1 and genPart.isLastCopy()){
-	if (find(finalParticles.begin(), finalParticles.end(), genPart!=finalParticles.end())) continue;
-	if (isAncestor(majN,genPart)){
+	if (find(finalParticles.begin(), finalParticles.end(), genPart)!=finalParticles.end()) continue;
+	if (isAncestor(*majN, *genPart)){
 	    
 	  if (genPart.mother(0).pdgId()==111 and (genPart.mother(0).isLastCopy())){
 	    if (find(finalParticles.begin(), finalParticles.end(), genPart.mother(0)!=finalParticles.end())){
