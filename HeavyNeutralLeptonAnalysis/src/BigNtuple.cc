@@ -99,7 +99,7 @@ void BigNtuple::set_sv_genInfo(TTree* tree) {
 
 }
 
-void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco::GenParticle> prtCollection ){
+void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco::GenParticle> prtCollection ){ 
 
   reco::GenParticle lep2;
 	float vx = hnl.vx(), vy = hnl.vy(), vz = hnl.vz();

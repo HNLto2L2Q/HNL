@@ -484,25 +484,28 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	break;
       }
     }
+    
+    set<const reco::GenParticle*> finalParticles;
 
-    vector<reco::GenParticle> finalParticles;
     for(auto& genPart: genParticles){
       if (genPart.status()==1 and genPart.isLastCopy()){
-	if (find(finalParticles.begin(), finalParticles.end(), genPart)!=finalParticles.end()) continue;
-	if (isAncestor(*majN, *genPart)){
-	    
-	  if (genPart.mother(0).pdgId()==111 and (genPart.mother(0).isLastCopy())){
-	    if (find(finalParticles.begin(), finalParticles.end(), genPart.mother(0)!=finalParticles.end())){
-	      final_particles.push_back(genPart.mother(0));
-	    }	      
+	if (isAncestor(&majN, &genPart)){
+	  const reco::GenParticle* mother = static_cast<const reco::GenParticle*>(genPart.mother(0));
+	  if (mother->pdgId()==111 and (mother->isLastCopy())){
+	    finalParticles.insert(static_cast<const reco::GenParticle*>(genPart.mother(0)));
 	  }
 	  else{
-	    final_particles.push_back(genPart);
-	  }
-	}
+    	    finalParticles.insert(&genPart);
+   	  }
+    	}
       }
     }
-    ntuple_.fill_sv_genInfo(majN,finalParticles);
+    //set 2 vector
+    vector<reco::GenParticle> final_particles;
+    for(auto& gp : finalParticles) {
+      final_particles.push_back(*gp);
+    }
+    ntuple_.fill_sv_genInfo(majN, final_particles);
   }
 
 
