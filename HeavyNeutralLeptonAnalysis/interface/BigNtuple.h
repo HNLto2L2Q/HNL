@@ -105,36 +105,36 @@ private:
 	int numberPV_    = -1000;
 
 	//gen infos mu @ pv
-	int     lep1_gen_PID     = -1000;
-	int     lep1_gen_Charge  = -1000;
-	float   lep1_gen_Pt      = -1000;
-	float   lep1_gen_Eta     = -1000;
-	float   lep1_gen_Phi     = -1000;
-	float   lep1_gen_vx      = -1000;
-	float   lep1_gen_vy      = -1000;
-	float   lep1_gen_vz      = -1000;
-	float   lep1_gen_Lxy     = -1000;
-	float   lep1_gen_Lxyz    = -1000;
-	int     HNL_gen_PID      = -1000;
-	float   HNL_gen_Mass     = -1000;
-	int     HNL_gen_Charge   = -1000;
-	float   HNL_gen_Pt       = -1000;
-	float   HNL_gen_Eta      = -1000;
-	float   HNL_gen_Phi      = -1000;
+	int     lep1_gen_PID_     = -1000;
+	int     lep1_gen_Charge_  = -1000;
+	float   lep1_gen_Pt_      = -1000;
+	float   lep1_gen_Eta_      = -1000;
+	float   lep1_gen_Phi_      = -1000;
+	float   lep1_gen_vx_       = -1000;
+	float   lep1_gen_vy_       = -1000;
+	float   lep1_gen_vz_       = -1000;
+	float   lep1_gen_Lxy_      = -1000;
+	float   lep1_gen_Lxyz_     = -1000;
+	int     HNL_gen_PID_       = -1000;
+	float   HNL_gen_Mass_      = -1000;
+	int     HNL_gen_Charge_    = -1000;
+	float   HNL_gen_Pt_        = -1000;
+	float   HNL_gen_Eta_       = -1000;
+	float   HNL_gen_Phi_       = -1000;
 
 	//gen Info mu @ sv
-	int     lep2_gen_PID     = -1000;
-	int     lep2_gen_Charge  = -1000;
-	float   lep2_gen_Pt      = -1000;
-	float   lep2_gen_Eta     = -1000;
-	float   lep2_gen_Phi     = -1000;
-	float   lep2_gen_vx      = -1000;
-	float   lep2_gen_vy      = -1000;
-	float   lep2_gen_vz      = -1000;
-	float   lep2_gen_MomLxyz = -1000;
-	float   lep2_gen_MomLz   = -1000;
-	float   lep2_gen_MomLxy  = -1000;
-	float   lep2_gen_MomCTau0= -1000;
+	int     lep2_gen_PID_      = -1000;
+	int     lep2_gen_Charge_   = -1000;
+	float   lep2_gen_Pt_       = -1000;
+	float   lep2_gen_Eta_      = -1000;
+	float   lep2_gen_Phi_      = -1000;
+	float   lep2_gen_vx_       = -1000;
+	float   lep2_gen_vy_       = -1000;
+	float   lep2_gen_vz_       = -1000;
+	float   lep2_gen_MomLxyz_  = -1000;
+	float   lep2_gen_MomLz_    = -1000;
+	float   lep2_gen_MomLxy_   = -1000;
+	float   lep2_gen_MomCTau0_ = -1000;
 
 	// final state hadrons
 	std::vector<int>     daugh_gen_PID_;

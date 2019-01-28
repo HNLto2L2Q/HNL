@@ -175,7 +175,9 @@ private:
   edm::EDGetTokenT                < LHEEventProduct > lheEventProductToken_;
   edm::EDGetTokenT         < reco::VertexCollection > inclusiveSecondaryVertices_;
 
-  const std::vector        <std::string> bDiscriminators_;
+  const std::vector        <std::string> bDiscbbToken_;
+  const std::vector        <std::string> bDiscbbbToken_;
+  const std::vector         <std::string> bDiscbcToken_;
 
   edm::EDGetTokenT         <edm::ValueMap<float>>     eleMvaToken_;
   edm::EDGetTokenT         <edm::ValueMap<bool>>      eleVetoToken_;
@@ -244,9 +246,9 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   PUInfoToken_(consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("PUInfo"))),
   lheEventProductToken_(mayConsume<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheEventProducts"))),
   inclusiveSecondaryVertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("SecondaryVertices"))),
-  bDiscbb_(iConfig.getParameter<std::vector<std::string> >("bDiscbb")),
-  bDiscbbb_(iConfig.getParameter<std::vector<std::string> >("bDiscbbb")),
-  bDiscbc_(iConfig.getParameter<std::vector<std::string> >("bDiscbc")),
+  bDiscbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbb")),
+  bDiscbbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbbb")),
+  bDiscbcToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbc")),
   eleMvaToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("electronsMva"))),
   eleVetoToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsVeto"))),
   eleLooseToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsLoose"))),
@@ -263,7 +265,6 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
     ntuple_.set_pv_genInfo(tree_);
     ntuple_.set_sv_genInfo(tree_);
   }
-  ntuple_.set_pileupInfo(tree_);
   ntuple_.set_trigInfo(tree_);
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_muInfo(tree_);
@@ -472,7 +473,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   //=============================================================
   if(isMCSignal){
     // mu && ele @ pv
-    auto genParticles = &(genHandle.product());
+    
+    std::vector<reco::GenParticle> genParticles = genHandle.product();
     reco::GenParticle majN;
 
     for(auto& genPart: genParticles){
@@ -645,7 +647,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        if (!( fabs(jet.eta()) < 3 && jet.pt() > 5. )) continue;
        else ntuple_.fill_jetInfo(jet);
        int flavor = std::abs( jet.partonFlavour() );       
-       for( const std::string &bDiscr : bDiscbb_ )
+       for( const std::string &bDiscr : bDiscbbToken_ )
 	 {
 	   ntuple_.fill_bjetInfo(jet, bDiscr, flavor);
 	 }

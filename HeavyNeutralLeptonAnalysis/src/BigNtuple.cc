@@ -1,4 +1,4 @@
-_)#include "HNL/HeavyNeutralLeptonAnalysis/interface/BigNtuple.h"
+#include "HNL/HeavyNeutralLeptonAnalysis/interface/BigNtuple.h"
 #include "DataFormats/BTauReco/interface/TrackIPTagInfo.h"
 #include "DataFormats/BTauReco/interface/SecondaryVertexTagInfo.h"
 #include "TVector3.h"
@@ -37,7 +37,7 @@ void BigNtuple::set_pv_genInfo(TTree* tree) {
 
 }
 
-void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt , const std::vector<reco::GenParticle> prtCollection ){
+void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt ,const std::vector<reco::GenParticle> prtCollection ){
 	float vx = prt.vx(), vy = prt.vy(), vz = prt.vz();
 	for (auto genPart: prtCollection){
 		//
@@ -54,9 +54,9 @@ void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt , const std::vector
 		    lep1_gen_Phi_ = prt.phi();
 		    lep1_gen_Charge_ = prt.charge();
 		    // vertexposition
-		    lep1_gen_VX_ = vx;
-		    lep1_gen_VY_ = vy;
-		    lep1_gen_VZ_ = vz;
+		    lep1_gen_vx_ = vx;
+		    lep1_gen_vy_ = vy;
+		    lep1_gen_vz_ = vz;
 		  // vertexflight
 		    lep1_gen_Lxy_  = std::sqrt( vx * vx + vy * vy );
 		    lep1_gen_Lxyz_ = std::sqrt( vx * vx + vy * vy + vz * vz);
@@ -67,12 +67,12 @@ void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt , const std::vector
 	}
 	// HNL infos
 	// gen id andstatus
-	HNL_gen_PID_ = prt->pdgId();
-	HNL_gen_Charge_ = prt->charge());
-	HNL_gen_Mass_ = prt->mass();
-	HNL_gen_Pt_ = prt->pt();
-	HNL_gen_Eta_ = prt->eta();
-	HNL_gen_Phi_ = prt->phi();
+	HNL_gen_PID_ = prt.pdgId();
+	HNL_gen_Charge_ = prt.charge();
+	HNL_gen_Mass_ = prt.mass();
+	HNL_gen_Pt_ = prt.pt();
+	HNL_gen_Eta_ = prt.eta();
+	HNL_gen_Phi_ = prt.phi();
 }
 
 void BigNtuple::set_sv_genInfo(TTree* tree) {
@@ -99,38 +99,38 @@ void BigNtuple::set_sv_genInfo(TTree* tree) {
 
 }
 
-void  BigNtuple::fill_pv_genInfo(const reco::GenParticle hnl , const std::vector<reco::GenParticle> prtCollection ){
+void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco::GenParticle> prtCollection ){
 
-	const reco::GenParticle lep2;
+  reco::GenParticle lep2;
 	float vx = hnl.vx(), vy = hnl.vy(), vz = hnl.vz();
-	auto ptOrdering = [&](const reco::GenParticle& first, const reco::GenParticle& second){return first.p() > second.p()};
-	std::sort(prtCollection.begin(), prtCollection.end(), ptOrdering);
+	auto pOrdering = [&](reco::GenParticle first, reco::GenParticle second){return first.p() > second.p();};
+	std::sort(prtCollection.begin(), prtCollection.end(), pOrdering);
 
 	for (auto genPart: prtCollection){
-		if( (abs(genPart.pdgId()) == 13 || abs(genPart.pdgId())==11 ) {
+		if( abs(genPart.pdgId()) == 13 || abs(genPart.pdgId())==11 ) {
 			lep2 = genPart;
 			break;
 		}
 	}
-	lep2_gen_PID = lep2.pdgId();
+	lep2_gen_PID_ = lep2.pdgId();
 	// genkinematics
-	lep2_gen_Pt = lep2.pt();
-	lep2_gen_Eta = lep2.eta();
-	lep2_gen_Phi = lep2.phi();
-	lep2_gen_Charge = lep2.charge();
+	lep2_gen_Pt_ = lep2.pt();
+	lep2_gen_Eta_ = lep2.eta();
+	lep2_gen_Phi_ = lep2.phi();
+	lep2_gen_Charge_ = lep2.charge();
 	// vertexposition
-	lep2_gen_vx = lep2.vx();
-	lep2_gen_vy = lep2.vy();
-	lep2_gen_vz = lep2.vz();
+	lep2_gen_vx_ = lep2.vx();
+	lep2_gen_vy_ = lep2.vy();
+	lep2_gen_vz_ = lep2.vz();
 // vertexflight
 	float dx = vx - lep2.vx(), dy = vy - lep2.vy(), dz = vz - lep2.vz();
-	float   beta_hnl  = hnl->p() / hnl->energy();
-	float   gamma_hnl = hnl->energy() / hnl->mass();
+	float   beta_hnl  = hnl.p() / hnl.energy();
+	float   gamma_hnl = hnl.energy() / hnl.mass();
 
-	lep2_gen_MomLxyz = std::sqrt(dx*dx + dy*dy + dz*dz);
-	lep2_gen_MomLz = dz;
-	lep2_gen_MomLxy = std::sqrt(dx*dx + dy*dy);
-	lep2_gen_MomCTau0 = std::sqrt(dx*dx + dy*dy + dz*dz) / (beta_hnl * gamma_hnl);
+	lep2_gen_MomLxyz_ = std::sqrt(dx*dx + dy*dy + dz*dz);
+	lep2_gen_MomLz_ = dz;
+	lep2_gen_MomLxy_ = std::sqrt(dx*dx + dy*dy);
+	lep2_gen_MomCTau0_ = std::sqrt(dx*dx + dy*dy + dz*dz) / (beta_hnl * gamma_hnl);
 
 	for(auto genPart: prtCollection){
 		daugh_gen_PID_.push_back(genPart.pdgId() );
