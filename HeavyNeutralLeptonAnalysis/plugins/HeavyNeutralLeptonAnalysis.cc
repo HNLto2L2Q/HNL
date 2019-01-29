@@ -179,7 +179,7 @@ private:
   const std::vector        <std::string> bDiscbbbToken_;
   const std::vector         <std::string> bDiscbcToken_;
 
-  edm::EDGetTokenT         <edm::ValueMap<float>>     eleMvaToken_;
+  //edm::EDGetTokenT         <edm::ValueMap<float>>     eleMvaToken_;
   edm::EDGetTokenT         <edm::ValueMap<bool>>      eleVetoToken_;
   edm::EDGetTokenT         <edm::ValueMap<bool>>      eleLooseToken_;
   edm::EDGetTokenT         <edm::ValueMap<bool>>      eleMediumToken_;
@@ -200,7 +200,7 @@ protected:
   edm::Handle            < edm::TriggerResults > metFilterResultsHandle;
   edm::Handle         < reco::VertexCollection > secondaryVertexHandle;
   
-  edm::Handle         <edm::ValueMap<float>> electronsMva;
+  //edm::Handle         <edm::ValueMap<float>> electronsMva;
   edm::Handle         <edm::ValueMap<bool>> electronsVeto;
   edm::Handle         <edm::ValueMap<bool>> electronsLoose;
   edm::Handle         <edm::ValueMap<bool>> electronsMedium;
@@ -249,7 +249,7 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   bDiscbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbb")),
   bDiscbbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbbb")),
   bDiscbcToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbc")),
-  eleMvaToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("electronsMva"))),
+  //eleMvaToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("electronsMva"))),
   eleVetoToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsVeto"))),
   eleLooseToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsLoose"))),
   eleMediumToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsMedium"))),
@@ -300,7 +300,7 @@ void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
   iEvent.getByToken(metFilterResultsToken_, metFilterResultsHandle);
   iEvent.getByToken(inclusiveSecondaryVertices_, secondaryVertexHandle);
 
-  iEvent.getByToken(eleMvaToken_, electronsMva);
+  //iEvent.getByToken(eleMvaToken_, electronsMva);
   iEvent.getByToken(eleVetoToken_,electronsVeto);
   iEvent.getByToken(eleLooseToken_,electronsLoose);
   iEvent.getByToken(eleMediumToken_,electronsMedium);
@@ -537,10 +537,11 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    vector<pat::Muon> looseMuons;
    if(muonsHandle.isValid()){ 
      muons = *muonsHandle;
-     for (const pat::Muon mu : muons) {
-       if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
-       if (!mu.isLooseMuon()) continue;
-       looseMuons.push_back(mu);
+     //for (const pat::Muon mu : muons) {
+     for(auto& mu : muons){
+     if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
+     if (!mu.isLooseMuon()) continue;
+     looseMuons.push_back(mu);
      }
    }
    // lambda function to sort this muons
@@ -576,15 +577,20 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
      if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
 
-     float  ele_Mva_   = ((*electronsMva)[eleRef]);
+     //float  ele_Mva_   = ((*electronsMva)[eleRef]);
+     pat::Electron eleMva = *ele;
+     float  ele_Mva_   = eleMva.electronID("mvaEleID-Fall17-iso-V1-wp90");
+       //static_cast<float *>(pat::Electron::userFloat("<ElectronMVAEstimatorRun2Fall17IsoV1>Values"));
+       //pat::Electron::electronID("mvaEleID-Fall17-iso-V1-wp90");
+       //static_cast<float *>(pat::Electron::userFloat("<ElectronMVAEstimatorRun2Fall17IsoV1>Values"));
      bool  ele_Veto_   = ((*electronsVeto)[eleRef]);
      bool  ele_Loose_  = ((*electronsLoose)[eleRef]);
      bool  ele_Medium_ = ((*electronsMedium)[eleRef]);
      bool  ele_Tight_  = ((*electronsTight)[eleRef]);
 
      ntuple_.fill_eleIDInfo(ele_Mva_, ele_Veto_, ele_Loose_ , ele_Medium_, ele_Tight_);
-
    }
+   
    // lambda function to sort this electrons
    std::sort(looseElectrons.begin(), looseElectrons.end(), [](pat::Electron a, pat::Electron b) {return a.pt() > b.pt(); });
    //=============================================================                    
