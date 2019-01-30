@@ -76,11 +76,8 @@ public:
 	void fill_trigInfo(const edm::TriggerResults& triggerResults, const edm::TriggerNames& trigNames);
 
 
-	void set_sv_mu_Info(TTree* tree);
-        void fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
-
-        void set_sv_ele_Info(TTree* tree);
-        void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
+	void set_sv_Info(TTree* tree);
+        void fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, std::pair<float, float> match, bool lept);
 
 	void set_muInfo(TTree* tree);
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
@@ -220,110 +217,54 @@ private:
 
  
 	//secondary verteces info due to mu
-	std::vector<int>   sv_mu_TrackSize_;
-	std::vector<float> sv_mu_Xpos_;
-	std::vector<float> sv_mu_Ypos_;
-	std::vector<float> sv_mu_Zpos_;
-	std::vector<float> sv_mu_xError_;
-	std::vector<float> sv_mu_yError_;
-	std::vector<float> sv_mu_zError_;
-	std::vector<float> sv_mu_pvX_;
-	std::vector<float> sv_mu_pvY_;
-	std::vector<float> sv_mu_pvZ_;
-	std::vector<float> sv_mu_pvXError_;
-	std::vector<float> sv_mu_pvYError_;
-	std::vector<float> sv_mu_pvZError_;
-	std::vector<float> sv_mu_LXYSig_;
-	std::vector<float> sv_mu_LXYZSig_;
-	std::vector<float> sv_mu_LXY_;
-	std::vector<float> sv_mu_LXYZ_;
-	std::vector<float> sv_mu_mass_;
-	std::vector<int>   sv_mu_charge_;
-	std::vector<float> sv_mu_eta_;
-	std::vector<float> sv_mu_phi_;
-	std::vector<float> sv_mu_pt_;
-	std::vector<float> sv_mu_p_;
-	std::vector<float> sv_mu_px_;
-	std::vector<float> sv_mu_py_;
-	std::vector<float> sv_mu_pz_;
-	std::vector<float> sv_mu_energy_;
-	std::vector<float> sv_mu_Beta_;
-	std::vector<float> sv_mu_Gamma_;
-	std::vector<float> sv_mu_CTau0_;
-	std::vector<float> sv_mu_NDof_;
-	std::vector<float> sv_mu_Chi2_;
-	std::vector<float> sv_mu_Angle3D_;
-	std::vector<float> sv_mu_Angle2D_;
+	std::vector<bool> sv_hasMuon_;
+	std::vector<int>   sv_numTracks_;
+	std::vector<float> sv_x_;
+	std::vector<float> sv_y_;
+	std::vector<float> sv_z_;
+	std::vector<float> sv_xErr_;
+	std::vector<float> sv_yErr_;
+	std::vector<float> sv_zErr_;
+	std::vector<float> sv_LxySig_;
+	std::vector<float> sv_LxyzSig_;
+	std::vector<float> sv_Lxy_;
+	std::vector<float> sv_Lxyz_;
+	std::vector<float> sv_mass_;
+	std::vector<int>   sv_charge_;
+	std::vector<float> sv_eta_;
+	std::vector<float> sv_phi_;
+	std::vector<float> sv_pt_;
+	std::vector<float> sv_p_;
+	std::vector<float> sv_px_;
+	std::vector<float> sv_py_;
+	std::vector<float> sv_pz_;
+	std::vector<float> sv_energy_;
+	std::vector<float> sv_Beta_;
+	std::vector<float> sv_Gamma_;
+	std::vector<float> sv_CTau0_;
+	std::vector<float> sv_NDof_;
+	std::vector<float> sv_Chi2_;
+	std::vector<float> sv_Angle3D_;
+	std::vector<float> sv_Angle2D_;
 
-	std::vector<std::vector<int  > > sv_mu_tracks_charge_;
-	std::vector<std::vector<float> > sv_mu_tracks_eta_;
-	std::vector<std::vector<float> > sv_mu_tracks_phi_;
-	std::vector<std::vector<float> > sv_mu_tracks_pt_;
-	std::vector<std::vector<float> > sv_mu_tracks_en_;
-	std::vector<std::vector<float> > sv_mu_tracks_dxySig_;
-	std::vector<std::vector<float> > sv_mu_tracks_dxy_;
-	std::vector<std::vector<float> > sv_mu_tracks_dxyz_;
+	std::vector<std::vector<int  > > sv_tracks_charge_;
+	std::vector<std::vector<float> > sv_tracks_eta_;
+	std::vector<std::vector<float> > sv_tracks_phi_;
+	std::vector<std::vector<float> > sv_tracks_pt_;
+	std::vector<std::vector<float> > sv_tracks_en_;
+	std::vector<std::vector<float> > sv_tracks_dxySig_;
+	std::vector<std::vector<float> > sv_tracks_dxy_;
+	std::vector<std::vector<float> > sv_tracks_dxyz_;
 
-	std::vector<float> sv_mu_dir_x_;
-	std::vector<float> sv_mu_dir_y_;
-	std::vector<float> sv_mu_dir_z_;
+	std::vector<float> sv_lx_;
+	std::vector<float> sv_ly_;
+	std::vector<float> sv_lz_;
 
-	std::vector<int  > sv_mu_tracks_Sumcharge_;
-	std::vector<float> sv_mu_tracks_Sumpt_;
-	std::vector<float> sv_mu_match_;
+	std::vector<int  > sv_tracks_Sumcharge_;
+	std::vector<float> sv_tracks_Sumpt_;
+	std::vector<float> sv_match_dxy;
+	std::vector<float> sv_match_dxyz;
 
-	//secondary verteces info due to ele
-	std::vector<int>   sv_ele_TrackSize_;
-	std::vector<float> sv_ele_Xpos_;
-	std::vector<float> sv_ele_Ypos_;
-	std::vector<float> sv_ele_Zpos_;
-	std::vector<float> sv_ele_xError_;
-	std::vector<float> sv_ele_yError_;
-	std::vector<float> sv_ele_zError_;
-	std::vector<float> sv_ele_pvX_;
-	std::vector<float> sv_ele_pvY_;
-	std::vector<float> sv_ele_pvZ_;
-	std::vector<float> sv_ele_pvXError_;
-	std::vector<float> sv_ele_pvYError_;
-	std::vector<float> sv_ele_pvZError_;
-	std::vector<float> sv_ele_LXYSig_;
-	std::vector<float> sv_ele_LXYZSig_;
-	std::vector<float> sv_ele_LXY_;
-	std::vector<float> sv_ele_LXYZ_;
-	std::vector<float> sv_ele_mass_;
-	std::vector<int>   sv_ele_charge_;
-	std::vector<float> sv_ele_eta_;
-	std::vector<float> sv_ele_phi_;
-	std::vector<float> sv_ele_pt_;
-	std::vector<float> sv_ele_p_;
-	std::vector<float> sv_ele_px_;
-	std::vector<float> sv_ele_py_;
-	std::vector<float> sv_ele_pz_;
-	std::vector<float> sv_ele_energy_;
-	std::vector<float> sv_ele_Beta_;
-	std::vector<float> sv_ele_Gamma_;
-	std::vector<float> sv_ele_CTau0_;
-	std::vector<float> sv_ele_NDof_;
-	std::vector<float> sv_ele_Chi2_;
-	std::vector<float> sv_ele_Angle3D_;
-	std::vector<float> sv_ele_Angle2D_;
-
-	std::vector<std::vector<int  > > sv_ele_tracks_charge_;
-	std::vector<std::vector<float> > sv_ele_tracks_eta_;
-	std::vector<std::vector<float> > sv_ele_tracks_phi_;
-	std::vector<std::vector<float> > sv_ele_tracks_pt_;
-	std::vector<std::vector<float> > sv_ele_tracks_en_;
-	std::vector<std::vector<float> > sv_ele_tracks_dxySig_;
-	std::vector<std::vector<float> > sv_ele_tracks_dxy_;
-	std::vector<std::vector<float> > sv_ele_tracks_dxyz_;
-
-	std::vector<float> sv_ele_dir_x_;
-	std::vector<float> sv_ele_dir_y_;
-	std::vector<float> sv_ele_dir_z_;
-
-	std::vector<int  > sv_ele_tracks_Sumcharge_;
-	std::vector<float> sv_ele_tracks_Sumpt_;
-	std::vector<float> sv_ele_match_;
 
 	//muon infos
 	std::vector<float> mu_en_ ;
@@ -376,12 +317,12 @@ private:
 	std::vector<float> mu_recoiso_ ;
 	std::vector<float> mu_isGlobalMuon_ ;
 	std::vector<float> mu_isStandAloneMuon_ ;
-	std::vector<float> mu_isPF_ ;
+	std::vector<float> mu_isPFMuon_ ;
 	std::vector<float> mu_isRPCMuon_ ;
 	std::vector<float> mu_isTrackerMuon_ ;
 	std::vector<float> mu_isGoodMuon_ ;
 	std::vector<float> mu_isSoftMuon_ ;
-	std::vector<float> mu_isLoose_ ;
+	std::vector<float> mu_isLooseMuon_ ;
 	std::vector<float> mu_isTightMuon_ ;
 	std::vector<int>    mu_STAnHits_ ;
 	std::vector<int>    mu_STAnLost_ ;
