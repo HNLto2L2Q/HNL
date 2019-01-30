@@ -128,7 +128,7 @@ public:
   double MatchGenElectron(const edm::Event& iEvent, const pat::Electron& ele_, int pdgId);
   //double MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
   std::pair<float, float> MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
-  std::pair<bool, float> MatchGenLeptons(const reco::Candidate& lepton);
+  std::pair<bool, int> MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
   
@@ -433,16 +433,16 @@ double HeavyNeutralLeptonAnalysis::MatchGenElectron(const edm::Event& iEvent, co
 }
 
 //===================================== Electron - Muon Gen Match ================================================//
-std::pair<bool, float> HeavyNeutralLeptonAnalysis::MatchGenLeptons(const reco::Candidate& lepton){
+std::pair<bool, int> HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton){
   
   float recoGenDeltaR = 0.2;
   float rho = sqrt(lepton.vx()*lepton.vx() + lepton.vy()*lepton.vy());
-  float dR = deltaR(lepton.eta(), lepton.phi(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi());
+  float dR = deltaR(lepton.eta(), lepton.phi(), v_eta, v_phi);
 
   if(rho < 0.5 and dR < recoGenDeltaR){ 
-    return make_pair(lepton.isMuon(), dR);
-  }else{return make_pair(false, static_cast<float>(-999.));}
-}//isElectron - isMuon
+    return make_pair(lepton.isMuon(), 1);
+  }else{return make_pair(lepton.isMuon(), 0);}
+}//returns the lepton's tipe (true if is muon - false if is electron) and 1 or 0 if the lepton matches with the vertex defined by v_eta and v_phi
 
 
 //===================================== Displaced Vertex Gen Match ================================================// 
@@ -565,15 +565,13 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      std::auto_ptr<EcalClusterLazyTools> recHitEcal;
      recHitEcal.reset(new EcalClusterLazyTools( iEvent, iSetup, recHitEBToken_, recHitEEToken_ ));
      
-     //reco::Candidate ele_prova;
-     if(!(MatchGenLeptons(*ele).first)){
-       //double matching_1stele = (isMC && isMCSignal) ? MatchGenElectron(iEvent, *ele , 24 ) : -999;
-       //double matching_2ndele = (isMC && isMCSignal) ? MatchGenElectron(iEvent, *ele , 9900012) : -999;
+     if(!(MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), *ele).first)){
+       int matching_1stele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), *ele).second : -999;
+       int matching_2ndele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), *ele).second : -999;
+       ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
      }
-     //ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
      if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
 
-     //float  ele_Mva_   = ((*electronsMva)[eleRef]);
      pat::Electron eleMva = *ele;
      float  ele_Mva_   = eleMva.electronID("mvaEleID-Fall17-iso-V1-wp90");
        //static_cast<float *>(pat::Electron::userFloat("<ElectronMVAEstimatorRun2Fall17IsoV1>Values"));
@@ -617,10 +615,12 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        for (const pat::Muon mu : looseMuons){
 	 double rho = *(rhoHandle.product());
 	 reco::TrackRef bestTrack = mu.muonBestTrack();
-	 double matching_1stmu = (isMC && isMCSignal) ? MatchGenMuon(iEvent, bestTrack, 24) : -999;
-	 double matching_2ndmu = (isMC && isMCSignal) ? MatchGenMuon(iEvent, bestTrack, 9900012) : -999;
+	 if(MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), mu).first){
+	   int matching_1stmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), mu).second : -999;
+	   int matching_2ndmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), mu).second : -999;
 	 //added the matching
 	 ntuple_.fill_muInfo(mu, pvs.at(0) , rho ,matching_1stmu , matching_2ndmu);
+	 }
        }
      }
      
