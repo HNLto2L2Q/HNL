@@ -36,6 +36,30 @@ class BigNtuple {
 public:
 	BigNtuple(){} //default, empty constructor
 
+	//getter
+
+	//vertex info
+        float get_pv_x()const{return lep1_gen_vx_;}
+        float get_pv_y()const{return lep1_gen_vy_;}
+	float get_pv_z()const{return lep1_gen_vz_;}
+
+        float get_sv_x()const{return lep2_gen_vx_;}
+        float get_sv_y()const{return lep2_gen_vy_;}
+        float get_sv_z()const{return lep2_gen_vz_;}
+
+	//phi info
+	float get_lep1_phi()const{return lep1_gen_Phi_;}
+	float get_lep2_phi()const{return lep2_gen_Phi_;}
+	
+	float get_lep1_eta()const{return lep1_gen_Eta_;}
+	float get_lep2_eta()const{return lep2_gen_Eta_;}
+
+	//setter
+
+	//void set_sv_x(float sv_x){lep2_gen_vx_ = sv_x;}
+	//void set_sv_y(float sv_y){lep2_gen_vy_ = sv_y;}
+	//void set_sv_z(float sv_z){lep2_gen_vz_ = sv_z;}
+
 	void set_evtInfo(TTree* tree);
 	void fill_evtInfo(const edm::EventID& id);
 
@@ -82,7 +106,11 @@ public:
 	  *this = dummy; //use assignment to reset
 	}
 
+	//float lep2_gen_vx_ = -1000;
+	//float lep2_gen_vy_ = -1000;
+	//float lep2_gen_vz_ = -1000;
 private:
+
 	unsigned int lumi_ = 0;
 	unsigned int run_ = 0;
 	unsigned long long evt_ = 0;
@@ -135,6 +163,11 @@ private:
 	float   lep2_gen_MomLz_    = -1000;
 	float   lep2_gen_MomLxy_   = -1000;
 	float   lep2_gen_MomCTau0_ = -1000;
+
+
+        //float get_sv_x(){return lep2_gen_vx_;}
+        //float get_sv_y(){return lep2_gen_vy_;}
+        //float get_sv_z(){return lep2_gen_vz_;}
 
 	// final state hadrons
 	std::vector<int>     daugh_gen_PID_;

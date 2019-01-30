@@ -126,7 +126,9 @@ public:
   bool isAncestor(const reco::Candidate* ancestor, const reco::Candidate* particle);
   double MatchGenMuon(const edm::Event&,  reco::TrackRef BestTrack , int pdgId);
   double MatchGenElectron(const edm::Event& iEvent, const pat::Electron& ele_, int pdgId);
-  double MatchGenVertex(const edm::Event& iEvent, reco::Vertex vertex, int pdgId);
+  //double MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
+  std::pair<float, float> MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
+  std::pair<bool, float> MatchGenLeptons(const reco::Candidate& lepton);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
   
@@ -153,10 +155,10 @@ private:
 
   SmartSelectionMonitor mon;
 
-  //--------------template-------------------------
+  //--------------Template-------------------------
 
   // ----------member data ---------------------------
-  
+  TH1D* prova;
   edm::EDGetTokenT         < reco::VertexCollection > vtxMiniAODToken_;
   edm::EDGetTokenT                         < double > rhoToken_;
   edm::EDGetTokenT            < pat::MuonCollection > muonsMiniAODToken_;
@@ -258,6 +260,8 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
 
   //now do what ever initialization is needed
   usesResource("TFileService");
+
+  prova = fs->make<TH1D>("prova", "prova", 2000, -1001, 1000);
 
   tree_ = fs->make<TTree>("tree_", "tree");
   ntuple_.set_evtInfo(tree_);
@@ -428,36 +432,27 @@ double HeavyNeutralLeptonAnalysis::MatchGenElectron(const edm::Event& iEvent, co
   else return -999;
 }
 
+//===================================== Electron - Muon Gen Match ================================================//
+std::pair<bool, float> HeavyNeutralLeptonAnalysis::MatchGenLeptons(const reco::Candidate& lepton){
+  
+  float recoGenDeltaR = 0.2;
+  float rho = sqrt(lepton.vx()*lepton.vx() + lepton.vy()*lepton.vy());
+  float dR = deltaR(lepton.eta(), lepton.phi(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi());
+
+  if(rho < 0.5 and dR < recoGenDeltaR){ 
+    return make_pair(lepton.isMuon(), dR);
+  }else{return make_pair(false, static_cast<float>(-999.));}
+}//isElectron - isMuon
+
+
 //===================================== Displaced Vertex Gen Match ================================================// 
-double HeavyNeutralLeptonAnalysis::MatchGenVertex(const edm::Event& iEvent, reco::Vertex vertex, int pdgId) {
-  double minDVertex=999;
-  double MinDistance_ = 0.2;
-  int genIndex=-999;
-  for(size_t i = 0; i<genHandle->size(); i++){
-    if(abs((*genHandle)[i].pdgId()) == pdgId && (*genHandle)[i].mother()->pdgId() == 9900012) {
-      const reco::Candidate * HNL = (*genHandle)[i].mother();
-      for(size_t j = 0; j<genHandle->size(); j++){
-	const reco::Candidate * part = (*genHandle)[j].mother(0) ;
-	if(part != nullptr && isAncestor( HNL , part) ){
-	  if( (*genHandle)[j].status() == 1){
-	    float vx = vertex.x(), vy = vertex.y(), vz = vertex.z();
-	    float gx =  (*genHandle)[j].vx(), gy =  (*genHandle)[j].vy(), gz =  (*genHandle)[j].vz();
-	    //float metric1 = std::sqrt(((gx-vx)*(gx-vx))/(gx*gx) + ((gy-vy)*(gy-vy))/(gy*gy) + ((gz-vz)*(gz-vz))/(gz*gz)); 
-	    float metric = std::sqrt(((gx-vx)*(gx-vx)) + ((gy-vy)*(gy-vy)) + ((gz-vz)*(gz-vz)));
-	    if (metric<minDVertex) {
-	      minDVertex= metric;
-	      genIndex=i;
-	    }// end of DR                                                                                                                        
-	  }//end of status==1 && partID==13                                                                                                     
-	}//isAncestor                                                                                                                            
-      }//end of loop over gen particles                                                                                                          
-    }//end of loop over gen particles  
-  }//end of Idetitfictaion of HNL
-  if (minDVertex<MinDistance_) return genIndex;
-  else return -999;
+std::pair<float, float> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco) {
+  double metric_xyz = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())) + ((vgen_z-vreco.z())*(vgen_z-vreco.z())));
+  double metric_xy = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())));      
+  return make_pair(metric_xyz, metric_xy);
 }
-
-
+  
+  
 // ------------ method called for each event  ------------
 void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
@@ -537,7 +532,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    vector<pat::Muon> looseMuons;
    if(muonsHandle.isValid()){ 
      muons = *muonsHandle;
-     //for (const pat::Muon mu : muons) {
      for(auto& mu : muons){
      if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
      if (!mu.isLooseMuon()) continue;
@@ -545,7 +539,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      }
    }
    // lambda function to sort this muons
-   std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.pt() > b.pt(); });
+   std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.p() > b.p(); }); //p ordering
 
    //============================================================= 
    //
@@ -571,10 +565,12 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      std::auto_ptr<EcalClusterLazyTools> recHitEcal;
      recHitEcal.reset(new EcalClusterLazyTools( iEvent, iSetup, recHitEBToken_, recHitEEToken_ ));
      
-     double matching_1stele = (isMC && isMCSignal) ? MatchGenElectron(iEvent, *ele , 24 ) : -999;
-     double matching_2ndele = (isMC && isMCSignal) ? MatchGenElectron(iEvent, *ele , 9900012) : -999;
-
-     ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
+     //reco::Candidate ele_prova;
+     if(!(MatchGenLeptons(*ele).first)){
+       //double matching_1stele = (isMC && isMCSignal) ? MatchGenElectron(iEvent, *ele , 24 ) : -999;
+       //double matching_2ndele = (isMC && isMCSignal) ? MatchGenElectron(iEvent, *ele , 9900012) : -999;
+     }
+     //ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
      if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
 
      //float  ele_Mva_   = ((*electronsMva)[eleRef]);
@@ -611,8 +607,9 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();	 
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
-	 double matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(iEvent, vtx_mu , 13) : -999;	 
-	 ntuple_.fill_sv_mu_Info(vtx_mu, pvs.at(0), matching_vtx);	 
+
+	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_mu) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));	 
+	 ntuple_.fill_sv_mu_Info(vtx_mu, pvs.at(0), static_cast<float>(matching_vtx.first));	 
        }
      }
      //file muon branches with events contain sv
@@ -636,8 +633,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
-	 double matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(iEvent, vtx_ele , 11) : -999;
-	 ntuple_.fill_sv_ele_Info(vtx_ele, pvs.at(0), matching_vtx );
+	 //double matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(iEvent, vtx_ele , 11) : -999;
+	 //ntuple_.fill_sv_ele_Info(vtx_ele, pvs.at(0), matching_vtx );
        }
      }
 

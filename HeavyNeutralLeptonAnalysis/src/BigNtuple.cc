@@ -122,7 +122,11 @@ void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco:
 	lep2_gen_vx_ = lep2.vx();
 	lep2_gen_vy_ = lep2.vy();
 	lep2_gen_vz_ = lep2.vz();
-// vertexflight
+	//set_sv_x(lep2.vx());
+	//set_sv_y(lep2.vy());
+	//set_sv_z(lep2.vz());
+
+	// Vertexflight ()
 	float dx = vx - lep2.vx(), dy = vy - lep2.vy(), dz = vz - lep2.vz();
 	float   beta_hnl  = hnl.p() / hnl.energy();
 	float   gamma_hnl = hnl.energy() / hnl.mass();
@@ -133,13 +137,17 @@ void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco:
 	lep2_gen_MomCTau0_ = std::sqrt(dx*dx + dy*dy + dz*dz) / (beta_hnl * gamma_hnl);
 
 	for(auto genPart: prtCollection){
-		daugh_gen_PID_.push_back(genPart.pdgId() );
-    daugh_gen_Pt_.push_back(genPart.pt());
-    daugh_gen_Eta_.push_back(genPart.eta());
-    daugh_gen_Phi_.push_back(genPart.phi());
-    daugh_gen_Charge_.push_back(genPart.charge());
-    daugh_gen_Mass_.push_back(genPart.mass());
+	  daugh_gen_PID_.push_back(genPart.pdgId() );
+	  daugh_gen_Pt_.push_back(genPart.pt());
+	  daugh_gen_Eta_.push_back(genPart.eta());
+	  daugh_gen_Phi_.push_back(genPart.phi());
+	  daugh_gen_Charge_.push_back(genPart.charge());
+	  daugh_gen_Mass_.push_back(genPart.mass());
 	}
+	
+	//	float get_sv_x(){return lep2_gen_vx_;}
+	//	float get_sv_y(){return lep2_gen_vy_;}
+	//	float get_sv_z(){return lep2_gen_vz_;}
 
 }
 
