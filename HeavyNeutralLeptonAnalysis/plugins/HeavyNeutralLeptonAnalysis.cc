@@ -274,8 +274,7 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_muInfo(tree_);
   ntuple_.set_eleInfo(tree_);
   ntuple_.set_eleIDInfo(tree_);
-  ntuple_.set_sv_mu_Info(tree_);
-  ntuple_.set_sv_ele_Info(tree_);
+  ntuple_.set_sv_Info(tree_);
   ntuple_.set_jetInfo(tree_);
   ntuple_.set_metInfo(tree_);
   ntuple_.set_bjetInfo(tree_);
@@ -565,8 +564,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      std::auto_ptr<EcalClusterLazyTools> recHitEcal;
      recHitEcal.reset(new EcalClusterLazyTools( iEvent, iSetup, recHitEBToken_, recHitEEToken_ ));
      
-     std::pair<double, double> matching_1stele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), *ele) : -999;
-     std::pair<double, double> matching_2ndele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), *ele) : -999;
+     std::pair<double, double> matching_1stele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), *ele) : make_pair(-999., -999.);
+     std::pair<double, double> matching_2ndele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), *ele) : make_pair(-999., -999.);
      ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
      
      if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
@@ -615,8 +614,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 double rho = *(rhoHandle.product());
 	 reco::TrackRef bestTrack = mu.muonBestTrack();
 
-	   std::pair<double, double> matching_1stmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), mu) : -999;
-	   std::pair<double, double> matching_2ndmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), mu) : -999;
+	 std::pair<double, double> matching_1stmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), mu) : make_pair(-999., -999.);
+	 std::pair<double, double> matching_2ndmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), mu) : make_pair(-999., -999.);
 	 //added the matching
 	 ntuple_.fill_muInfo(mu, pvs.at(0), rho, matching_1stmu, matching_2ndmu);
 
@@ -632,7 +631,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
-	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_mu) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
+	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_ele) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
 	 ntuple_.fill_sv_Info(vtx_ele, pvs.at(0), matching_vtx, false);
        }
      }

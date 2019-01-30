@@ -80,7 +80,7 @@ public:
         void fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, std::pair<float, float> match, bool lept);
 
 	void set_muInfo(TTree* tree);
-        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
+        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , std::pair<double, double> match1 , std::pair<double,double> match2 );
 	
 	void set_jetInfo(TTree* tree);
 	void fill_jetInfo(const pat::Jet& jet);
@@ -89,7 +89,7 @@ public:
         void fill_metInfo(const pat::MET& met);
 
         void set_eleInfo(TTree* tree);
-        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal);
+        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, std::pair<double,double> match1, std::pair<double,double> match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal);
 
 
         void set_eleIDInfo(TTree* tree);
@@ -251,11 +251,13 @@ private:
 	std::vector<std::vector<float> > sv_tracks_eta_;
 	std::vector<std::vector<float> > sv_tracks_phi_;
 	std::vector<std::vector<float> > sv_tracks_pt_;
-	std::vector<std::vector<float> > sv_tracks_en_;
+	std::vector<std::vector<float> > sv_tracks_p_;
 	std::vector<std::vector<float> > sv_tracks_dxySig_;
 	std::vector<std::vector<float> > sv_tracks_dxy_;
 	std::vector<std::vector<float> > sv_tracks_dxyz_;
 
+	float sv_match_dxyz_;
+	float sv_match_dxy_;
 	std::vector<float> sv_lx_;
 	std::vector<float> sv_ly_;
 	std::vector<float> sv_lz_;
@@ -273,8 +275,8 @@ private:
 	std::vector<float> mu_phi_ ;
 	std::vector<float> mu_et_ ;
 	std::vector<float> mu_charge_ ;
-	std::vector<int>   mu_FirstGenMatch_ ;
-	std::vector<int>   mu_SecondGenMatch_ ;
+	std::vector<std::pair<double,double>>   mu_FirstGenMatch_ ;
+	std::vector<std::pair<double,double>>   mu_SecondGenMatch_ ;
 	std::vector<float> mu_trackiso_ ;
 	std::vector<float> mu_rhoIso_;
 	std::vector<float> mu_pfSumChargedHadronPt_ ;
@@ -454,8 +456,8 @@ private:
 	std::vector<float>   ele_pfSumNeutralHadronEt_;
 	std::vector<float>   ele_pfSumPUPt_;  
 	std::vector<float>   ele_pfDeltaBeta_;
-	std::vector<float>   ele_FirstGenMatch_;
-	std::vector<float>   ele_SecondGenMatch_;
+	std::vector<std::pair<double,double>>   ele_FirstGenMatch_;
+	std::vector<std::pair<double,double>>   ele_SecondGenMatch_;
 
 	std::vector<float>   ele_Mva2016_;
 	std::vector<float>   ele_CutVeto_; 
