@@ -23,6 +23,7 @@ void BigNtuple::set_pv_genInfo(TTree* tree) {
   tree->Branch("lep1_gen_Pt",&lep1_gen_Pt_,"lep1_gen_Pt/F");
   tree->Branch("lep1_gen_Eta",&lep1_gen_Eta_,"lep1_gen_Eta/F");
   tree->Branch("lep1_gen_Phi",&lep1_gen_Phi_,"lep1_gen_Phi/F");
+  tree->Branch("lep1_gen_En",&lep1_gen_En_,"lep1_gen_En/F");
   tree->Branch("lep1_gen_vx",&lep1_gen_vx_,"lep1_gen_vx/F");
   tree->Branch("lep1_gen_vy",&lep1_gen_vy_,"lep1_gen_vy/F");
   tree->Branch("lep1_gen_vz",&lep1_gen_vz_,"lep1_gen_vz/F");
@@ -52,6 +53,7 @@ void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt ,const std::vector<
 			  lep1_gen_Pt_ = prt.pt();
 			  lep1_gen_Eta_ = prt.eta();
 			  lep1_gen_Phi_ = prt.phi();
+			  lep1_gen_En_ = prt.energy();
 			  lep1_gen_Charge_ = prt.charge();
 			  // vertexposition
 			  lep1_gen_vx_ = vx;
@@ -591,9 +593,20 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
   TVector3 pvToVertex3D( sign3D * dx, sign3D * dy, sign3D * dz);
   TVector3 pvToVertex2D( sign2D * dx, sign2D * dy, 0);
 
+  sv_rho_ = pvToVertex3D.Mag();
+  _sv_phi_ = pvToVertex3D.Phi();
+  sv_theta_ = pvToVertex3D.Theta();
+
   float svAngle3D = pvToVertex3D.Angle(sv_momentum_3D);
   float svAngle2D = pvToVertex2D.Angle(sv_momentum_2D);
   
+  //bestVertex info
+  best_sv_px_ = bestVertex.p4().px();
+  best_sv_py_ = bestVertex.p4().py();
+  best_sv_pz_ = bestVertex.p4().pz();
+  best_sv_pt_ = bestVertex.p4().pt();
+  best_sv_energy_ = bestVertex.p4().energy();
+
   sv_lx_.push_back(dx);
   sv_ly_.push_back(dy);
   sv_lz_.push_back(dz);
@@ -983,20 +996,48 @@ void BigNtuple::fill_metInfo(const pat::MET& met){
 
 }
 
+//transverse mass
+void BigNtuple::set_transverseMassInfo(TTree* tree){
+  tree->Branch("tranvsverseMass_ivf" , &tranvsverseMass_ivf_, "tranvsverseMass_ivf/F");
+  tree->Branch("tranvsverseMass_lep1" , &tranvsverseMass_lep1_, "tranvsverseMass_lep1/F");
+  tree->Branch("tranvsverseMass_ivfPluslep1" , &tranvsverseMass_ivfPluslep1_, "tranvsverseMass_ivfPluslep1/F");
+}
+
+void BigNtuple::fill_transverseMassInfo(float tr_mass_ivf, float tr_mass_lep1, float tr_mass_ivfPluslep1){
+  tranvsverseMass_ivf_ = tr_mass_ivf;
+  tranvsverseMass_lep1_ = tr_mass_lep1;
+  tranvsverseMass_ivfPluslep1_ = tr_mass_ivfPluslep1;
+}
+
+void BigNtuple::set_massCorrection(TTree *tree){
+  //tree->Branch("sv_rho", sv_rho_, "sv_rho/F");
+  //tree->Branch("sv_phi", _sv_phi_, "sv_phi/F");
+  //tree->Branch("sv_theta", sv_theta_, "sv_theta/F");
+  tree->Branch("sv_mass_corr", &sv_mass_corr_, "sv_mass_corr/F");
+}
+
+void BigNtuple::fill_massCorrection(double mass_corr){
+  sv_mass_corr_ = mass_corr;
+}
+
 void BigNtuple::set_bjetInfo(TTree* tree){
   tree->Branch("jet_btag_pt",&jet_btag_pt_);
   tree->Branch("jet_btag_eta",&jet_btag_eta_);
   tree->Branch("jet_btag_phi",&jet_btag_phi_);
   tree->Branch("jet_btag_flavor",&jet_btag_flavor_);
-  tree->Branch("jet_btag_pfCSVv2IVF_discriminator",&jet_btag_pfCSVv2IVF_discriminator_);
+  tree->Branch("pfDeepCSV_bb",&jet_btag_pfDeepCSV_bb_discriminator_);
+  tree->Branch("pfDeepCSV_bbb",&jet_btag_pfDeepCSV_bbb_discriminator_);
+  tree->Branch("pfDeepCSV_bc",&jet_btag_pfDeepCSV_bc_discriminator_);
 }
 
-void BigNtuple::fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscr, int flavor){
+void BigNtuple::fill_bjetInfo(const pat::Jet& jet,  const std::string& bDiscrbb, const std::string& bDiscrbbb, const std::string& bDiscrbc,  int flavor){
 
   jet_btag_pt_.push_back(jet.pt());
   jet_btag_eta_.push_back(jet.eta());
   jet_btag_phi_.push_back(jet.phi());
   jet_btag_flavor_.push_back(flavor);
-  jet_btag_pfCSVv2IVF_discriminator_.push_back(jet.bDiscriminator(bDiscr));
+  jet_btag_pfDeepCSV_bb_discriminator_.push_back(jet.bDiscriminator(bDiscrbb));
+  jet_btag_pfDeepCSV_bbb_discriminator_.push_back(jet.bDiscriminator(bDiscrbbb));
+  jet_btag_pfDeepCSV_bc_discriminator_.push_back(jet.bDiscriminator(bDiscrbc));
 
 }

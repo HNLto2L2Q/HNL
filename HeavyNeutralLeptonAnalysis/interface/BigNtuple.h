@@ -47,11 +47,27 @@ public:
         float get_sv_y()const{return lep2_gen_vy_;}
         float get_sv_z()const{return lep2_gen_vz_;}
 
+	float get_sv_pt()const{return best_sv_pt_;}
+	float get_sv_px()const{return best_sv_px_;}
+	float get_sv_py()const{return best_sv_py_;}
+	float get_sv_pz()const{return best_sv_pz_;}
+	float get_sv_en()const{return best_sv_energy_;}
+
+        float get_met_pt()const{return pfMet_pt_;}
+        float get_met_px()const{return pfMet_px_;}
+        float get_met_py()const{return pfMet_py_;}
+
+	float get_sv_rho()const{return sv_rho_;}
+	float get_sv_phi()const{return _sv_phi_;}
+	float get_sv_theta()const{return sv_theta_;}
+
 	//phi info
 	float get_lep1_phi()const{return lep1_gen_Phi_;}
-	float get_lep2_phi()const{return lep2_gen_Phi_;}
-	
+	float get_lep1_pt()const{return lep1_gen_Pt_;}
 	float get_lep1_eta()const{return lep1_gen_Eta_;}
+	float get_lep1_en()const{return lep1_gen_En_;}
+
+	float get_lep2_phi()const{return lep2_gen_Phi_;}
 	float get_lep2_eta()const{return lep2_gen_Eta_;}
 
 	//setter
@@ -88,6 +104,12 @@ public:
         void set_metInfo(TTree* tree);
         void fill_metInfo(const pat::MET& met);
 
+	void set_transverseMassInfo(TTree* tree);
+	void fill_transverseMassInfo(float tr_mass_ivf, float tr_mass_lep1, float tr_mass_ivfPluslep1);
+
+	void set_massCorrection(TTree* tree);
+	void fill_massCorrection(double mass_corr);
+
         void set_eleInfo(TTree* tree);
         void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, std::pair<double,double> match1, std::pair<double,double> match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal);
 
@@ -96,7 +118,7 @@ public:
         void fill_eleIDInfo(float ele_mva , bool ele_veto , bool ele_loose , bool ele_medium , bool ele_tight);
 
         void set_bjetInfo(TTree* tree);
-	void fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscr, int flavor);
+	void fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscrbb, const std::string & bDiscrbbb, const std::string & bDiscrbc, int flavor);
  
 	void reset() {
 	  BigNtuple dummy; //create a new one
@@ -135,6 +157,7 @@ private:
 	float   lep1_gen_Pt_      = -1000;
 	float   lep1_gen_Eta_      = -1000;
 	float   lep1_gen_Phi_      = -1000;
+	float   lep1_gen_En_       = -1000;
 	float   lep1_gen_vx_       = -1000;
 	float   lep1_gen_vy_       = -1000;
 	float   lep1_gen_vz_       = -1000;
@@ -215,6 +238,11 @@ private:
 
 	bool passDoubleMu33Ele33_       = 0;
 
+	float best_sv_px_ = 999;
+	float best_sv_py_ = 999;
+	float best_sv_pz_ = 999;
+	float best_sv_pt_ = 999;
+	float best_sv_energy_ = 999;
  
 	//secondary verteces info due to mu
 	std::vector<bool> sv_hasMuon_;
@@ -494,9 +522,22 @@ private:
 	float  caloMet_pt_ = -1000;
 	float  caloMet_phi_ = -1000;
 
+	//transverse mass info
+	float tranvsverseMass_ivf_ = -999;
+	float tranvsverseMass_lep1_ = -999;
+	float tranvsverseMass_ivfPluslep1_ = -999;
+
+	//correction mass info
+	float sv_rho_ = -999; //respect to primary vertex
+	float _sv_phi_ = -999;
+	float sv_theta_ = -999;
+	float sv_mass_corr_ = -999;
+
 	//bJet info
 	std::vector<int>   jet_btag_flavor_;
-	std::vector<float> jet_btag_pfCSVv2IVF_discriminator_;
+	std::vector<float> jet_btag_pfDeepCSV_bb_discriminator_;
+	std::vector<float> jet_btag_pfDeepCSV_bbb_discriminator_;
+	std::vector<float> jet_btag_pfDeepCSV_bc_discriminator_;
 	std::vector<float> jet_btag_pt_;
 	std::vector<float> jet_btag_eta_;
 	std::vector<float> jet_btag_phi_;

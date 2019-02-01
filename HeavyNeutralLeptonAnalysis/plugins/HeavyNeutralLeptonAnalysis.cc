@@ -131,7 +131,12 @@ public:
   std::pair<double, double> MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
+  //transverse mass
+  inline double MT(TLorentzVector *l, TLorentzVector *met) {
+    return sqrt(pow(l->Pt() + met->Pt(), 2) - pow(l->Px() + met->Px(), 2) - pow(l->Py() + met->Py(), 2));
+  }
   
+
 private:
   virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -277,6 +282,8 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_sv_Info(tree_);
   ntuple_.set_jetInfo(tree_);
   ntuple_.set_metInfo(tree_);
+  ntuple_.set_transverseMassInfo(tree_);
+  ntuple_.set_massCorrection(tree_);  
   ntuple_.set_bjetInfo(tree_);
 }
 
@@ -644,6 +651,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //       
    //=============================================================
    pat::JetCollection jets;
+   //std::vector<tuple < std::vector<std::string>, std::vector<std::string>, std::vector<std::string> > > bDisc_info = make_tuple(bDiscbbToken_, bDiscbbbToken_, bDiscbcToken_); 
    if(jetsHandle.isValid() && sv.size()){ 
      jets = *jetsHandle;
      for (const pat::Jet jet : jets) {
@@ -651,10 +659,18 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        if (!( fabs(jet.eta()) < 3 && jet.pt() > 5. )) continue;
        else ntuple_.fill_jetInfo(jet);
        int flavor = std::abs( jet.partonFlavour() );       
-       for( const std::string &bDiscr : bDiscbbToken_ )
-	 {
-	   ntuple_.fill_bjetInfo(jet, bDiscr, flavor);
+       for( const std::string &bDiscrbb : bDiscbbToken_ ){
+	 for( const std::string &bDiscrbbb : bDiscbbbToken_ ){
+	   for( const std::string &bDiscrbc : bDiscbcToken_ ){
+	     //for(const std::tuple& bDiscr : bDisc_info)
+	     //for(std::vector::<tuple < std::vector<string>, std::vector<string>, std::vector<string> > >::const_iterator i = bDisc_info.begin(); i != bDisc_info->end(); i++){
+	     
+	     
+	     //ntuple_.fill_bjetInfo(jet, bDiscrbb, bDiscrbbb, bDiscrbc, flavor);
+	     ntuple_.fill_bjetInfo(jet, bDiscrbb, bDiscrbbb, bDiscrbc, flavor);
+	   }
 	 }
+       }
      }
    }
    //=============================================================
@@ -670,14 +686,38 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    }   
    pat::TauCollection taus;
    if(tausHandle.isValid()){ taus = *tausHandle;}
-
+   
    pat::PackedCandidateCollection pfCandidates;
    if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
 
+   TLorentzVector ivf_(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz(), ntuple_.get_sv_en());
+   TLorentzVector prompt_lep(ntuple_.get_lep1_pt(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), ntuple_.get_lep1_en());
+   TLorentzVector ivfPlus_lep1 = ivf_ + prompt_lep;
+
+   float transverse_mass_ivf = sqrt(pow(ntuple_.get_sv_pt() + ntuple_.get_met_pt(), 2) - pow(ntuple_.get_sv_px() + ntuple_.get_met_px(), 2) - pow(ntuple_.get_sv_y() + ntuple_.get_met_py(), 2));//ivf transverse mass
+   float transverse_mass_lep1 = sqrt(pow(ntuple_.get_lep1_pt() + ntuple_.get_met_pt(), 2) - pow(prompt_lep.Px() + ntuple_.get_met_px(), 2) - pow(prompt_lep.Py() + ntuple_.get_met_py(), 2));
+   float transverse_mass_ivfPlus_lep1 = sqrt(pow(ivfPlus_lep1.Pt() + ntuple_.get_met_pt(), 2) - pow(ivfPlus_lep1.Px() + ntuple_.get_met_px(), 2) - pow(ivfPlus_lep1.Py() + ntuple_.get_met_py(), 2));
+					     					     
+   ntuple_.fill_transverseMassInfo(transverse_mass_ivf, transverse_mass_lep1, transverse_mass_ivfPlus_lep1); //ivf transverse mass
+
+   //mass correction
+   TVector3 dir_sv(ntuple_.get_sv_rho(), ntuple_.get_sv_phi(), ntuple_.get_sv_theta());
+   TVector3 ivf3D_(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz());
+
+   double ivf_mass = ivf_.M();
+   double vertexPt2 = dir_sv.Cross(ivf3D_).Mag2() / dir_sv.Mag2();
+   double mass_correction = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
+
+   ntuple_.fill_massCorrection(mass_correction);
 
    tree_->Fill();   
 }
    
+
+
+
+
+
 // ------------ method called once each job just before starting event loop  ------------
 void 
 HeavyNeutralLeptonAnalysis::beginJob(){
