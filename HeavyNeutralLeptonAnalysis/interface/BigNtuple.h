@@ -57,9 +57,9 @@ public:
         float get_met_px()const{return pfMet_px_;}
         float get_met_py()const{return pfMet_py_;}
 
-	float get_sv_rho()const{return sv_rho_;}
-	float get_sv_phi()const{return _sv_phi_;}
-	float get_sv_theta()const{return sv_theta_;}
+	float get_pvTosv_rho()const{return pvTosv_rho_;}
+	float get_pvTosv_phi()const{return pvTosv_phi_;}
+	float get_pvTosv_theta()const{return pvTosv_theta_;}
 
 	//phi info
 	float get_lep1_phi()const{return lep1_gen_Phi_;}
@@ -198,6 +198,7 @@ private:
 	std::vector<float>   daugh_gen_Mass_;
 
 	//trigger infos
+	bool passEle32_WPTight_Gsf_ = 0;
 	bool passMu3_PFJet40_    = 0;
 	bool passMu8_TrkIsoVVL_  = 0;
 	bool passMu17_TrkIsoVVL_ = 0;
@@ -379,6 +380,13 @@ private:
 	std::vector<float>  mu_STATofTimeAtIpOutIn_ ;
 	std::vector<float>  mu_STATofTimeAtIpOutInErr_ ;
 
+	int mu_cmb_nDof_ = -1;
+	int mu_rpc_nDof_ = -1;
+	double mu_cmb_time_ = -999.;
+	double mu_rpc_time_ = -999.;
+	double mu_cmb_timeErr_ = -999.;
+	double mu_rpc_timeErr_ = -999.;
+
 	//jet info
 
 	std::vector<float>   jet_charge_ ;
@@ -528,9 +536,9 @@ private:
 	float tranvsverseMass_ivfPluslep1_ = -999;
 
 	//correction mass info
-	float sv_rho_ = -999; //respect to primary vertex
-	float _sv_phi_ = -999;
-	float sv_theta_ = -999;
+	float pvTosv_rho_ = -999; //respect to primary vertex
+	float pvTosv_phi_ = -999;
+	float pvTosv_theta_ = -999;
 	float sv_mass_corr_ = -999;
 
 	//bJet info

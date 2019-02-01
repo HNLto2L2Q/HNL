@@ -124,9 +124,6 @@ public:
   reco::VertexCollection getMatchedVertex_Electron(const pat::Electron & ele, const reco::VertexCollection& vtxCollection);
   reco::VertexCollection PrimaryVertex( const reco::VertexCollection &vtx);
   bool isAncestor(const reco::Candidate* ancestor, const reco::Candidate* particle);
-  //double MatchGenMuon(const edm::Event&,  reco::TrackRef BestTrack , int pdgId);
-  //double MatchGenElectron(const edm::Event& iEvent, const pat::Electron& ele_, int pdgId);
-  //double MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
   std::pair<float, float> MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
   std::pair<double, double> MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton);
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
@@ -256,7 +253,6 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   bDiscbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbb")),
   bDiscbbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbbb")),
   bDiscbcToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbc")),
-  //eleMvaToken_(consumes<edm::ValueMap<float>>(iConfig.getParameter<edm::InputTag>("electronsMva"))),
   eleVetoToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsVeto"))),
   eleLooseToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsLoose"))),
   eleMediumToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsMedium"))),
@@ -387,57 +383,7 @@ bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,cons
     }
   return false;
 }
-//===================================== Muon Gen Match ================================================//
-/*double HeavyNeutralLeptonAnalysis::MatchGenMuon(const edm::Event& iEvent, reco::TrackRef BestTrack, int pdgId) {
-  double minDeltaR=999;
-  double recoGenDeltaR_ = 0.2;
-  int genIndex=-999;
-    for(size_t i = 0; i<genHandle->size(); i++){
-      if(abs((*genHandle)[i].pdgId()) == 13 && abs((*genHandle)[i].mother()->pdgId()) == pdgId) {
-	const reco::Candidate * WBoson = (*genHandle)[i].mother();
-	for(size_t j = 0; j<genHandle->size(); j++){
-	  const reco::Candidate * part = (*genHandle)[j].mother(0) ;
-	  if(part != nullptr && isAncestor( WBoson , part) ){
-	    if( (*genHandle)[j].status() == 1 && abs((*genHandle)[j].pdgId()) == 13 ){
-	      double dR=deltaR(BestTrack->eta(),BestTrack->phi(),(*genHandle)[j].eta(),(*genHandle)[j].phi());
-	      if (dR<minDeltaR) {
-		minDeltaR = dR;
-		genIndex = j;
-	      }// end of DR                                                                                                                        
-	    } //end of status==1 && partID==13                                                                                                     
-	  }//isAncestor                                                                                                                            
-	}//end of loop over gen particles                                                                                                          
-      }//end of Idetitfictaion of WBoson                                                                                                           
-    }// end of loop over gen particles                                                                                                             
-  if (minDeltaR<recoGenDeltaR_) return genIndex;
-  else return -999;
-}
-//===================================== Electron Gen Match ================================================// 
-double HeavyNeutralLeptonAnalysis::MatchGenElectron(const edm::Event& iEvent, const pat::Electron& ele_, int pdgId) {
-  double minDeltaR=999;
-  double recoGenDeltaR_ = 0.2;
-  int genIndex=-999;
-  for(size_t i = 0; i<genHandle->size(); i++){
-    if(abs((*genHandle)[i].pdgId()) == 11 && abs((*genHandle)[i].mother()->pdgId()) == pdgId) {
-      const reco::Candidate * WBoson = (*genHandle)[i].mother();
-      for(size_t j = 0; j<genHandle->size(); j++){
-	const reco::Candidate * part = (*genHandle)[j].mother(0) ;
-	if(part != nullptr && isAncestor( WBoson , part) ){
-	  if( (*genHandle)[j].status() == 1 && abs((*genHandle)[j].pdgId()) == 11 ){
-	    double dR=deltaR(ele_.eta(),ele_.phi(),(*genHandle)[j].eta(),(*genHandle)[j].phi());
-	    if (dR<minDeltaR) {
-	      minDeltaR = dR;
-	      genIndex = j;
-	    }// end of DR
-	  } //end of status==1 && partID==11
-	}//isAncestor
-      }//end of loop over gen particles
-    }//end of Idetitfictaion of WBoson  
-  }// end of loop over gen particles                                            
-  if (minDeltaR<recoGenDeltaR_) return genIndex;
-  else return -999;
-}
-*/
+
 //===================================== Electron - Muon Gen Match ================================================//
 std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton){
   
@@ -579,9 +525,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 
      pat::Electron eleMva = *ele;
      float  ele_Mva_   = eleMva.electronID("mvaEleID-Fall17-iso-V1-wp90");
-       //static_cast<float *>(pat::Electron::userFloat("<ElectronMVAEstimatorRun2Fall17IsoV1>Values"));
-       //pat::Electron::electronID("mvaEleID-Fall17-iso-V1-wp90");
-       //static_cast<float *>(pat::Electron::userFloat("<ElectronMVAEstimatorRun2Fall17IsoV1>Values"));
+
      bool  ele_Veto_   = ((*electronsVeto)[eleRef]);
      bool  ele_Loose_  = ((*electronsLoose)[eleRef]);
      bool  ele_Medium_ = ((*electronsMedium)[eleRef]);
@@ -690,25 +634,26 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    pat::PackedCandidateCollection pfCandidates;
    if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
 
-   TLorentzVector ivf_(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz(), ntuple_.get_sv_en());
-   TLorentzVector prompt_lep(ntuple_.get_lep1_pt(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), ntuple_.get_lep1_en());
+   TLorentzVector ivf_, prompt_lep;
+   ivf_.SetPxPyPzE(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz(), ntuple_.get_sv_en());
+   prompt_lep.SetPtEtaPhiE(ntuple_.get_lep1_pt(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), ntuple_.get_lep1_en());
    TLorentzVector ivfPlus_lep1 = ivf_ + prompt_lep;
 
-   float transverse_mass_ivf = sqrt(pow(ntuple_.get_sv_pt() + ntuple_.get_met_pt(), 2) - pow(ntuple_.get_sv_px() + ntuple_.get_met_px(), 2) - pow(ntuple_.get_sv_y() + ntuple_.get_met_py(), 2));//ivf transverse mass
-   float transverse_mass_lep1 = sqrt(pow(ntuple_.get_lep1_pt() + ntuple_.get_met_pt(), 2) - pow(prompt_lep.Px() + ntuple_.get_met_px(), 2) - pow(prompt_lep.Py() + ntuple_.get_met_py(), 2));
-   float transverse_mass_ivfPlus_lep1 = sqrt(pow(ivfPlus_lep1.Pt() + ntuple_.get_met_pt(), 2) - pow(ivfPlus_lep1.Px() + ntuple_.get_met_px(), 2) - pow(ivfPlus_lep1.Py() + ntuple_.get_met_py(), 2));
-					     					     
+   float transverse_mass_ivf = sqrt(pow(ivf_.Pt() + ntuple_.get_met_pt(), 2) - pow(ivf_.Px() + ntuple_.get_met_px(), 2) - pow(ivf_.Py() + ntuple_.get_met_py(), 2));//ivf transverse mass
+   float transverse_mass_lep1 = sqrt(pow(prompt_lep.Pt() + ntuple_.get_met_pt(), 2) - pow(prompt_lep.Px() + ntuple_.get_met_px(), 2) - pow(prompt_lep.Py() + ntuple_.get_met_py(), 2));//prompt lepton transverse mass
+   float transverse_mass_ivfPlus_lep1 = sqrt(pow(ivfPlus_lep1.Pt() + ntuple_.get_met_pt(), 2) - pow(ivfPlus_lep1.Px() + ntuple_.get_met_px(), 2) - pow(ivfPlus_lep1.Py() + ntuple_.get_met_py(), 2));//ivf + prompt lepton transverse mass
+
    ntuple_.fill_transverseMassInfo(transverse_mass_ivf, transverse_mass_lep1, transverse_mass_ivfPlus_lep1); //ivf transverse mass
 
    //mass correction
-   TVector3 dir_sv(ntuple_.get_sv_rho(), ntuple_.get_sv_phi(), ntuple_.get_sv_theta());
+   TVector3 dir_sv(ntuple_.get_pvTosv_rho(), ntuple_.get_pvTosv_phi(), ntuple_.get_pvTosv_theta());
    TVector3 ivf3D_(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz());
 
    double ivf_mass = ivf_.M();
    double vertexPt2 = dir_sv.Cross(ivf3D_).Mag2() / dir_sv.Mag2();
-   double mass_correction = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
+   double mass_corrected = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
 
-   ntuple_.fill_massCorrection(mass_correction);
+   ntuple_.fill_massCorrection(mass_corrected);
 
    tree_->Fill();   
 }

@@ -235,6 +235,7 @@ void BigNtuple::set_trigInfo(TTree* tree){
     tree->Branch("passDoubleEle33MW", &passDoubleEle33MW_,"passDoubleEle33MW/O");
     tree->Branch("passDoubleEle33", &passDoubleEle33_,"passDoubleEle33/O");
     tree->Branch("passDoubleMu33Ele33", &passDoubleMu33Ele33_,"passDoubleMu33Ele33/O");
+    tree->Branch("passEle32_WPTight_Gsf", &passEle32_WPTight_Gsf_, "passEle32_WPTight_Gsf/O");
 
 }
 
@@ -245,6 +246,7 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
     bool fired = triggerResults.accept(i);
     if(!fired) continue;
     
+    passEle32_WPTight_Gsf_ |= name.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos;
     passMu3_PFJet40_    |= name.find("HLT_Mu3_PFJet40_v")    != std::string::npos;
     passMu8_TrkIsoVVL_  |= name.find("HLT_Mu8_TrkIsoVVL_v")  != std::string::npos;
     passMu17_TrkIsoVVL_ |= name.find("HLT_Mu17_TrkIsoVVL_v") != std::string::npos;
@@ -376,7 +378,14 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
    tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_);
    tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_);
 
- }
+   //fill time info
+   tree->Branch("mu_cmb_nDof", &mu_cmb_nDof_, "mu_cmb_nDof/I");
+   tree->Branch("mu_rpc_nDof", &mu_rpc_nDof_, "mu_rpc_nDof/I");
+   tree->Branch("mu_cmb_time", &mu_cmb_time_, "mu_cmb_time/D");
+   tree->Branch("mu_rpc_time", &mu_rpc_time_, "mu_rpc_time/D");
+   tree->Branch("mu_cmb_timeErr", &mu_cmb_timeErr_, "mu_cmb_timeErr/D");
+   tree->Branch("mu_rpc_timeErr", &mu_rpc_timeErr_, "mu_rpc_timeErr/D"); 
+}
 
 
 
@@ -482,13 +491,25 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
     mu_STAnStationsWithValidHits_.push_back(-999);
   }
 
-  reco::MuonTime tofAll = mu.time();
-  mu_STATofDirection_.push_back(tofAll.direction());
-  mu_STATofNDof_.push_back(tofAll.nDof);
-  mu_STATofTimeAtIpInOut_.push_back(tofAll.timeAtIpInOut);
-  mu_STATofTimeAtIpInOutErr_.push_back(tofAll.timeAtIpInOutErr);
-  mu_STATofTimeAtIpOutIn_.push_back(tofAll.timeAtIpOutIn);
-  mu_STATofTimeAtIpOutInErr_.push_back(tofAll.timeAtIpOutInErr);
+  //time info
+  reco::MuonTime cmb = mu.time();
+  const reco::MuonTime rpc = mu.rpcTime(); 
+
+  mu_cmb_nDof_ = cmb.nDof;//int
+  mu_rpc_nDof_ = rpc.nDof;
+
+  mu_cmb_time_ = cmb.timeAtIpInOut;//double
+  mu_rpc_time_ = rpc.timeAtIpInOut;
+
+  mu_cmb_timeErr_ = cmb.timeAtIpInOutErr;//double
+  mu_rpc_timeErr_ = rpc.timeAtIpInOutErr;
+
+  mu_STATofDirection_.push_back(cmb.direction());
+  mu_STATofNDof_.push_back(cmb.nDof);
+  mu_STATofTimeAtIpInOut_.push_back(cmb.timeAtIpInOut);
+  mu_STATofTimeAtIpInOutErr_.push_back(cmb.timeAtIpInOutErr);
+  mu_STATofTimeAtIpOutIn_.push_back(cmb.timeAtIpOutIn);
+  mu_STATofTimeAtIpOutInErr_.push_back(cmb.timeAtIpOutInErr);
   //============= Parameters related to detector isolation =====================
   double charged   = mu.pfIsolationR04().sumChargedHadronPt;
   double neutral   = mu.pfIsolationR04().sumNeutralHadronEt;
@@ -593,9 +614,9 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
   TVector3 pvToVertex3D( sign3D * dx, sign3D * dy, sign3D * dz);
   TVector3 pvToVertex2D( sign2D * dx, sign2D * dy, 0);
 
-  sv_rho_ = pvToVertex3D.Mag();
-  _sv_phi_ = pvToVertex3D.Phi();
-  sv_theta_ = pvToVertex3D.Theta();
+  pvTosv_rho_ = pvToVertex3D.Mag();
+  pvTosv_phi_ = pvToVertex3D.Phi();
+  pvTosv_theta_ = pvToVertex3D.Theta();
 
   float svAngle3D = pvToVertex3D.Angle(sv_momentum_3D);
   float svAngle2D = pvToVertex2D.Angle(sv_momentum_2D);
