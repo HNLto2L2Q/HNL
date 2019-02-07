@@ -53,6 +53,10 @@ public:
 	float get_sv_pz()const{return best_sv_pz_;}
 	float get_sv_en()const{return best_sv_energy_;}
 
+        float get_sv_recox()const{return best_sv_recox_;}
+        float get_sv_recoy()const{return best_sv_recoy_;}
+        float get_sv_recoz()const{return best_sv_recoz_;}
+
         float get_met_pt()const{return pfMet_pt_;}
         float get_met_px()const{return pfMet_px_;}
         float get_met_py()const{return pfMet_py_;}
@@ -245,6 +249,10 @@ private:
 	float best_sv_pt_ = 999;
 	float best_sv_energy_ = 999;
  
+        float best_sv_recox_ = 999;
+        float best_sv_recoy_ = 999;
+	float best_sv_recoz_ = 999;
+
 	//secondary verteces info due to mu
 	std::vector<bool> sv_hasMuon_;
 	std::vector<int>   sv_numTracks_;

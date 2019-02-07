@@ -628,6 +628,11 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
   best_sv_pt_ = bestVertex.p4().pt();
   best_sv_energy_ = bestVertex.p4().energy();
 
+  best_sv_recox_ = bestVertex.x();
+  best_sv_recoy_ = bestVertex.y();
+  best_sv_recoz_ = bestVertex.z();
+    
+
   sv_lx_.push_back(dx);
   sv_ly_.push_back(dy);
   sv_lz_.push_back(dz);

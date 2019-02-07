@@ -45,6 +45,7 @@
 #include "TROOT.h"
 #include "TNtuple.h"
 #include "TLorentzVector.h"
+#include "TVector3.h"
 #include <Math/VectorUtil.h>
 
 
@@ -646,13 +647,14 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    ntuple_.fill_transverseMassInfo(transverse_mass_ivf, transverse_mass_lep1, transverse_mass_ivfPlus_lep1); //ivf transverse mass
 
    //mass correction
-   TVector3 dir_sv(ntuple_.get_pvTosv_rho(), ntuple_.get_pvTosv_phi(), ntuple_.get_pvTosv_theta());
-   TVector3 ivf3D_(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz());
-
+   TVector3 dir_sv, ivf3D_;
+   dir_sv.SetMagThetaPhi(ntuple_.get_pvTosv_rho(), ntuple_.get_pvTosv_phi(), ntuple_.get_pvTosv_theta());
+   ivf3D_.SetXYZ(ntuple_.get_sv_recox(), ntuple_.get_sv_recoy(), ntuple_.get_sv_recoz());
+   
    double ivf_mass = ivf_.M();
    double vertexPt2 = dir_sv.Cross(ivf3D_).Mag2() / dir_sv.Mag2();
    double mass_corrected = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
-
+   
    ntuple_.fill_massCorrection(mass_corrected);
 
    tree_->Fill();   
