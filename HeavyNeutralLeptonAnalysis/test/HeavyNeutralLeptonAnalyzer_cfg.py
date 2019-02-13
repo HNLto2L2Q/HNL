@@ -151,12 +151,8 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             )
 
 process.p = cms.Path(
-    #process.egmGsfElectronIDTask 
     process.egmGsfElectronIDSequence
-    #*process.egammaPostRecoSeq
-    #*process.egmGsfElectronIDs
     *process.electronMVAValueMapProducer
-    #*process.egmGsfElectronIDs
     *process.btagging
     *process.metaTree
     *process.displacedInclusiveVertexing
