@@ -526,6 +526,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 
      pat::Electron eleMva = *ele;
      float  ele_Mva_   = eleMva.electronID("mvaEleID-Fall17-iso-V1-wp90");
+     //float  ele_Mva_   = eleMva.electronID("mvaEleID-Spring15-25ns-Trig-V1-wp90"); to try with 2016
 
      bool  ele_Veto_   = ((*electronsVeto)[eleRef]);
      bool  ele_Loose_  = ((*electronsLoose)[eleRef]);
