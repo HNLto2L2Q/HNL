@@ -14,4 +14,3 @@ displacedInclusiveSecondaryVertices.minSignificance = 10
 
 
 displacedInclusiveVertexing = cms.Sequence(unpackedTracksAndVertices * displacedInclusiveVertexFinder  * displacedVertexMerger * displacedTrackVertexArbitrator * displacedInclusiveSecondaryVertices ) 
-

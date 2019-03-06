@@ -5,7 +5,7 @@ config.section_('General')
 config.General.transferOutputs = True
 config.General.transferLogs = True
 #config.General.requestName = 'prova__prova'
-config.General.workArea = 'prova_tt2017'
+config.General.workArea = 'prova_2017'
 config.section_('Data')
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 1
