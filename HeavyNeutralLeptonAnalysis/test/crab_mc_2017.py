@@ -26,13 +26,17 @@ if __name__ == '__main__':
     from httplib import HTTPException
     from multiprocessing import Process
         
-    for dataset, nfiles in dataset_files.items():        
+    for dataset, infos in dataset_files.items():        
         
-        print dataset, nfiles
+        nfiles = infos[0]
+        name = infos[1]
+        print dataset, nfiles, name
         config.Data.inputDataset = dataset
-        config.General.requestName = dataset.split('/')[1]
+        config.General.requestName = name
         config.Data.unitsPerJob = nfiles
         crabCommand('submit', config = config)#, dryrun = True)
         
         
+
+
         
