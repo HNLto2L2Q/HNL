@@ -9,7 +9,7 @@ config.General.workArea = 'HNL_mc_2017'
 config.section_('Data')
 config.Data.splitting = 'FileBased'
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/HNL_2017_mc' % (getUsernameFromSiteDB())
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'HeavyNeutralLeptonAnalyzer_cfg.py'
