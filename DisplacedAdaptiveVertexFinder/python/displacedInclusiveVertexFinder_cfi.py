@@ -7,7 +7,7 @@ displacedInclusiveVertexFinder  = cms.EDProducer("InclusiveVertexFinder",
        tracks = cms.InputTag("unpackedTracksAndVertices"),
        minHits = cms.uint32(8), #c'era 6 old 8 -> 0 AOD produciton has problems with nhits
        maximumLongitudinalImpactParameter = cms.double(200), #c'era 99999 old  .3 -> infty #1 va bene
-       minPt = cms.double(0.8), #c'era 0.4 old .8 -> 1 
+       minPt = cms.double(0.95), #c'era 0.4 old .8 -> 1 
        maxNTracks = cms.uint32(30), #old 30 -> 100
 ################from 100 to 30 crab jobs too long
 

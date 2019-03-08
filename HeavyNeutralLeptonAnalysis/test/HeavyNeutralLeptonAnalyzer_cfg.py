@@ -173,5 +173,5 @@ process.p = cms.Path(
     *process.jetCorrFactors
     *process.slimmedJetsJEC
     *process.LeptonsFilter
-#    *process.HeavyNeutralLepton
+    *process.HeavyNeutralLepton
     )
