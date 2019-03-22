@@ -11,8 +11,8 @@ Instructions:
 
 ```bash
 export SCRAM_ARCH=slc6_amd64_gcc630
-cmsrel CMSSW_9_4_12
-cd CMSSW_9_4_12/src
+cmsrel CMSSW_9_4_13
+cd CMSSW_9_4_13/src
 cmsenv
 git cms-init
 
@@ -22,7 +22,6 @@ git cms-init
 # Post RECO tools:
 # https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes#2016_2017_Data_MC
 git cms-merge-topic cms-egamma:EgammaPostRecoTools #just adds in an extra file to have a setup function to make things easier
-scram b -j 8
 
 # L1 ECAL Prefiring weights
 # twiki: https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe#Recipe_details_80X_94X
@@ -38,7 +37,7 @@ pushd HNL/
 git checkout run_2017
 popd
 
-scram b -j8
+scram b -j 8
 ```
 
 ## Test
