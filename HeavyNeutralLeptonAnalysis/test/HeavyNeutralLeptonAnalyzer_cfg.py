@@ -148,7 +148,7 @@ for mod in id_modules:
     setupAllVIDIdsInModule(process, mod, setupVIDElectronSelection)
 
     setupEgammaPostRecoSeq(process,
-                           runVID=False, #saves CPU time by not needlessly re-running VID, if you want the Fall17V2 IDs, set this to True or remove (default is True)
+                           runVID=True, #saves CPU time by not needlessly re-running VID, if you want the Fall17V2 IDs, set this to True or remove (default is True)
                            era='2017-Nov17ReReco')
 
 #process.Filter = cms.EDFilter('LeptonFilter',
