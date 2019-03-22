@@ -17,7 +17,9 @@ config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'HeavyNeutralLeptonAnalyzer_cfg.py'
-config.Data.inputDataset = '/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
+
+config.Data.inputDataset = '/HNL_2L2Q_DisplacedSignal/atalierc-processed_gen-sim-premix-RECO-MINIAODv2-10a67796329f4238191918f07d0f7633/USER'
+#'/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
 #'/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
 #'/TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM'
 config.JobType.outputFiles = ['Analysis_output.root']
