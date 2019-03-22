@@ -83,6 +83,9 @@ public:
 	void set_evtInfo(TTree* tree);
 	void fill_evtInfo(const edm::EventID& id);
 
+        void set_prefiring(TTree* tree);
+        void fill_prefiring(double weight, double weightup, double weightdown);
+
 	void set_pv_genInfo(TTree* tree);
         void fill_pv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
 
@@ -421,7 +424,11 @@ private:
 	std::vector<float>   jet_neutralHadronEnergy_ ;
 	std::vector<float>   jet_neutralHadronMultiplicity_ ;
 	std::vector<float>   jet_neutralMultiplicity_ ;
-
+	std::vector<float>   jet_pileUpid_ ;
+	std::vector<float>   jet_L1ptcorrection_ ;
+	std::vector<float>   jet_L2ptcorrection_ ;
+	std::vector<float>   jet_L3ptcorrection_ ;
+	std::vector<float>   jet_ptuncorrected_ ;
 	//electron info
 
 	std::vector<float>   ele_Et_;
@@ -537,6 +544,14 @@ private:
 	float  pfMet_sumEt_ = -1000;
 	float  caloMet_pt_ = -1000;
 	float  caloMet_phi_ = -1000;
+	float metJECDown_ = -1000;
+	float metJECUp_ = -1000;
+	float metUnclDown_ = -1000;
+	float metUnclUp_ = -1000;
+	float metPhiJECDown_ = -1000;
+	float metPhiJECUp_ = -1000;
+	float metPhiUnclDown_ = -1000;
+	float metPhiUnclUp_ = -1000;
 
 	//transverse mass info
 	float tranvsverseMass_ivf_ = -999;
@@ -557,6 +572,12 @@ private:
 	std::vector<float> jet_btag_pt_;
 	std::vector<float> jet_btag_eta_;
 	std::vector<float> jet_btag_phi_;
+
+	double prefiring_weight_ = -99999;
+	double prefiring_weightup_ = -99999;
+	double prefiring_weightdown_ = -99999;
+
+
 
 }; 
 

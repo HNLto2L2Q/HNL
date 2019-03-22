@@ -10,6 +10,18 @@ void BigNtuple::set_evtInfo(TTree* tree) {
 	tree->Branch("evt" , &evt_, "evt/i");
 }
 
+void BigNtuple::set_prefiring(TTree* tree){
+  tree->Branch("prefiring_weight", &prefiring_weight_, "prefiring_weight/D");
+  tree->Branch("prefiring_weightup", &prefiring_weightup_, "prefiring_weightup/D");
+  tree->Branch("prefiring_weightdown", &prefiring_weightdown_, "prefiring_weightdown/D");
+}
+
+void BigNtuple::fill_prefiring(double weight, double weightup, double weightdown){
+  prefiring_weight_ = weight;
+  prefiring_weightup_ = weightup;
+  prefiring_weightdown_ = weightdown;
+}
+
 void BigNtuple::fill_evtInfo(const edm::EventID& id) {
 	lumi_ = id.run();
 	run_  = id.luminosityBlock();
@@ -731,6 +743,11 @@ void BigNtuple::set_jetInfo(TTree* tree){
   tree->Branch("jet_neutralHadronMultiplicity" , &jet_neutralHadronMultiplicity_);
   tree->Branch("jet_neutralMultiplicity" , &jet_neutralMultiplicity_);
   tree->Branch("jet_chargedMultiplicity" , &jet_chargedMultiplicity_);
+  tree->Branch("jet_pileUpid", &jet_pileUpid_);
+  tree->Branch("jet_ptuncorrected", &jet_ptuncorrected_);
+  tree->Branch("jet_L1ptcorrection", &jet_L1ptcorrection_);
+  tree->Branch("jet_L2ptcorrection", &jet_L2ptcorrection_);
+  tree->Branch("jet_L3ptcorrection", &jet_L3ptcorrection_);
 }
 
 
@@ -761,6 +778,11 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet){
   jet_neutralHadronEnergy_.push_back(jet.neutralHadronEnergy());
   jet_neutralHadronMultiplicity_.push_back(jet.neutralHadronMultiplicity());
   jet_neutralMultiplicity_.push_back(jet.neutralMultiplicity());
+  jet_pileUpid_.push_back(jet.userFloat("pileupJetId:fullDiscriminant"));
+  jet_L1ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
+  jet_L2ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
+  jet_L3ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
+  jet_ptuncorrected_.push_back(jet.correctedP4("Uncorrected").Pt());
 }
 
 void BigNtuple::set_eleInfo(TTree* tree){
@@ -1000,7 +1022,14 @@ void BigNtuple::set_metInfo(TTree* tree){
   tree->Branch("pfMet_sumEt" , &pfMet_sumEt_, "pfMet_sumEt/F");
   tree->Branch("caloMet_pt" , &caloMet_pt_, "caloMet_pt/F");
   tree->Branch("caloMet_phi" , &caloMet_phi_, "caloMet_phi/F");
-
+  tree->Branch("metJECDown", &metJECDown_);
+  tree->Branch("metJECUp", &metJECUp_);
+  tree->Branch("metUnclDown", &metUnclDown_);
+  tree->Branch("metUnclUp", &metUnclUp_);
+  tree->Branch("metPhiJECDown", &metPhiJECDown_);
+  tree->Branch("metPhiUnclUp", &metPhiUnclUp_);
+  tree->Branch("metPhiUnclDown", &metPhiUnclDown_);
+  tree->Branch("metPhiUnclUp", &metPhiUnclUp_);
 }
 
 
@@ -1018,6 +1047,16 @@ void BigNtuple::fill_metInfo(const pat::MET& met){
 
   caloMet_pt_ = met.caloMETPt();
   caloMet_phi_ = met.caloMETPhi();
+
+  metJECDown_      = met.shiftedPt(pat::MET::JetEnDown);
+  metJECUp_        = met.shiftedPt(pat::MET::JetEnUp);
+  metUnclDown_     = met.shiftedPt(pat::MET::UnclusteredEnDown);
+  metUnclUp_       = met.shiftedPt(pat::MET::UnclusteredEnUp);
+  metPhiJECDown_   = met.shiftedPhi(pat::MET::JetEnDown);
+  metPhiJECUp_     = met.shiftedPhi(pat::MET::JetEnUp);
+  metPhiUnclUp_    = met.shiftedPhi(pat::MET::UnclusteredEnUp);
+  metPhiUnclDown_  = met.shiftedPhi(pat::MET::UnclusteredEnDown);
+
 
 
 }

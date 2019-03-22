@@ -216,6 +216,13 @@ protected:
   edm::Handle            < GenEventInfoProduct > genEventInfoHandle;
   edm::Handle < std::vector<PileupSummaryInfo> > puInfoH;
   edm::Handle                < LHEEventProduct > lheEPHandle;
+
+  //Prefiring stuff
+  edm::EDGetTokenT< double > prefweight_token;
+  edm::EDGetTokenT< double > prefweightup_token;
+  edm::EDGetTokenT< double > prefweightdown_token;
+
+
 };
 
 //
@@ -258,7 +265,14 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   eleLooseToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsLoose"))),
   eleMediumToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsMedium"))),
   eleTightToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsTight")))
+  //prefweight_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProb"))),
+  //prefweightup_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbUp"))),
+  //prefweightdown_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbDown")))
 {
+
+  prefweight_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProb"));
+  prefweightup_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbUp"));
+  prefweightdown_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbDown"));
 
   //now do what ever initialization is needed
   usesResource("TFileService");
@@ -271,6 +285,7 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
     ntuple_.set_pv_genInfo(tree_);
     ntuple_.set_sv_genInfo(tree_);
   }
+  ntuple_.set_prefiring(tree_);
   ntuple_.set_trigInfo(tree_);
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_muInfo(tree_);
@@ -293,6 +308,21 @@ HeavyNeutralLeptonAnalysis::~HeavyNeutralLeptonAnalysis()
 }
 
 void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
+
+  edm::Handle< double > theprefweight;
+  iEvent.getByToken(prefweight_token, theprefweight ) ;
+  double _prefiringweight =(*theprefweight);
+
+  edm::Handle< double > theprefweightup;
+  iEvent.getByToken(prefweightup_token, theprefweightup ) ;
+  double _prefiringweightup =(*theprefweightup);
+
+  edm::Handle< double > theprefweightdown;
+  iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
+  double _prefiringweightdown =(*theprefweightdown);
+
+  ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
+
   iEvent.getByToken(vtxMiniAODToken_, vtxHandle);
   iEvent.getByToken(rhoToken_, rhoHandle);
   iEvent.getByToken(muonsMiniAODToken_, muonsHandle);
@@ -625,11 +655,13 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //     
    //=============================================================    
    pat::METCollection mets;
+
    if(metsHandle.isValid() && sv.size()){ 
      mets = *metsHandle;
      const pat::MET met = mets.front();
      ntuple_.fill_metInfo(met);
-   }   
+   }
+
    pat::TauCollection taus;
    if(tausHandle.isValid()){ taus = *tausHandle;}
    
@@ -640,6 +672,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    ivf_.SetPxPyPzE(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz(), ntuple_.get_sv_en());
    prompt_lep.SetPtEtaPhiE(ntuple_.get_lep1_pt(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), ntuple_.get_lep1_en());
    TLorentzVector ivfPlus_lep1 = ivf_ + prompt_lep;
+
+   if(ntuple_.get_met_px() > 0){ 
 
    float transverse_mass_ivf = sqrt(pow(ivf_.Pt() + ntuple_.get_met_pt(), 2) - pow(ivf_.Px() + ntuple_.get_met_px(), 2) - pow(ivf_.Py() + ntuple_.get_met_py(), 2));//ivf transverse mass
    float transverse_mass_lep1 = sqrt(pow(prompt_lep.Pt() + ntuple_.get_met_pt(), 2) - pow(prompt_lep.Px() + ntuple_.get_met_px(), 2) - pow(prompt_lep.Py() + ntuple_.get_met_py(), 2));//prompt lepton transverse mass
@@ -657,7 +691,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    double mass_corrected = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
    
    ntuple_.fill_massCorrection(mass_corrected);
-
+   }
    tree_->Fill();   
 }
    

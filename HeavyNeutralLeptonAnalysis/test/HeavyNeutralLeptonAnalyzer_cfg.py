@@ -8,11 +8,34 @@ from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 from RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi import *
 from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
 
+#parser
+#import argparse
+#from input_crab import dataset_files
+hasLHE_ = True
+
+#parser = argparse.ArgumentParser()
+#parser.add_argument("PythonOn", type=int, help="hasLHE congif ON when 1")
+#args = parser.parse_args()
+#pyEnable = args.PythonOn
+
+#for dataset, infos in dataset_files.items():
+#    if infos[2] == 0:
+#        hasLHE_ = False
+#    else:
+#        hasLHE_ = True
+    
+#if pyEnable == 1:
+#    hasLHE_ == True
+#else:
+#    hasLHE_ == False
+
+#print hasLHE_
+
 debugLevel    = -1 
 
 isMC_         = True
 isMCSignal_   = False
-hasLHE_       = True #Only for MC with Matrix Element generators
+#hasLHE_       = False #Only for MC with Matrix Element generators
 
 algorithm     = "AK4PFchs"
 
@@ -49,13 +72,14 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(100)
 )
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
+#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
 
 #'/store/mc/RunIISpring16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/40000/04E3024A-EF2B-E611-9794-02163E013F44.root'#2016 sample
-
+#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
 'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
@@ -132,6 +156,28 @@ for mod in id_modules:
 #                              MinimalNumberOfElectrons = cms.untracked.int32(2)
 #    )
     
+#MET correction for systematics
+from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+
+runMetCorAndUncFromMiniAOD (
+    process,
+    isData = True, # false for MC
+    fixEE2017 = True,
+    fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139} ,
+    postfix = "ModifiedMET"
+    )
+
+
+#prefiring correction for ECAL in the forward region
+process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
+                                         ThePhotons = cms.InputTag("slimmedPhotons"),
+                                         TheJets = cms.InputTag("slimmedJets"),
+                                         L1Maps = cms.string("/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/L1Prefiring/EventWeightProducer/files/L1PrefiringMaps_new.root"), # update this line with the location of this file
+                                         DataEra = cms.string("2017BtoF"), #Use 2016BtoH for 2016
+                                         UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
+                                         PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
+                                         )
+
 process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             debugLevel            = cms.int32(debugLevel),
                                             isMC                  = cms.bool(isMC_),
@@ -145,7 +191,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             tauSrc                = cms.InputTag("slimmedTaus"),
                                             packCandSrc           = cms.InputTag("packedPFCandidates"),
                                             jetSrc                = cms.InputTag("slimmedJetsJEC"),
-                                            pfMETSrc              = cms.InputTag("slimmedMETs"),
+                                            pfMETSrc              = cms.InputTag("slimmedMETsModifiedMet"),
                                             triggerResultSrc      = cms.InputTag("TriggerResults","","HLT"),
                                             metFilterResultSrc    = cms.InputTag("TriggerResults","","PAT"),
                                             genParticleSrc        = cms.InputTag("prunedGenParticles"),
@@ -165,6 +211,8 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
 
 process.p = cms.Path(
     process.egmGsfElectronIDSequence
+    *process.prefiringweight
+    *process.fullPatMetSequenceModifiedMET 
     *process.electronMVAValueMapProducer
     *process.btagging
     *process.metaTree
