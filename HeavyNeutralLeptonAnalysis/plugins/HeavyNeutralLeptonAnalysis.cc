@@ -405,14 +405,16 @@ reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Electron(con
 }
 
 //======================================================================================// 
-bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,const reco::Candidate* particle)
-{
-  if(ancestor == particle ) return true;
-  for(size_t i=0;i< particle->numberOfMothers();i++)
-    {
-      if(isAncestor(ancestor,particle->mother(i))) return true;
-    }
-  return false;
+bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,const reco::Candidate* particle){
+
+const reco::Candidate * particle_mother = particle->mother(0);
+while(particle_mother->status() != 4){
+  particle_mother = particle_mother->mother(0);
+  if(particle_mother->pdgId() == ancestor->pdgId()){
+    return true;}
+ }
+ return false;
+
 }
 
 //===================================== Electron - Muon Gen Match ================================================//
@@ -442,6 +444,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   
   initialize(iEvent);
 
+  //cout << "MET handle " <<  metsHandle.isValid() << "\n";
+
   ntuple_.reset();
   ntuple_.fill_evtInfo(iEvent.id());
   //============================================================= 
@@ -458,24 +462,34 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
     for(auto& genPart: genParticles){
       if ((genPart.pdgId() == 9900012 or genPart.pdgId() == 9900014 or genPart.pdgId() == 9900016) and genPart.isLastCopy()){
 	majN = genPart;
+	//checking OK
+	//cout << "pt di HNL " << majN.pt() << "\n";
+	//cout << "eta di HNL " << majN.eta() << "\n";
+	//cout << "status di HNL " << majN.status() << "\n";
+	//cout << "pdgid di HNL " << majN.pdgId() << "\n";
 	ntuple_.fill_pv_genInfo(genPart,genParticles);
 	break;
       }
     }
     
     set<const reco::GenParticle*> finalParticles;
-
     for(auto& genPart: genParticles){
       if (genPart.status()==1 and genPart.isLastCopy()){
+	//checking OK
+	//cout << "chi sono " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
+	//cout << "chi e' mamma " << majN.pdgId() << " questo e' il suo status " << majN.status() << " questo e' il mio pt " << majN.pt() << "\n";
 	if (isAncestor(&majN, &genPart)){
+	  //cout << "chi sono (dopo is Anc) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	  const reco::GenParticle* mother = static_cast<const reco::GenParticle*>(genPart.mother(0));
+
+	  //I don't want to save all the gamma, just taking the pi0
 	  if (mother->pdgId()==111 and (mother->isLastCopy())){
 	    finalParticles.insert(static_cast<const reco::GenParticle*>(genPart.mother(0)));
 	  }
 	  else{
     	    finalParticles.insert(&genPart);
-   	  }
-    	}
+	    }
+	}
       }
     }
     //set 2 vector
@@ -656,10 +670,13 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //=============================================================    
    pat::METCollection mets;
 
+   //cout << "Sono fuori dall'if e sono un handle della met " <<  metsHandle.isValid() << "\n";
+
    if(metsHandle.isValid() && sv.size()){ 
      mets = *metsHandle;
      const pat::MET met = mets.front();
      ntuple_.fill_metInfo(met);
+     //cout<< "Sono dentro l'if e sono un handle della met " <<  metsHandle.isValid() << " e questa e' la size del sv " << sv.size() << "\n";
    }
 
    pat::TauCollection taus;
