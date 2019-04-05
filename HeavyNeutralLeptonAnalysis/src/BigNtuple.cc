@@ -41,7 +41,7 @@ void BigNtuple::set_pv_genInfo(TTree* tree) {
   tree->Branch("lep1_gen_vz",&lep1_gen_vz_,"lep1_gen_vz/F");
   tree->Branch("lep1_gen_Lxy",&lep1_gen_Lxy_,"lep1_gen_Lxy/F");
   tree->Branch("lep1_gen_Lxyz",&lep1_gen_Lxyz_,"lep1_gen_Lxyz/F");
-  tree->Branch("HNL_gen_PID",&HNL_gen_PID_,"HNL_gen_PID/F");
+  tree->Branch("HNL_gen_PID",&HNL_gen_PID_,"HNL_gen_PID/I");
   tree->Branch("HNL_gen_Mass",&HNL_gen_Mass_,"HNL_gen_Mass/F");
   tree->Branch("HNL_gen_Charge",&HNL_gen_Charge_,"HNL_gen_Charge/I");
   tree->Branch("HNL_gen_Pt",&HNL_gen_Pt_,"HNL_gen_Pt/F");
@@ -861,7 +861,7 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_pfSumNeutralHadronEt",&ele_pfSumNeutralHadronEt_);
   tree->Branch("ele_pfSumPUPt",&ele_pfSumPUPt_);
   tree->Branch("ele_pfDeltaBeta",&ele_pfDeltaBeta_);
-  tree->Branch("ele_FirstGenMatch",&ele_FirstGenMatch_);
+  tree->Branch("ele_FirstGenMatch.first",&ele_FirstGenMatch_);
   tree->Branch("ele_SecondGenMatch", &ele_SecondGenMatch_);
   tree->Branch("ele_isEB" ,&ele_isEB_);
   tree->Branch("ele_isEE" ,&ele_isEE_);

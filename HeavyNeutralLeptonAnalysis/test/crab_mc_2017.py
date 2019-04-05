@@ -5,11 +5,11 @@ config = config()
 config.section_('General')
 config.General.transferOutputs = True
 config.General.transferLogs = True
-config.General.workArea = 'HNL_mc_2017'
+config.General.workArea = 'HNL_QCD_2017'
 config.section_('Data')
 config.Data.splitting = 'FileBased'
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/%s/HNL_2017_mc' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/HNL_QCD_mc' % (getUsernameFromSiteDB())
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'HeavyNeutralLeptonAnalyzer_cfg.py'
@@ -18,6 +18,7 @@ config.JobType.allowUndistributedCMSSW = True
 config.section_('User')
 config.section_('Site')
 config.Site.storageSite = 'T2_IT_Bari'
+config.JobType.pyCfgParams = ['Flag=False']
 
 if __name__ == '__main__':
     

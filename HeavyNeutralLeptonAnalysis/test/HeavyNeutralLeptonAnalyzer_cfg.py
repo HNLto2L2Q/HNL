@@ -8,33 +8,22 @@ from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 from RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi import *
 from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
 
-#parser
-#import argparse
-#from input_crab import dataset_files
-hasLHE_ = True
+import re
+import importlib
+import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
 
-#parser = argparse.ArgumentParser()
-#parser.add_argument("PythonOn", type=int, help="hasLHE congif ON when 1")
-#args = parser.parse_args()
-#pyEnable = args.PythonOn
+#options = VarParsing('analysis')
+#options.register('Flag', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Apply trigger matching for signal objects. Default: True")
+#options.parseArguments()
 
-#for dataset, infos in dataset_files.items():
-#    if infos[2] == 0:
-#        hasLHE_ = False
-#    else:
-#        hasLHE_ = True
-    
-#if pyEnable == 1:
-#    hasLHE_ == True
-#else:
-#    hasLHE_ == False
-
-#print hasLHE_
+#hasLHE_ = options.Flag
+hasLHE_ = False
 
 debugLevel    = -1 
 
 isMC_         = True
-isMCSignal_   = False
+isMCSignal_    = True
 #hasLHE_       = False #Only for MC with Matrix Element generators
 
 algorithm     = "AK4PFchs"
@@ -72,15 +61,17 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(1)
 )
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
-
+#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/Signal-RunIIFall17MiniAODv2-00666.root'
+#'file:/afs/cern.ch/user/a/atalierc/Signal-RunIIFall17MiniAODv2-00666_38.root'
+'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
+#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/04C8B197-4042-E811-BD46-FA163E81B685.root'
 #'/store/mc/RunIISpring16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/40000/04E3024A-EF2B-E611-9794-02163E013F44.root'#2016 sample
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
-'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root' 
+#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/120000/96922A9A-B5B8-E811-986B-02163E017F81.root'
@@ -109,6 +100,9 @@ process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
 process.metaTree.globalTag = GT
 process.metaTree.args = cms.string('USELESS') #FILL ME!
 process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
+#process.metaTree.hasLHE = cms.bool(hasLHE_)
+
+#print process.metaTree.hasLHE
 
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
 
@@ -191,7 +185,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             tauSrc                = cms.InputTag("slimmedTaus"),
                                             packCandSrc           = cms.InputTag("packedPFCandidates"),
                                             jetSrc                = cms.InputTag("slimmedJetsJEC"),
-                                            pfMETSrc              = cms.InputTag("slimmedMETsModifiedMet"),
+                                            pfMETSrc              = cms.InputTag("slimmedMETsModifiedMET"),
                                             triggerResultSrc      = cms.InputTag("TriggerResults","","HLT"),
                                             metFilterResultSrc    = cms.InputTag("TriggerResults","","PAT"),
                                             genParticleSrc        = cms.InputTag("prunedGenParticles"),
@@ -220,6 +214,6 @@ process.p = cms.Path(
     *process.ele_Sequence
     *process.jetCorrFactors
     *process.slimmedJetsJEC
-    *process.LeptonsFilter
+    #*process.LeptonsFilter
     *process.HeavyNeutralLepton
     )

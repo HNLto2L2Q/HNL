@@ -69,4 +69,5 @@ metaTree = cms.EDAnalyzer(
     globalTag=cms.string(''),
     args = cms.string(''),
     hasLHE=cms.bool(True)
+#    hasLHE=cms.bool(hasLHE_)
 )

@@ -1,3 +1,3 @@
 #Automatically created by SCRAM
 import os
-__path__.append(os.path.dirname(os.path.abspath(__file__).rsplit('/RecoVertex/AdaptiveVertexFinder/',1)[0])+'/cfipython/slc6_amd64_gcc481/RecoVertex/AdaptiveVertexFinder')
+__path__.append(os.path.dirname(os.path.abspath(__file__).rsplit('/HNL/DisplacedAdaptiveVertexFinder/',1)[0])+'/cfipython/slc6_amd64_gcc630/HNL/DisplacedAdaptiveVertexFinder')

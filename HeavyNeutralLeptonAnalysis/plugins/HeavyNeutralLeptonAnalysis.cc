@@ -498,7 +498,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
       final_particles.push_back(*gp);
     }
     ntuple_.fill_sv_genInfo(majN, final_particles);
-  }
+}
 
 
   //============================================================= 
