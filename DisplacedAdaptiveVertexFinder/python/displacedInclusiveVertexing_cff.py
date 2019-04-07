@@ -5,7 +5,6 @@ from PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi import *
 from HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexFinder_cfi import *
 from HNL.DisplacedAdaptiveVertexFinder.displacedVertexMerger_cfi import *
 from HNL.DisplacedAdaptiveVertexFinder.displacedTrackVertexArbitrator_cfi import *
-from HNL.DisplacedSVAssociator.displacedSVAssociationIVF_cfi import *
 
 displacedInclusiveSecondaryVertices = displacedVertexMerger.clone()
 displacedInclusiveSecondaryVertices.secondaryVertices = cms.InputTag("displacedTrackVertexArbitrator")
@@ -14,4 +13,3 @@ displacedInclusiveSecondaryVertices.minSignificance = 10
 
 
 displacedInclusiveVertexing = cms.Sequence(unpackedTracksAndVertices * displacedInclusiveVertexFinder  * displacedVertexMerger * displacedTrackVertexArbitrator * displacedInclusiveSecondaryVertices ) 
-
