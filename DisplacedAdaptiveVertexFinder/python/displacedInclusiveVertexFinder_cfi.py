@@ -5,8 +5,8 @@ displacedInclusiveVertexFinder  = cms.EDProducer("InclusiveVertexFinder",
        primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
        #tracks = cms.InputTag("displacedAssocToTracks","displacedAssocToTracks","ANA"),
        tracks = cms.InputTag("unpackedTracksAndVertices"),
-       minHits = cms.uint32(8), #c'era 6 old 8 -> 0 AOD produciton has problems with nhits
-       maximumLongitudinalImpactParameter = cms.double(200), #200 c'era 99999 old  .3 -> infty #1 va bene
+       minHits = cms.uint32(6), #c'era 6 old 8 -> 0 AOD produciton has problems with nhits
+       maximumLongitudinalImpactParameter = cms.double(200), #200 c'era 99999 old  .3 -> infty #1 va bene 99999
        minPt = cms.double(0.95), #0.95 c'era 0.4 old .8 -> 1 
        maxNTracks = cms.uint32(30), #30 old 30 -> 100
 ################from 100 to 30 crab jobs too long

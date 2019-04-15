@@ -165,8 +165,9 @@ LeptonFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   
-  if((muons_count + electrons_count) >= 2){
-    result = true;
+  //if((muons_count + electrons_count) >= 2){
+  if((muons_count >= 2) || (electrons_count >= 2)){ 
+   result = true;
   }
   
   

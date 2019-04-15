@@ -76,6 +76,10 @@
 #include "DataFormats/Math/interface/deltaR.h"
 #include "RecoTauTag/TauTagTools/interface/GeneratorTau.h"
 
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
+
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
@@ -171,6 +175,9 @@ private:
   edm::EDGetTokenT             < pat::TauCollection > tausMiniAODToken_;
   edm::EDGetTokenT < pat::PackedCandidateCollection > packedCandidateToken_;
   edm::EDGetTokenT             < pat::JetCollection > jetsMiniAODToken_;
+  edm::EDGetTokenT            <std::vector<pat::Jet>> jetSmearedToken_;
+  edm::EDGetTokenT            <std::vector<pat::Jet>> jetSmearedUpToken_;
+  edm::EDGetTokenT            <std::vector<pat::Jet>> jetSmearedDownToken_;
   edm::EDGetTokenT             < pat::METCollection > pfMETAODToken_;
   edm::EDGetTokenT            < edm::TriggerResults > triggerResultsToken_;
   edm::EDGetTokenT            < edm::TriggerResults > metFilterResultsToken_;
@@ -183,6 +190,7 @@ private:
   const std::vector        <std::string> bDiscbbToken_;
   const std::vector        <std::string> bDiscbbbToken_;
   const std::vector         <std::string> bDiscbcToken_;
+
 
   //edm::EDGetTokenT         <edm::ValueMap<float>>     eleMvaToken_;
   edm::EDGetTokenT         <edm::ValueMap<bool>>      eleVetoToken_;
@@ -200,11 +208,15 @@ protected:
   edm::Handle             < pat::TauCollection > tausHandle;
   edm::Handle < pat::PackedCandidateCollection > pfCandidatesHandle;
   edm::Handle             < pat::JetCollection > jetsHandle;
+  edm::Handle            <std::vector<pat::Jet>> jetsSmeared;
+  edm::Handle            <std::vector<pat::Jet>> jetsSmearedUp;
+  edm::Handle            <std::vector<pat::Jet>> jetsSmearedDown;
   edm::Handle             < pat::METCollection > metsHandle;
   edm::Handle            < edm::TriggerResults > triggerResultsHandle;
   edm::Handle            < edm::TriggerResults > metFilterResultsHandle;
   edm::Handle         < reco::VertexCollection > secondaryVertexHandle;
   
+
   //edm::Handle         <edm::ValueMap<float>> electronsMva;
   edm::Handle         <edm::ValueMap<bool>> electronsVeto;
   edm::Handle         <edm::ValueMap<bool>> electronsLoose;
@@ -250,6 +262,9 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   tausMiniAODToken_(mayConsume< pat::TauCollection >(iConfig.getParameter<edm::InputTag>("tauSrc"))),
   packedCandidateToken_(mayConsume< pat::PackedCandidateCollection >(iConfig.getParameter<edm::InputTag>("packCandSrc"))),
   jetsMiniAODToken_(mayConsume< pat::JetCollection >(iConfig.getParameter<edm::InputTag>("jetSrc"))),
+  jetSmearedToken_( consumes<std::vector<pat::Jet>>( iConfig.getParameter<edm::InputTag>("jetsSmeared"))),
+  jetSmearedUpToken_(consumes<std::vector<pat::Jet>>(iConfig.getParameter<edm::InputTag>("jetsSmearedUp"))),
+  jetSmearedDownToken_(consumes<std::vector<pat::Jet>>(iConfig.getParameter<edm::InputTag>("jetsSmearedDown"))),
   pfMETAODToken_(mayConsume<pat::METCollection>(iConfig.getParameter<edm::InputTag>("pfMETSrc"))),
   triggerResultsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerResultSrc"))),
   metFilterResultsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterResultSrc"))),
@@ -296,7 +311,7 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_metInfo(tree_);
   ntuple_.set_transverseMassInfo(tree_);
   ntuple_.set_massCorrection(tree_);  
-  ntuple_.set_bjetInfo(tree_);
+  //ntuple_.set_bjetInfo(tree_);
 }
 
 
@@ -309,20 +324,6 @@ HeavyNeutralLeptonAnalysis::~HeavyNeutralLeptonAnalysis()
 
 void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
 
-  edm::Handle< double > theprefweight;
-  iEvent.getByToken(prefweight_token, theprefweight ) ;
-  double _prefiringweight =(*theprefweight);
-
-  edm::Handle< double > theprefweightup;
-  iEvent.getByToken(prefweightup_token, theprefweightup ) ;
-  double _prefiringweightup =(*theprefweightup);
-
-  edm::Handle< double > theprefweightdown;
-  iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
-  double _prefiringweightdown =(*theprefweightdown);
-
-  ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
-
   iEvent.getByToken(vtxMiniAODToken_, vtxHandle);
   iEvent.getByToken(rhoToken_, rhoHandle);
   iEvent.getByToken(muonsMiniAODToken_, muonsHandle);
@@ -330,6 +331,9 @@ void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
   iEvent.getByToken(recHitEBToken_, recHitCollectionEBHandle);
   iEvent.getByToken(recHitEEToken_, recHitCollectionEEHandle);
   iEvent.getByToken(tausMiniAODToken_, tausHandle);
+  iEvent.getByToken(jetSmearedToken_, jetsSmeared);
+  iEvent.getByToken(jetSmearedUpToken_, jetsSmearedUp);
+  iEvent.getByToken(jetSmearedDownToken_, jetsSmearedDown);
   iEvent.getByToken(packedCandidateToken_, pfCandidatesHandle);
   iEvent.getByToken(jetsMiniAODToken_, jetsHandle);
   iEvent.getByToken(pfMETAODToken_, metsHandle);
@@ -424,7 +428,7 @@ std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_et
   double rho = sqrt(lepton.vx()*lepton.vx() + lepton.vy()*lepton.vy());
   double dR = deltaR(lepton.eta(), lepton.phi(), v_eta, v_phi);
 
-  if(rho < 0.5 and dR < recoGenDeltaR){ 
+  if(dR < recoGenDeltaR){ 
     return make_pair(rho, dR);
   }else{return make_pair(-999., -999.);}
 }//returns the lepton's tipe (true if is muon - false if is electron) and 1 or 0 if the lepton matches with the vertex defined by v_eta and v_phi
@@ -441,13 +445,28 @@ std::pair<float, float> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x,
 // ------------ method called for each event  ------------
 void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
-  
+
   initialize(iEvent);
 
   //cout << "MET handle " <<  metsHandle.isValid() << "\n";
 
   ntuple_.reset();
+
+
+  edm::Handle< double > theprefweight;
+  iEvent.getByToken(prefweight_token, theprefweight ) ;
+  double _prefiringweight =(*theprefweight);
+
+  edm::Handle< double > theprefweightup;
+  iEvent.getByToken(prefweightup_token, theprefweightup ) ;
+  double _prefiringweightup =(*theprefweightup);
+
+  edm::Handle< double > theprefweightdown;
+  iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
+  double _prefiringweightdown =(*theprefweightdown);
+
   ntuple_.fill_evtInfo(iEvent.id());
+  ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
   //============================================================= 
   //
   //                 Gen level Info
@@ -474,20 +493,22 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
     
     set<const reco::GenParticle*> finalParticles;
     for(auto& genPart: genParticles){
-      if (genPart.status()==1 and genPart.isLastCopy()){
+      if (genPart.status() == 1 and genPart.isLastCopy()){//genPart.status()==1 and
 	//checking OK
 	//cout << "chi sono " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	//cout << "chi e' mamma " << majN.pdgId() << " questo e' il suo status " << majN.status() << " questo e' il mio pt " << majN.pt() << "\n";
 	if (isAncestor(&majN, &genPart)){
-	  //cout << "chi sono (dopo is Anc) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
+	  cout << "chi sono (dopo is Anc) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	  const reco::GenParticle* mother = static_cast<const reco::GenParticle*>(genPart.mother(0));
 
 	  //I don't want to save all the gamma, just taking the pi0
 	  if (mother->pdgId()==111 and (mother->isLastCopy())){
 	    finalParticles.insert(static_cast<const reco::GenParticle*>(genPart.mother(0)));
+            cout << "chi sono (dopo is Anc && if) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << "  uesto e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	  }
 	  else{
-    	    finalParticles.insert(&genPart);
+	    cout << "chi sono (dopo is Anc && else) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
+	    finalParticles.insert(&genPart);
 	    }
 	}
       }
@@ -640,6 +661,11 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    //             Jets 
    //       
    //=============================================================
+   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+   iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl); 
+   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+   JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
+
    pat::JetCollection jets;
    //std::vector<tuple < std::vector<std::string>, std::vector<std::string>, std::vector<std::string> > > bDisc_info = make_tuple(bDiscbbToken_, bDiscbbbToken_, bDiscbcToken_); 
    if(jetsHandle.isValid() && sv.size()){ 
@@ -647,20 +673,52 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      for (const pat::Jet jet : jets) {
        if( jet.pt() < 0.0 ) continue;
        if (!( fabs(jet.eta()) < 3 && jet.pt() > 5. )) continue;
-       else ntuple_.fill_jetInfo(jet);
-       int flavor = std::abs( jet.partonFlavour() );       
-       for( const std::string &bDiscrbb : bDiscbbToken_ ){
-	 for( const std::string &bDiscrbbb : bDiscbbbToken_ ){
-	   for( const std::string &bDiscrbc : bDiscbcToken_ ){
+
+       auto jetSmearedIt = jetsSmeared->begin();
+       for(auto j = jetsSmeared->cbegin(); j != jetsSmeared->cend(); ++j){
+	 if(reco::deltaR(jet, *j) < reco::deltaR(jet, *jetSmearedIt)) jetSmearedIt = j;
+       }
+       
+       auto jetSmearedUpIt = jetsSmearedUp->begin();
+       for(auto j = jetsSmearedUp->cbegin(); j != jetsSmearedUp->cend(); ++j){
+	 if(reco::deltaR(jet, *j) < reco::deltaR(jet, *jetSmearedUpIt))  jetSmearedUpIt = j;
+       }
+
+       auto jetSmearedDownIt = jetsSmearedDown->begin();
+       for(auto j = jetsSmearedDown->cbegin(); j != jetsSmearedDown->cend(); ++j){
+	 if(reco::deltaR(jet, *j) < reco::deltaR(jet, *jetSmearedDownIt))  jetSmearedDownIt = j;
+       }
+
+       jecUnc->setJetEta(jet.eta());
+       jecUnc->setJetPt(jet.pt());
+       double unc = jecUnc->getUncertainty(true);
+
+       //double unc = 9 ;
+
+       jecUnc->setJetEta(jetSmearedIt->eta());
+       jecUnc->setJetPt(jetSmearedIt->pt());
+       double uncSmeared = jecUnc->getUncertainty(true);
+
+       //double uncSmeared = 9;
+
+       float jetSmearedPt         = jetSmearedIt->pt();
+       float jetSmearedPt_JERDown = jetSmearedDownIt->pt();
+       float jetSmearedPt_JERUp   = jetSmearedUpIt->pt();
+
+       //int flavor = std::abs( jet.partonFlavour() );       
+       //for( const std::string &bDiscrbb : bDiscbbToken_ ){
+       //for( const std::string &bDiscrbbb : bDiscbbbToken_ ){
+       //for( const std::string &bDiscrbc : bDiscbcToken_ ){
 	     //for(const std::tuple& bDiscr : bDisc_info)
 	     //for(std::vector::<tuple < std::vector<string>, std::vector<string>, std::vector<string> > >::const_iterator i = bDisc_info.begin(); i != bDisc_info->end(); i++){
 	     
 	     
 	     //ntuple_.fill_bjetInfo(jet, bDiscrbb, bDiscrbbb, bDiscrbc, flavor);
-	     ntuple_.fill_bjetInfo(jet, bDiscrbb, bDiscrbbb, bDiscrbc, flavor);
-	   }
-	 }
-       }
+       //ntuple_.fill_bjetInfo(jet, jet.bDiscriminator(*bDiscbbToken_.product().at(0)), jet.bDiscriminator(*bDiscbcToken_.product().at(0)), jet.bDiscriminator(*bDiscbbbToken_.product().at(0)), flavor);
+       ntuple_.fill_jetInfo(jet ,jetSmearedPt ,jetSmearedPt_JERUp ,jetSmearedPt_JERDown ,unc ,uncSmeared );
+	     //}
+	     //}
+	     //}
      }
    }
    //=============================================================

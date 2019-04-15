@@ -106,7 +106,8 @@ public:
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , std::pair<double, double> match1 , std::pair<double,double> match2 );
 	
 	void set_jetInfo(TTree* tree);
-	void fill_jetInfo(const pat::Jet& jet);
+	//void fill_jetInfo(const pat::Jet& jet);
+	void fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp ,float smearedDown ,double un , double unSmeared );
 
         void set_metInfo(TTree* tree);
         void fill_metInfo(const pat::MET& met);
@@ -124,8 +125,8 @@ public:
         void set_eleIDInfo(TTree* tree);
         void fill_eleIDInfo(float ele_mva , bool ele_veto , bool ele_loose , bool ele_medium , bool ele_tight);
 
-        void set_bjetInfo(TTree* tree);
-	void fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscrbb, const std::string & bDiscrbbb, const std::string & bDiscrbc, int flavor);
+        //void set_bjetInfo(TTree* tree);
+	//void fill_bjetInfo(const pat::Jet& jet, int flavor);
  
 	void reset() {
 	  BigNtuple dummy; //create a new one
@@ -399,6 +400,13 @@ private:
 	double mu_rpc_timeErr_ = -999.;
 
 	//jet info
+	std::vector<float>   jetPt_JECUp_;
+	std::vector<float>   jetPt_JECDown_;
+	std::vector<float>   jetSmearedPt_;
+	std::vector<float>   jetSmearedPt_JERUp_;
+	std::vector<float>   jetSmearedPt_JERDown_;
+	std::vector<float>   jetSmearedPt_unUp_;
+	std::vector<float>   jetSmearedPt_unDown_;
 
 	std::vector<float>   jet_charge_ ;
 	std::vector<float>   jet_et_ ;
@@ -521,6 +529,17 @@ private:
 	std::vector<float>   ele_ecalEnergy_;
 	std::vector<float>   ele_dEtaInSeed_;
 	std::vector<float>   ele_InvMinusPInv_;
+
+	std::vector<float>   ele_PtCorr_;
+	std::vector<float>   ele_PtScaleUp_;
+	std::vector<float>   ele_PtScaleDown_;
+	std::vector<float>   ele_PtResUp_;
+	std::vector<float>   ele_PtResDown_;
+	std::vector<float>   ele_ECorr_;
+	std::vector<float>   ele_EScaleUp_;
+	std::vector<float>   ele_EScaleDown_;
+	std::vector<float>   ele_EResUp_;
+	std::vector<float>   ele_EResDown_;
 
 	/*
 	std::vector<float>   ele_Mva_;

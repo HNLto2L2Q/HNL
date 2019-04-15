@@ -718,6 +718,13 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
 }
 
 void BigNtuple::set_jetInfo(TTree* tree){
+  tree->Branch("jetPt_JECUp", &jetPt_JECUp_);
+  tree->Branch("jetPt_JECDown", &jetPt_JECDown_);
+  tree->Branch("jetSmearedPt", &jetSmearedPt_);
+  tree->Branch("jetSmearedPt_JERUp", &jetSmearedPt_JERUp_);
+  tree->Branch("jetSmearedPt_JERDown", &jetSmearedPt_JERDown_);
+  tree->Branch("jetSmearedPt_unUp", &jetSmearedPt_unUp_);
+  tree->Branch("jetSmearedPt_unDown", &jetSmearedPt_unDown_);
 
   tree->Branch("jet_charge" , &jet_charge_);
   tree->Branch("jet_et" , &jet_et_);
@@ -748,11 +755,26 @@ void BigNtuple::set_jetInfo(TTree* tree){
   tree->Branch("jet_L1ptcorrection", &jet_L1ptcorrection_);
   tree->Branch("jet_L2ptcorrection", &jet_L2ptcorrection_);
   tree->Branch("jet_L3ptcorrection", &jet_L3ptcorrection_);
+
+  tree->Branch("jet_btag_flavor",&jet_btag_flavor_);
+  tree->Branch("pfDeepCSV_bb",&jet_btag_pfDeepCSV_bb_discriminator_);
+  tree->Branch("pfDeepCSV_bbb",&jet_btag_pfDeepCSV_bbb_discriminator_);
+  tree->Branch("pfDeepCSV_bc",&jet_btag_pfDeepCSV_bc_discriminator_);
+
 }
 
 
 
-void BigNtuple::fill_jetInfo(const pat::Jet& jet){
+//void BigNtuple::fill_jetInfo(const pat::Jet& jet){
+void BigNtuple::fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp ,float smearedDown ,double un , double unSmeared ){
+
+  jetPt_JECUp_.push_back(jet.pt()*(1 + un));
+  jetPt_JECDown_.push_back(jet.pt()*(1 - un));
+  jetSmearedPt_.push_back(smeared);
+  jetSmearedPt_JERUp_.push_back(smearedUp);
+  jetSmearedPt_JERDown_.push_back(smearedDown);
+  jetSmearedPt_unUp_.push_back(jet.pt()*(1.+unSmeared));
+  jetSmearedPt_unDown_.push_back(jet.pt()*(1.-unSmeared));
 
   jet_charge_.push_back(jet.charge());
   jet_et_.push_back(jet.et());
@@ -783,6 +805,17 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet){
   jet_L2ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
   jet_L3ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
   jet_ptuncorrected_.push_back(jet.correctedP4("Uncorrected").Pt());
+
+  jet_btag_flavor_.push_back(jet.hadronFlavour());
+
+  float DeepCsv_b = jet.bDiscriminator("pfDeepCSVJetTags:probb");
+  float DeepCsv_c = jet.bDiscriminator("pfDeepCSVJetTags:probc");
+  float DeepCsv_bb = jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+
+  jet_btag_pfDeepCSV_bb_discriminator_.push_back(DeepCsv_b);
+  jet_btag_pfDeepCSV_bbb_discriminator_.push_back(DeepCsv_bb);
+  jet_btag_pfDeepCSV_bc_discriminator_.push_back(DeepCsv_c);
+
 }
 
 void BigNtuple::set_eleInfo(TTree* tree){
@@ -869,7 +902,16 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_ecalEnergy" ,&ele_ecalEnergy_);
   tree->Branch("ele_dEtaInSeed" ,&ele_dEtaInSeed_);
   tree->Branch("ele_InvMinusPInv" ,&ele_InvMinusPInv_);
-
+  tree->Branch("ele_PtCorr",&ele_PtCorr_ );
+  tree->Branch("ele_PtScaleUp",& ele_PtScaleUp_);
+  tree->Branch("ele_PtScaleDown",& ele_PtScaleDown_);
+  tree->Branch("ele_PtResUp",& ele_PtResUp_);
+  tree->Branch("ele_PtResDown",& ele_PtResDown_);
+  tree->Branch("ele_ECorr",& ele_ECorr_);
+  tree->Branch("ele_EScaleUp",& ele_EScaleUp_);
+  tree->Branch("ele_EScaleDown",& ele_EScaleDown_);
+  tree->Branch("ele_EResUp",& ele_EResUp_);
+  tree->Branch("ele_EResDown",& ele_EResDown_);
 
 }
 
@@ -961,6 +1003,18 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
   ele_EoverP_.push_back(ele_.eSeedClusterOverP());
   ele_Xposition_.push_back(ele_.caloPosition().x());
   ele_Yposition_.push_back(ele_.caloPosition().y());
+
+  // electron correction
+  ele_PtCorr_.push_back(ele_.pt()*ele_.userFloat("ecalTrkEnergyPostCorr")/ele_.energy());
+  ele_PtScaleUp_.push_back(ele_.pt()*ele_.userFloat("energyScaleUp")/ele_.energy());
+  ele_PtScaleDown_.push_back(ele_.pt()*ele_.userFloat("energyScaleDown")/ele_.energy());
+  ele_PtResUp_.push_back(ele_.pt()*ele_.userFloat("energySigmaUp")/ele_.energy());
+  ele_PtResDown_.push_back(ele_.pt()*ele_.userFloat("energySigmaDown")/ele_.energy());
+  ele_ECorr_.push_back(ele_.userFloat("ecalTrkEnergyPostCorr"));
+  ele_EScaleUp_.push_back(ele_.userFloat("energyScaleUp"));
+  ele_EScaleDown_.push_back(ele_.userFloat("energyScaleDown"));
+  ele_EResUp_.push_back(ele_.userFloat("energySigmaUp"));
+  ele_EResDown_.push_back(ele_.userFloat("energySigmaDown"));
 
     //tracker isolation
   ele_dr03TkSumPt_.push_back(ele_.dr03TkSumPt());
@@ -1084,7 +1138,7 @@ void BigNtuple::set_massCorrection(TTree *tree){
 void BigNtuple::fill_massCorrection(double mass_corr){
   sv_mass_corr_ = mass_corr;
 }
-
+/*
 void BigNtuple::set_bjetInfo(TTree* tree){
   tree->Branch("jet_btag_pt",&jet_btag_pt_);
   tree->Branch("jet_btag_eta",&jet_btag_eta_);
@@ -1095,14 +1149,25 @@ void BigNtuple::set_bjetInfo(TTree* tree){
   tree->Branch("pfDeepCSV_bc",&jet_btag_pfDeepCSV_bc_discriminator_);
 }
 
-void BigNtuple::fill_bjetInfo(const pat::Jet& jet,  const std::string& bDiscrbb, const std::string& bDiscrbbb, const std::string& bDiscrbc,  int flavor){
+//void BigNtuple::fill_bjetInfo(const pat::Jet& jet,  float& bDiscrbb, float& bDiscrbbb, float& bDiscrbc,  int flavor){
+void BigNtuple::fill_bjetInfo(const pat::Jet& jet, int flavor){
 
   jet_btag_pt_.push_back(jet.pt());
   jet_btag_eta_.push_back(jet.eta());
   jet_btag_phi_.push_back(jet.phi());
   jet_btag_flavor_.push_back(flavor);
-  jet_btag_pfDeepCSV_bb_discriminator_.push_back(jet.bDiscriminator(bDiscrbb));
-  jet_btag_pfDeepCSV_bbb_discriminator_.push_back(jet.bDiscriminator(bDiscrbbb));
-  jet_btag_pfDeepCSV_bc_discriminator_.push_back(jet.bDiscriminator(bDiscrbc));
+
+  float DeepCsv_b = jet.bDiscriminator("pfDeepCSVJetTags:probb");
+  float DeepCsv_c = jet.bDiscriminator("pfDeepCSVJetTags:probc");
+  float DeepCsv_bb = jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+
+  jet_btag_pfDeepCSV_bb_discriminator_.push_back(DeepCsv_b);
+  jet_btag_pfDeepCSV_bbb_discriminator_.push_back(DeepCsv_bb);
+  jet_btag_pfDeepCSV_bc_discriminator_.push_back(DeepCsv_c);
 
 }
+  //jet_btag_pfDeepCSV_bb_discriminator_.push_back(bDiscrbb);
+  //jet_btag_pfDeepCSV_bbb_discriminator_.push_back(bDiscrbbb);
+  //jet_btag_pfDeepCSV_bc_discriminator_.push_back(bDiscrbc);
+  */
+

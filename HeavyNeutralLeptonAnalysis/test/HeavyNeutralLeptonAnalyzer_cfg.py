@@ -61,13 +61,14 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)
+    input = cms.untracked.int32(100)
 )
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/Signal-RunIIFall17MiniAODv2-00666.root'
 #'file:/afs/cern.ch/user/a/atalierc/Signal-RunIIFall17MiniAODv2-00666_38.root'
-'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
+#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
+'file:/afs/cern.ch/user/a/atalierc/HIG-RunIIFall17MiniAODv2-00666_99.root' 
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/04C8B197-4042-E811-BD46-FA163E81B685.root'
 #'/store/mc/RunIISpring16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/40000/04E3024A-EF2B-E611-9794-02163E013F44.root'#2016 sample
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
@@ -161,6 +162,22 @@ runMetCorAndUncFromMiniAOD (
     postfix = "ModifiedMET"
     )
 
+if isMC_:
+    process.jetSmearing = cms.EDProducer('SmearedPATJetProducer',
+                                         src          = cms.InputTag('slimmedJetsJEC'),
+                                         enabled      = cms.bool(True),
+                                         rho          = cms.InputTag("fixedGridRhoFastjetAll"),
+                                         algo         = cms.string('AK4PFchs'),
+                                         algopt       = cms.string('AK4PFchs_pt'),
+                                         genJets      = cms.InputTag('slimmedGenJets'),
+                                         dRMax        = cms.double(0.2),
+                                         dPtMaxFactor = cms.double(3),
+                                         debug        = cms.untracked.bool(False),
+                                         variation    = cms.int32(0),
+                                         )
+    process.jetSmearingUp   = process.jetSmearing.clone(variation    = cms.int32(1))
+    process.jetSmearingDown = process.jetSmearing.clone(variation    = cms.int32(-1))
+
 
 #prefiring correction for ECAL in the forward region
 process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
@@ -200,20 +217,28 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             electronsVeto  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto"),
                                             electronsLoose = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-loose"),
                                             electronsMedium= cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-medium"),
-                                            electronsTight = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-tight")
+                                            electronsTight = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-tight"),
+                                            jetsSmeared     = cms.InputTag("jetSmearing" if isMC_ else "slimmedJetsJEC"),
+                                            jetsSmearedUp   = cms.InputTag("jetSmearingUp" if isMC_ else "slimmedJetsJEC"),
+                                            jetsSmearedDown = cms.InputTag("jetSmearingDown" if isMC_ else "slimmedJetsJEC")
                                             )
 
 process.p = cms.Path(
-    process.egmGsfElectronIDSequence
+    process.metaTree
+    #*process.LeptonsFilter
+    *process.egmGsfElectronIDSequence
     *process.prefiringweight
     *process.fullPatMetSequenceModifiedMET 
     *process.electronMVAValueMapProducer
     *process.btagging
-    *process.metaTree
+    #*process.metaTree
     *process.displacedInclusiveVertexing
     *process.ele_Sequence
     *process.jetCorrFactors
     *process.slimmedJetsJEC
     #*process.LeptonsFilter
+    *process.jetSmearing
+    *process.jetSmearingUp
+    *process.jetSmearingDown
     *process.HeavyNeutralLepton
     )
