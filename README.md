@@ -26,6 +26,11 @@ git cms-merge-topic cms-egamma:EgammaPostRecoTools #just adds in an extra file t
 # L1 ECAL Prefiring weights
 # twiki: https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe#Recipe_details_80X_94X
 git cms-merge-topic lathomas:L1Prefiring_9_4_9
+# Moving L1PrefiringMaps in data folder to make it available on CRAB
+pushd L1Prefiring/EventWeightProducer/
+mkdir data
+cp files/L1PrefiringMaps_new.root data/
+popd 
 
 # Official Prescription for calculating corrections and uncertainties on Missing Transverse Energy (MET)
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10
