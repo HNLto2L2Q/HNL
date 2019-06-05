@@ -74,6 +74,11 @@ public:
 	float get_lep2_phi()const{return lep2_gen_Phi_;}
 	float get_lep2_eta()const{return lep2_gen_Eta_;}
 
+
+	//trigger info
+	bool get_passIsoMu24All()const{return passIsoMu24All_;}
+        bool get_passIsoMu27All()const{return passIsoMu27All_;}
+
 	//setter
 
 	//void set_sv_x(float sv_x){lep2_gen_vx_ = sv_x;}

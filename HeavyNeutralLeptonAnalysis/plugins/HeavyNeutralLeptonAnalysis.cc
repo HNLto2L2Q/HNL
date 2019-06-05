@@ -498,16 +498,16 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	//cout << "chi sono " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	//cout << "chi e' mamma " << majN.pdgId() << " questo e' il suo status " << majN.status() << " questo e' il mio pt " << majN.pt() << "\n";
 	if (isAncestor(&majN, &genPart)){
-	  cout << "chi sono (dopo is Anc) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
+	  //cout << "chi sono (dopo is Anc) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	  const reco::GenParticle* mother = static_cast<const reco::GenParticle*>(genPart.mother(0));
 
 	  //I don't want to save all the gamma, just taking the pi0
 	  if (mother->pdgId()==111 and (mother->isLastCopy())){
 	    finalParticles.insert(static_cast<const reco::GenParticle*>(genPart.mother(0)));
-            cout << "chi sono (dopo is Anc && if) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << "  uesto e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
+            //cout << "chi sono (dopo is Anc && if) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << "  uesto e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	  }
 	  else{
-	    cout << "chi sono (dopo is Anc && else) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
+	    //cout << "chi sono (dopo is Anc && else) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
 	    finalParticles.insert(&genPart);
 	    }
 	}
@@ -540,6 +540,9 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
    ntuple_.fill_trigInfo(triggerResults, trigNames);    
 
+   if(ntuple_.get_passIsoMu24All() == false || ntuple_.get_passIsoMu27All() == false) return;
+   cout << "getter " << ntuple_.get_passIsoMu24All() << "\n";
+
    //=============================================================
    //
    //                Select Muon To Fill
@@ -551,9 +554,10 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    if(muonsHandle.isValid()){ 
      muons = *muonsHandle;
      for(auto& mu : muons){
-     if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
-     if (!mu.isLooseMuon()) continue;
-     looseMuons.push_back(mu);
+       //       if(ntuple_.get_passIsoMu24All() == false || ntuple_.get_passIsoMu27All() == false) continue;
+       if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
+       if (!mu.isLooseMuon()) continue;
+       looseMuons.push_back(mu);
      }
    }
    // lambda function to sort this muons

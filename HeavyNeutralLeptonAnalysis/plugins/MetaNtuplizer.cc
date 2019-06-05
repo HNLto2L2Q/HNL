@@ -78,6 +78,7 @@ private:
   std::map<std::string, std::string> to_json_;
   bool string_dumped_, isMC_, hasLhe_, useWeighted_, triedWeighted_;
   TH1F *pu_distro_;
+  TH1F *histo_ctau;
   unsigned int lumi_;
   unsigned int run_;
   unsigned long long processed_ = 0;
@@ -125,6 +126,7 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   meta_tree_->Branch("sum_weigts", &sumw_);
 
   pu_distro_   = fs->make<TH1F>("PUDistribution", "PUDistribution", 100, 0, 100);
+  histo_ctau   = fs->make<TH1F>("ctau", "ctau", 100, 0, 100);
 }
 
 //
@@ -166,6 +168,21 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 		}
 		if(lheinfo->weights().size() == 0) 
 			throw cms::Exception("RuntimeError") << "The LHEInfo I got works but has not weights!" << std::endl;
+
+		vector<double> ctau_info = lheinfo.product()->hepeup().VTIMUP;
+		vector<int> ctau_pdgid = lheinfo.product()->hepeup().IDUP;
+
+		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
+
+		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
+		//histo_ctau->Fill(*flag);
+		int flag = -1;
+		for(unsigned int i = 0; i < ctau_pdgid.size(); i++){	
+		  if(fabs(ctau_pdgid.at(i)) == 9990012 || fabs(ctau_pdgid.at(i)) == 9900012 || fabs(ctau_pdgid.at(i)) == 9900014 || fabs(ctau_pdgid.at(i)) == 9900016)
+		    flag = i;
+		}
+		if(flag != -1){
+		  histo_ctau->Fill(ctau_info.at(flag));}
 
 		//std::cout << weight << std::endl;
 		size_t nws = lheinfo->weights().size();

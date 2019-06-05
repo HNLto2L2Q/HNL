@@ -1,15 +1,17 @@
 from CRABClient.UserUtilities import config, ClientException, getUsernameFromSiteDB
-from input_crab import dataset_files
+from input_crab_data import dataset_files
 
 config = config()
 config.section_('General')
 config.General.transferOutputs = True
 config.General.transferLogs = True
-config.General.workArea = 'HNL_mc_2017_newvariables_good_filter'
+config.General.workArea = 'HNL_data_2017'
 config.section_('Data')
 config.Data.splitting = 'FileBased'
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/%s/HNL_mc_2017_newvariables_good_filter' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/HNL_data_2017' % (getUsernameFromSiteDB())
+config.Data.lumiMask = 'Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt'
+config.Data.inputDBS = 'global'
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'HeavyNeutralLeptonAnalyzer_cfg.py'
@@ -21,23 +23,20 @@ config.Site.storageSite = 'T2_IT_Bari'
 config.JobType.pyCfgParams = ['Flag=False']
 
 if __name__ == '__main__':
-    
+
     from CRABAPI.RawCommand import crabCommand
     from CRABClient.ClientExceptions import ClientException
     from httplib import HTTPException
     from multiprocessing import Process
-        
-    for dataset, infos in dataset_files.items():        
-        
+
+    for dataset, infos in dataset_files.items():
+
         nfiles = infos[0]
         name = infos[1]
         print dataset, nfiles, name
         config.Data.inputDataset = dataset
         config.General.requestName = name
         config.Data.unitsPerJob = nfiles
-        crabCommand('submit', config = config)#, dryrun = True)
-        
-        
+        crabCommand('submit', config = config, dryrun = True)
 
 
-        

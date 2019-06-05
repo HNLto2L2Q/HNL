@@ -303,6 +303,8 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
   passIsoMu24All_ = passIsoMu24All_   || passIsoMu24_ || passIsoMuTk24_ ;
   passIsoMu27All_ = passIsoMu27All_   || passIsoMu27_ || passIsoMuTk27_ ;
 
+
+
 }
 
 
@@ -894,7 +896,7 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_pfSumNeutralHadronEt",&ele_pfSumNeutralHadronEt_);
   tree->Branch("ele_pfSumPUPt",&ele_pfSumPUPt_);
   tree->Branch("ele_pfDeltaBeta",&ele_pfDeltaBeta_);
-  tree->Branch("ele_FirstGenMatch.first",&ele_FirstGenMatch_);
+  tree->Branch("ele_FirstGenMatch",&ele_FirstGenMatch_);
   tree->Branch("ele_SecondGenMatch", &ele_SecondGenMatch_);
   tree->Branch("ele_isEB" ,&ele_isEB_);
   tree->Branch("ele_isEE" ,&ele_isEE_);
