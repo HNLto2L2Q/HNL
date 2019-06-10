@@ -28,6 +28,7 @@ g++ -I $ROOTSYS/include -I $ROOFITSYS/include -I ${cmsswincdir} CloneTree_new.C 
 
 ./CloneTree_new.exe input_root
 
-mv skimmed* dir_skimmed
-mv skimmer*.sh conodor_ex_new*.cfg dir_jobs
+mv skimmed_*.root dir_skimmed
+mv skimmer*.sh dir_jobs
+mv condor_ex_new_*.cfg dir_jobs
 mv list*.txt dir_list
