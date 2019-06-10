@@ -15,11 +15,12 @@ import sys
 import re
 import importlib
 import FWCore.ParameterSet.Config as cms
-#from FWCore.ParameterSet.VarParsing import VarParsing
+from FWCore.ParameterSet.VarParsing import VarParsing
 
-#options = VarParsing('analysis')
+options = VarParsing('analysis')
 #options.register('Flag', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Apply trigger matching for signal objects. Default: True")
-#options.parseArguments()
+options.register('isMC', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Running on MC samples")
+options.parseArguments()
 
 #hasLHE_ = options.Flag
 
@@ -27,7 +28,7 @@ hasLHE_ = True
 
 debugLevel    = -1 
 
-isMC_         = True
+isMC_          = options.isMC
 isMCSignal_    = False
 #hasLHE_       = False #Only for MC with Matrix Element generators
 
