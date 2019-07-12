@@ -81,6 +81,7 @@ private:
   TH1F *histo_ctau;
   unsigned int lumi_;
   unsigned int run_;
+  //unsigned int npu = -1;
   unsigned long long processed_ = 0;
   long long processedWeighted_ = 0; 
   vector<double> sumw_;
@@ -121,6 +122,7 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   meta_tree_ = fs->make<TTree>( "meta"  , "File Meta Information");
   meta_tree_->Branch("run", &run_);
   meta_tree_->Branch("lumi", &lumi_);
+  //meta_tree_->Branch("pu_distribution", &npu);
   meta_tree_->Branch("processed", &processed_);
   meta_tree_->Branch("processedWeighted", &processedWeighted_);
   meta_tree_->Branch("sum_weigts", &sumw_);

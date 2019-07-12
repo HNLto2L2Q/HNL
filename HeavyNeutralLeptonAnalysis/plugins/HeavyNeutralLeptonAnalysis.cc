@@ -448,6 +448,17 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 
   initialize(iEvent);
 
+  //  if(isMC){
+    unsigned int tnpv = -1;
+    for (std::vector<PileupSummaryInfo>::const_iterator pvi = puInfoH->begin(); pvi != puInfoH->end(); ++pvi) {
+      int bx = pvi->getBunchCrossing();
+      if (bx == 0) {
+	tnpv = pvi->getTrueNumInteractions();
+	break;
+      }
+    }
+    //}
+
   //cout << "MET handle " <<  metsHandle.isValid() << "\n";
 
   ntuple_.reset();
@@ -465,7 +476,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
   double _prefiringweightdown =(*theprefweightdown);
 
-  ntuple_.fill_evtInfo(iEvent.id());
+  ntuple_.fill_evtInfo(iEvent.id(), tnpv);
   ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
   //============================================================= 
   //

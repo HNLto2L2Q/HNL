@@ -54,9 +54,6 @@ process.load('HNL.HeavyNeutralLeptonAnalysis.LeptonFilter_cfi')
 #process.LeptonsFilter.MinimalNumberOfMuons = cms.untracked.int32(2)
 #process.LeptonsFilter.MinimalNumberOfElectrons = cms.untracked.int32(2)
 
-#b-tagging
-process.load('RecoBTag/Configuration/RecoBTag_cff')
-
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 import FWCore.PythonUtilities.LumiList as LumiList
@@ -96,7 +93,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 #-------------------------------------------------------------------
     
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(500)
     )
     
     
@@ -105,7 +102,7 @@ process.source = cms.Source("PoolSource",
                             fileNames =  cms.untracked.vstring(
 
 #'root://xrootd-cms.infn.it//store/data/Run2017B/SingleElectron/MINIAOD/31Mar2018-v1/30000/04B05308-0038-E811-99AB-008CFAC94314.root')
-'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/PromptReco-v2/000/299/329/00000/D6E915C7-3E6D-E711-8384-02163E014126.root')
+#'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/PromptReco-v2/000/299/329/00000/D6E915C7-3E6D-E711-8384-02163E014126.root')
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D4B7750A-4D94-E811-B78B-842B2B1\
 #81788.root') 
 #'file:heavyNeutrino_1.root')
@@ -117,11 +114,9 @@ process.source = cms.Source("PoolSource",
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/Signal-RunIIFall17MiniAODv2-00666.root'
 #'file:/afs/cern.ch/user/a/atalierc/Signal-RunIIFall17MiniAODv2-00666_38.root'
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
-#'file:/afs/cern.ch/user/a/atalierc/HIG-RunIIFall17MiniAODv2-00666_99.root' 
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/04C8B197-4042-E811-BD46-FA163E81B685.root'
-#'/store/mc/RunIISpring16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/40000/04E3024A-EF2B-E611-9794-02163E013F44.root'#2016 sample
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
-#'file:FA54D3FF-AA70-E811-900F-002481DE4818.root'
+
+'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root') 
+
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/120000/96922A9A-B5B8-E811-986B-02163E017F81.root'
@@ -144,7 +139,7 @@ process.source = cms.Source("PoolSource",
 #'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17/displaced/HeavyNeutrino_lljj_M-1_V-0.00836660026534_e_onshell_pre2017_leptonFirst_NLO/heavyNeutrino_96.root'
 )#)
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output_prova.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output.root"))
 process.load('HNL.HeavyNeutralLeptonAnalysis.MetaNtuplizer_cfi')
 process.metaTree.isMC = isMC_
 process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
@@ -228,7 +223,7 @@ if isMC_:
 process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
                                          ThePhotons = cms.InputTag("slimmedPhotons"),
                                          TheJets = cms.InputTag("slimmedJets"),
-                                         L1Maps = cms.string("${CMSSW_BASE}/src/L1Prefiring/EventWeightProducer/data/L1PrefiringMaps_new.root"),
+                                         L1Maps = cms.string("${CMSSW_BASE}/src/L1Prefiring/EventWeightProducer/data/L1PrefiringMaps_new.root"), # update this line with the location of this file
                                          DataEra = cms.string("2017BtoF"), #Use 2016BtoH for 2016
                                          UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
                                          PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
@@ -281,7 +276,6 @@ if (isMC_):
         *process.prefiringweight
         *process.fullPatMetSequenceModifiedMET
         *process.electronMVAValueMapProducer
-        *process.btagging
         *process.displacedInclusiveVertexing
         *process.ele_Sequence
         *process.jetCorrFactors
@@ -309,9 +303,6 @@ else:
         *process.slimmedJetsJEC
         *process.prefiringweight
         *process.electronMVAValueMapProducer
-        *process.btagging
         *process.displacedInclusiveVertexing
         *process.HeavyNeutralLepton 
-
-
        )

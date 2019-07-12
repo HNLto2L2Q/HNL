@@ -86,7 +86,7 @@ public:
 	//void set_sv_z(float sv_z){lep2_gen_vz_ = sv_z;}
 
 	void set_evtInfo(TTree* tree);
-	void fill_evtInfo(const edm::EventID& id);
+	void fill_evtInfo(const edm::EventID& id, unsigned int& pile_up_info);
 
         void set_prefiring(TTree* tree);
         void fill_prefiring(double weight, double weightup, double weightdown);
@@ -145,6 +145,7 @@ private:
 
 	unsigned int lumi_ = 0;
 	unsigned int run_ = 0;
+	unsigned int tnpv = -1;
 	unsigned long long evt_ = 0;
 
 	// primary vertex infos  -- they shouldn't be vector 

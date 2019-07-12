@@ -8,6 +8,8 @@ void BigNtuple::set_evtInfo(TTree* tree) {
 	tree->Branch("run" , &run_, "run/i");
 	tree->Branch("lumi", &lumi_, "lumi/i");
 	tree->Branch("evt" , &evt_, "evt/i");
+	tree->Branch("pu_trueInteraction", &tnpv, "pu_trueInteraction/i");
+
 }
 
 void BigNtuple::set_prefiring(TTree* tree){
@@ -22,12 +24,14 @@ void BigNtuple::fill_prefiring(double weight, double weightup, double weightdown
   prefiring_weightdown_ = weightdown;
 }
 
-void BigNtuple::fill_evtInfo(const edm::EventID& id) {
+void BigNtuple::fill_evtInfo(const edm::EventID& id, unsigned int& pileup_info) {
 	lumi_ = id.run();
 	run_  = id.luminosityBlock();
 	evt_  = id.event();
-}
+	tnpv = pileup_info;
 
+}
+	
 void BigNtuple::set_pv_genInfo(TTree* tree) {
 
   tree->Branch("lep1_gen_PID" , &lep1_gen_PID_, "lep1_gen_PID/I");
