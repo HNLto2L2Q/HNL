@@ -24,7 +24,7 @@ void BigNtuple::fill_prefiring(double weight, double weightup, double weightdown
   prefiring_weightdown_ = weightdown;
 }
 
-void BigNtuple::fill_evtInfo(const edm::EventID& id, unsigned int& pileup_info) {
+void BigNtuple::fill_evtInfo(const edm::EventID& id, int& pileup_info) {
 	lumi_ = id.run();
 	run_  = id.luminosityBlock();
 	evt_  = id.event();
