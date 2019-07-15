@@ -323,6 +323,7 @@ else:
 #        *process.jetCorrFactors
 #        *process.slimmedJetsJEC
 #        *process.HeavyNeutralLepton
+        *process.ecalBadCalibReducedMINIAODFilter
         *process.egmGsfElectronIDSequence
         *process.jetCorrFactors
         *process.slimmedJetsJEC
