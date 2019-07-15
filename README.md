@@ -36,6 +36,10 @@ popd
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10
 git cms-merge-topic cms-met:METFixEE2017_949_v2
 
+#PLEASE CHECK THE BAD CHANNEL CORRECTION
+#https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_ecal_BadCalibReducedM
+#they are included in the final cgf but they are 'WORK IN PROGRESS' in the twiki
+
 git clone git@github.com:HNLto2L2Q/HNL.git
 pushd HNL/
 # For 2017
