@@ -3,12 +3,10 @@ from os import path as path
 import FWCore.ParameterSet.Config as cms
 
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
-from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
 from RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi import *
 from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 from RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi import *
 from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
-from PhysicsTools.PatUtils.l1ECALPrefiringWeightProducer_cfi import *
 
 import sys
 
@@ -20,42 +18,39 @@ import FWCore.ParameterSet.Config as cms
 #options = VarParsing('analysis')
 #options.register('Flag', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Apply trigger matching for signal objects. Default: True")
 #options.parseArguments()
-
 #hasLHE_ = options.Flag
 
+period_ = 'D'
 hasLHE_ = True
-
 debugLevel    = -1 
-
 isMC_         = True
 isMCSignal_    = False
-#hasLHE_       = False #Only for MC with Matrix Element generators
 
-algorithm     = "AK4PFchs"
+GT_MC = '102X_upgrade2018_realistic_v18'#94X_mc2017_realistic_v14
+edmOut = False
 
-GT_MC = '94X_mc2017_realistic_v10'#94X_mc2017_realistic_v14
-GT_DATA = '92X_dataRun2_2017Repro_v4'#94X_dataRun2_v6
+
+if period_ in 'ABC':
+    GT_DATA = '102X_dataRun2_Sep2018ABC_v2'#94X_dataRun2_v6
+elif period_ == 'D':
+    GT_DATA = '102X_dataRun2_Prompt_v13' #2018D
+else:
+    raise RuntimeError()
 
 GT      =  GT_MC if isMC_ else GT_DATA
 
 #system('ls -ltr')
 
 process = cms.Process("AnalysisProc")
-process.load("RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 process.load('Configuration.StandardSequences.Services_cff')
 process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
 process.load('HNL.HeavyNeutralLeptonAnalysis.LeptonFilter_cfi')
-
-#process.LeptonsFilter.MinimalNumberOfMuons = cms.untracked.int32(2)
-#process.LeptonsFilter.MinimalNumberOfElectrons = cms.untracked.int32(2)
-
-#b-tagging
-process.load('RecoBTag/Configuration/RecoBTag_cff')
+process.load("CondCore.CondDB.CondDB_cfi")
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
@@ -65,253 +60,175 @@ LumiList.LumiList().getVLuminosityBlockRange()
 #from Configuration.AlCa.GlobalTag import GlobalTag
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
-
-#input_file_list = options.inputFile
-#myfilelist      = cms.untracked.vstring()
-##if input_file_list != None:
-#list_from_input_list = open("list.txt", "r")
-#lines = list_from_input_list.readlines()
-#stripped_lines = map(lambda x: x.rstrip("\n"), lines)
-#for line in stripped_lines:
-#    myfilelist.extend([line])
-    
-#print "my file " , myfilelist
-    
-#-------------------------------------------------------data section
-
-#data 2017 lumi 41.86 /fb
-
-#if(isMC_ == False):
-#    if len('/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13_patch4/src/HNL/data/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt') > 0:
-#        import FWCore.PythonUtilities.LumiList as LumiList
-#        process.source.lumisToProcess = LumiList.LumiList(filename = 'Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt').getVLuminosityBlockRange()
-#        import FWCore.PythonUtilities.LumiList as LumiList
-#        import FWCore.ParameterSet.Types as CfgTypes
-#        process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
-#        JSONfile = '/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13_patch4/src/HNL/data/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt'
-#        myLumis = LumiList.LumiList(filename = JSONfile).getCMSSWString().split(',')
-#        process.source.lumisToProcess.extend(myLumis)
-
-        
-#-------------------------------------------------------------------
-    
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
-    )
-    
     
 
+###################### input file for testing ##########################
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
+                                '/store/data/Run2018D/SingleMuon/MINIAOD/PromptReco-v2/000/321/735/00000/86409C5E-C7AA-E811-858F-FA163E33C798.root'
+                            )
+)
 
-#'root://xrootd-cms.infn.it//store/data/Run2017B/SingleElectron/MINIAOD/31Mar2018-v1/30000/04B05308-0038-E811-99AB-008CFAC94314.root')
-'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/PromptReco-v2/000/299/329/00000/D6E915C7-3E6D-E711-8384-02163E014126.root')
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D4B7750A-4D94-E811-B78B-842B2B1\
-#81788.root') 
-#'file:heavyNeutrino_1.root')
-                           #fileNames = myfilelist
-#'file:/afs/cern.ch/user/a/atalierc/Merged_3GeVgood.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D4B7750A-4D94-E811-B78B-842B2B181788.root'
-#'file:/afs/cern.ch/user/a/atalierc/public/HIG-RunIIFall17MiniAODv2-00666_99.root'
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13_patch4/src/HNL/heavyNeutrino_150.root'
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/Signal-RunIIFall17MiniAODv2-00666.root'
-#'file:/afs/cern.ch/user/a/atalierc/Signal-RunIIFall17MiniAODv2-00666_38.root'
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
-#'file:/afs/cern.ch/user/a/atalierc/HIG-RunIIFall17MiniAODv2-00666_99.root' 
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/04C8B197-4042-E811-BD46-FA163E81B685.root'
-#'/store/mc/RunIISpring16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/40000/04E3024A-EF2B-E611-9794-02163E013F44.root'#2016 sample
-#'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
-#'file:FA54D3FF-AA70-E811-900F-002481DE4818.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/120000/96922A9A-B5B8-E811-986B-02163E017F81.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_BGenFilter_Wpt-200toInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/30000/FEAFC6E4-ED82-E811-8398-0025904CF766.root'
-#store/mc/RunIIFall17MiniAOD/ST_tW_antitop_5f_NoFullyHadronicDecays_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/70000/FEFA6784-D0F6-E711-A31A-008CFAC93ECC.root'
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root'
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root',
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root',
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root',
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root',
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root',
-#'root://cms-xrd-global.cern.ch//store/user/tomc/heavyNeutrinoMiniAOD/Fall17/displaced/HeavyNeutrino_lljj_M-5_V-0.00836660026534_mu_massiveAndCKM_LO/heavyNeutrino_1.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAOD/DYJetsToLL_M-50_Zpt-150toInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/RECOSIMstep_94X_mc2017_realistic_v10-v1/50000/EE9CC3E0-0DED-E711-BCAC-00E081CB560C.root'
-#root://xrootd-cms.infn.it//WZTo3LNu_0Jets_MLL-4to50_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM
-#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/4E597432-24BE-E611-ACBB-00266CFFBFC0.root'
-#cms-xrd-global.cern.ch//store/mc/RunIISummer16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/80000/4E597432-24BE-E611-ACBB-00266CFFBFC0.root'
-#'root://cms-xrd-global.cern.ch//store/data/Run2016G/SingleMuon/MINIAOD/23Sep2016-v1/1110000/72446D9C-D89C-E611-9060-002590A3C984.root'
-#'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17_aug2018/displaced/HeavyNeutrino_lljj_M-2_V-0.00316227766017_mu_massiveAndCKM_LO/heavyNeutrino_40.root'
-#'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17_aug2018/displaced/HeavyNeutrino_lljj_M-8_V-0.004472135955_mu_massiveAndCKM_LO/heavyNeutrino_96.root'
-#'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17/displaced/HeavyNeutrino_lljj_M-1_V-0.00836660026534_e_onshell_pre2017_leptonFirst_NLO/heavyNeutrino_96.root'
-)#)
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+####################################################################
 
+
+
+###################### output file #############################
 process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output_prova.root"))
+################################################################
+
+
+######################  Meta Ntuplizer #########################
 process.load('HNL.HeavyNeutralLeptonAnalysis.MetaNtuplizer_cfi')
 process.metaTree.isMC = isMC_
 process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
 process.metaTree.globalTag = GT
 process.metaTree.args = cms.string('USELESS') #FILL ME!
 process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
+################################################################
 
+
+
+########################### Displaced IVF ######################
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
+################################################################
 
-addElectronSequence(process)
 
-process.load("CondCore.CondDB.CondDB_cfi")
+################################ JETMET################################
+# update MET according to new JECs and compute uncertainties
+# given that to update the MET we need to update the Jets we also take the updated jets from here
+#the module below automatically load the new Jet energy corrections
+# from: https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription
 
-process.load("PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff")
-
-process.jetCorrFactors = process.updatedPatJetCorrFactors.clone(
-    src = cms.InputTag("slimmedJets"),
-    levels = ['L1FastJet', 
-              'L2Relative', 
-              'L3Absolute',
-              'L2L3Residual'],
-    payload = 'AK4PFchs') 
-
-process.slimmedJetsJEC = process.updatedPatJets.clone(
-    jetSource = cms.InputTag("slimmedJets"),
-    jetCorrFactorsSource = cms.VInputTag(cms.InputTag("jetCorrFactors"))
-    )
-
-runMetCorAndUncFromMiniAOD(process, isData = not(isMC_), jetCollUnskimmed = "slimmedJetsJEC", postfix="NewJEC")
-
-from PhysicsTools.SelectorUtils.tools.vid_id_tools import DataFormat, switchOnVIDElectronIdProducer, setupAllVIDIdsInModule, setupVIDElectronSelection
-switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
-
-process.egmGsfElectronIDs.physicsObjectSrc = "slimmedElectrons"
-
-id_modules = [
-    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Fall17_94X_V2_cff',
-    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_noIso_V1_cff',
-    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_iso_V1_cff'
-    ]
-
-for mod in id_modules:
-    setupAllVIDIdsInModule(process, mod, setupVIDElectronSelection)
-
-    setupEgammaPostRecoSeq(process,
-                           runVID=True, #saves CPU time by not needlessly re-running VID, if you want the Fall17V2 IDs, set this to True or remove (default is True)
-                           era='2017-Nov17ReReco')
-
-#process.Filter = cms.EDFilter('LeptonFilter',
-#                              MinimalNumberOfMuons = cms.untracked.int32(2),
-#                              MinimalNumberOfElectrons = cms.untracked.int32(2)
-#    )
-    
-#MET correction for systematics
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+runMetCorAndUncFromMiniAOD( process,isData = not isMC_)
 
-runMetCorAndUncFromMiniAOD (
-    process,
-    isData = True, # false for MC
-    fixEE2017 = True,
-    fixEE2017Params = {'userawPt': True, 'ptThreshold':50.0, 'minEtaThreshold':2.65, 'maxEtaThreshold': 3.139} ,
-    postfix = "ModifiedMET"
-    )
+# To get updated ecalBadCalibReducedMINIAODFilter
+# See https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_ecal_BadCalibReducedM
+# Recipe is preliminary, i.e. recommended to check for updates
 
+process.load('RecoMET.METFilters.ecalBadCalibFilter_cfi')
+
+baddetEcallist = cms.vuint32(
+  [872439604,872422825,872420274,872423218,
+   872423215,872416066,872435036,872439336,
+   872420273,872436907,872420147,872439731,
+   872436657,872420397,872439732,872439339,
+   872439603,872422436,872439861,872437051,
+   872437052,872420649,872422436,872421950,
+   872437185,872422564,872421566,872421695,
+   872421955,872421567,872437184,872421951,
+   872421694,872437056,872437057,872437313])
+
+process.ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
+  "EcalBadCalibFilter",
+  EcalRecHitSource = cms.InputTag("reducedEgamma:reducedEERecHits"),
+  ecalMinEt        = cms.double(50.),
+  baddetEcal       = baddetEcallist,
+  taggingMode      = cms.bool(True),
+  debug            = cms.bool(False)
+  )
+
+
+# we redo the smearing because that in runMetCorAndUncFromMiniAOD has some selection (e.g., remove jets overlapping with muons)
+process.jetSmearingSeq = cms.Sequence()
 if isMC_:
-    process.jetSmearing = cms.EDProducer('SmearedPATJetProducer',
-                                         src          = cms.InputTag('slimmedJetsJEC'),
-                                         enabled      = cms.bool(True),
-                                         rho          = cms.InputTag("fixedGridRhoFastjetAll"),
-                                         algo         = cms.string('AK4PFchs'),
-                                         algopt       = cms.string('AK4PFchs_pt'),
-                                         genJets      = cms.InputTag('slimmedGenJets'),
-                                         dRMax        = cms.double(0.2),
-                                         dPtMaxFactor = cms.double(3),
-                                         debug        = cms.untracked.bool(False),
-                                         variation    = cms.int32(0),
-                                         )
-    process.jetSmearingUp   = process.jetSmearing.clone(variation    = cms.int32(1))
-    process.jetSmearingDown = process.jetSmearing.clone(variation    = cms.int32(-1))
+    process.jetSmearing = process.patSmearedJets.clone(
+        src = cms.InputTag("patJetsReapplyJEC")
+    )
+    process.jetSmearingUp   = process.jetSmearing.clone(variation = cms.int32(101))
+    process.jetSmearingDown = process.jetSmearing.clone(variation = cms.int32(-101))
+    process.jetSmearingSeq = cms.Sequence(process.jetSmearing + process.jetSmearingUp + process.jetSmearingDown)
 
-process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
-                                         ThePhotons = cms.InputTag("slimmedPhotons"),
-                                         TheJets = cms.InputTag("slimmedJets"),
-                                         L1Maps = cms.string("${CMSSW_BASE}/src/L1Prefiring/EventWeightProducer/data/L1PrefiringMaps_new.root"),
-                                         DataEra = cms.string("2017BtoF"), #Use 2016BtoH for 2016
-                                         UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
-                                         PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
-                                         )
+################################################################################
 
 
+#declare producer for ecalBadCalibReducedMINIAODFilter
+#https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2
 
-process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',#HeavyNeutralLeptonAnalysis
-                                            debugLevel            = cms.int32(debugLevel),
-                                            isMC                  = cms.bool(isMC_),
-                                            isMCSignal            = cms.bool(isMCSignal_),
-                                            vtxSrc                = cms.InputTag("offlineSlimmedPrimaryVertices"),
-                                            rho                   = cms.InputTag("fixedGridRhoFastjetAll"),#cambiato tag?
-                                            muonSrc               = cms.InputTag("slimmedMuons"),
-                                            electronSrc           = cms.InputTag("slimmedElectrons"),
-                                            recHitCollectionEBSrc = cms.InputTag("reducedEgamma","reducedEBRecHits"),
-                                            recHitCollectionEESrc = cms.InputTag("reducedEgamma","reducedEERecHits"),
-                                            tauSrc                = cms.InputTag("slimmedTaus"),
-                                            packCandSrc           = cms.InputTag("packedPFCandidates"),
-                                            jetSrc                = cms.InputTag("slimmedJetsJEC"),
-                                            pfMETSrc              = cms.InputTag("slimmedMETsModifiedMET"),
-                                            triggerResultSrc      = cms.InputTag("TriggerResults","","HLT"),
-                                            metFilterResultSrc    = cms.InputTag("TriggerResults","","PAT"),
-                                            genParticleSrc        = cms.InputTag("prunedGenParticles"),
-                                            genEventInfoProduct   = cms.InputTag("generator"),
-                                            PUInfo                = cms.InputTag("slimmedAddPileupInfo"),
-                                            lheEventProducts      = cms.InputTag("externalLHEProducer"),
-                                            SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"), 
-                                            bDiscbb               = cms.vstring("pfDeepCSVJetTags:probb"),
-                                            bDiscbbb              = cms.vstring("pfDeepCSVJetTags:probbb"),
-                                            bDiscbc               = cms.vstring("pfDeepCSVJetTags:probc"),
-                                            #electronsMva          = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto"),#egmGsfElectronIDs:mvaEleID-Fall17-iso-V1-wp90 #egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto mvaEleID-Fall17-noIso-V1-wp90
-                                            electronsVeto  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-veto"),
-                                            electronsLoose = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-loose"),
-                                            electronsMedium= cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-medium"),
-                                            electronsTight = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Fall17-94X-V2-tight"),
-                                            jetsSmeared     = cms.InputTag("jetSmearing" if isMC_ else "slimmedJetsJEC"),
-                                            jetsSmearedUp   = cms.InputTag("jetSmearingUp" if isMC_ else "slimmedJetsJEC"),
-                                            jetsSmearedDown = cms.InputTag("jetSmearingDown" if isMC_ else "slimmedJetsJEC")
-                                            )
+# EGamma recipe: run electronID and photonID  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes#2018_Data_MC
+################################Electron ID ###########################
+from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+setupEgammaPostRecoSeq(process, runVID=False, era = '2018-Prompt')
+#######################################################################
 
-process.MessageLogger = cms.Service("MessageLogger",
-                                suppressWarning= cms.untracked.vstring('displacedInclusiveVertexFinder')
+#https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe#Recipe_details_10_2_X_X_10_or_9   Should not be needed
+
+#https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10  Should not be needed
+    
+
+process.HeavyNeutralLepton = cms.EDAnalyzer(
+    'HeavyNeutralLeptonAnalysis',#HeavyNeutralLeptonAnalysis
+    debugLevel            = cms.int32(debugLevel),
+    isMC                  = cms.bool(isMC_),
+    isMCSignal            = cms.bool(isMCSignal_),
+    vtxSrc                = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    rho                   = cms.InputTag("fixedGridRhoFastjetAll"),#cambiato tag?
+    muonSrc               = cms.InputTag("slimmedMuons"),
+    electronSrc           = cms.InputTag("slimmedElectrons"),
+    recHitCollectionEBSrc = cms.InputTag("reducedEgamma","reducedEBRecHits"),
+    recHitCollectionEESrc = cms.InputTag("reducedEgamma","reducedEERecHits"),
+    tauSrc                = cms.InputTag("slimmedTaus"),
+    packCandSrc           = cms.InputTag("packedPFCandidates"),
+    jetSrc                = cms.InputTag("patJetsReapplyJEC"),
+    pfMETSrc              = cms.InputTag("slimmedMETs","","AnalysisProc"),
+    triggerResultSrc      = cms.InputTag("TriggerResults","","HLT"),
+    metFilterResultSrc    = cms.InputTag("TriggerResults","","PAT"),
+    genParticleSrc        = cms.InputTag("prunedGenParticles"),
+    genEventInfoProduct   = cms.InputTag("generator"),
+    PUInfo                = cms.InputTag("slimmedAddPileupInfo"),
+    lheEventProducts      = cms.InputTag("externalLHEProducer"),
+    SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"), 
+    electronsMva   = cms.string("cutBasedElectronID-Fall17-94X-V2-veto"),
+    electronsVeto  = cms.string("cutBasedElectronID-Fall17-94X-V2-veto"),
+    electronsLoose = cms.string("cutBasedElectronID-Fall17-94X-V2-loose"),
+    electronsMedium= cms.string("cutBasedElectronID-Fall17-94X-V2-medium"),
+    electronsTight = cms.string("cutBasedElectronID-Fall17-94X-V2-tight"),
+    jetsSmeared     = cms.InputTag("jetSmearing"     if isMC_ else "patJetsReapplyJEC"),
+    jetsSmearedUp   = cms.InputTag("jetSmearingUp"   if isMC_ else "patJetsReapplyJEC"),
+    jetsSmearedDown = cms.InputTag("jetSmearingDown" if isMC_ else "patJetsReapplyJEC")
 )
-if (isMC_):
-    process.p = cms.Path(
-        process.metaTree
-        *process.LeptonsFilter
-        *process.egmGsfElectronIDSequence
-        *process.prefiringweight
-        *process.fullPatMetSequenceModifiedMET
-        *process.electronMVAValueMapProducer
-        *process.btagging
-        *process.displacedInclusiveVertexing
-        *process.ele_Sequence
-        *process.jetCorrFactors
-        *process.slimmedJetsJEC
-        *process.jetSmearing
-        *process.jetSmearingUp
-        *process.jetSmearingDown
-        *process.HeavyNeutralLepton
+
+process.MessageLogger = cms.Service(
+    "MessageLogger",
+    suppressWarning= cms.untracked.vstring('displacedInclusiveVertexFinder')
+)
+
+process.p = cms.Path(
+    process.metaTree
+    *process.LeptonsFilter
+    *process.egammaPostRecoSeq
+    *process.ecalBadCalibReducedMINIAODFilter
+    *process.fullPatMetSequence
+    *process.displacedInclusiveVertexing
+    *process.jetSmearingSeq
+    *process.HeavyNeutralLepton
+)
+
+# crea un output EDM
+if edmOut:
+        process.edmOut = cms.OutputModule(
+            "PoolOutputModule",
+            # use this in case of filter available
+            outputCommands = cms.untracked.vstring( 
+                'keep *',
+            ),
+            fileName = cms.untracked.string('edmTEST.root')
         )
-else:
-    process.p = cms.Path(
-        process.LeptonsFilter
-#        *process.egmGsfElectronIDSequence
-#        *process.prefiringweight
-#        *process.fullPatMetSequenceModifiedMET
-#        *process.electronMVAValueMapProducer
-#        *process.btagging
-#        *process.displacedInclusiveVertexing
-#        *process.ele_Sequence
-#        *process.jetCorrFactors
-#        *process.slimmedJetsJEC
-#        *process.HeavyNeutralLepton
-        *process.egmGsfElectronIDSequence
-        *process.jetCorrFactors
-        *process.slimmedJetsJEC
-        *process.prefiringweight
-        *process.electronMVAValueMapProducer
-        *process.btagging
-        *process.displacedInclusiveVertexing
-        *process.HeavyNeutralLepton 
+        process.end = cms.EndPath(
+            process.edmOut
+        )
 
 
-       )
+def diff(mod1, mod2):
+    s1 = mod1.__repr__().split('\n')
+    s2 = mod2.__repr__().split('\n')
+    m_size = max(
+        max(len(i) for i in s1),
+        max(len(i) for i in s2),
+    )
+    form = '%-'+str(m_size)+'s'
+    for l1, l2 in zip(s1, s2):
+        space = ' ' if l1 == l2 else '|'
+        print form % l1, space, l2

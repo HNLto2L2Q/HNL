@@ -187,16 +187,16 @@ private:
   edm::EDGetTokenT                < LHEEventProduct > lheEventProductToken_;
   edm::EDGetTokenT         < reco::VertexCollection > inclusiveSecondaryVertices_;
 
-  const std::vector        <std::string> bDiscbbToken_;
-  const std::vector        <std::string> bDiscbbbToken_;
-  const std::vector         <std::string> bDiscbcToken_;
+  // const std::string bDiscbb_;
+  // const std::string bDiscbbb_;
+  // const std::string bDiscbc_;
 
 
-  //edm::EDGetTokenT         <edm::ValueMap<float>>     eleMvaToken_;
-  edm::EDGetTokenT         <edm::ValueMap<bool>>      eleVetoToken_;
-  edm::EDGetTokenT         <edm::ValueMap<bool>>      eleLooseToken_;
-  edm::EDGetTokenT         <edm::ValueMap<bool>>      eleMediumToken_;
-  edm::EDGetTokenT         <edm::ValueMap<bool>>      eleTightToken_;
+  const std::string eleMva_;
+  const std::string eleVeto_;
+  const std::string eleLoose_;
+  const std::string eleMedium_;
+  const std::string eleTight_;
   
 protected:
   edm::Handle         < reco::VertexCollection > vtxHandle;
@@ -216,12 +216,6 @@ protected:
   edm::Handle            < edm::TriggerResults > metFilterResultsHandle;
   edm::Handle         < reco::VertexCollection > secondaryVertexHandle;
   
-
-  //edm::Handle         <edm::ValueMap<float>> electronsMva;
-  edm::Handle         <edm::ValueMap<bool>> electronsVeto;
-  edm::Handle         <edm::ValueMap<bool>> electronsLoose;
-  edm::Handle         <edm::ValueMap<bool>> electronsMedium;
-  edm::Handle         <edm::ValueMap<bool>> electronsTight;
 
   /* Only for MC */
   edm::Handle    < reco::GenParticleCollection > genHandle;
@@ -273,13 +267,14 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   PUInfoToken_(consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("PUInfo"))),
   lheEventProductToken_(mayConsume<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheEventProducts"))),
   inclusiveSecondaryVertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("SecondaryVertices"))),
-  bDiscbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbb")),
-  bDiscbbbToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbbb")),
-  bDiscbcToken_(iConfig.getParameter<std::vector<std::string> >("bDiscbc")),
-  eleVetoToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsVeto"))),
-  eleLooseToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsLoose"))),
-  eleMediumToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsMedium"))),
-  eleTightToken_(consumes<edm::ValueMap<bool>>(iConfig.getParameter<edm::InputTag>("electronsTight")))
+  // bDiscbb_{iConfig.getParameter<std::string>("bDiscbb")},
+  // bDiscbbb_{iConfig.getParameter<std::string>("bDiscbbb")},
+  // bDiscbc_{iConfig.getParameter< std::string>("bDiscbc")},
+  eleMva_   {iConfig.getParameter<std::string>("electronsMVA")},
+  eleVeto_  {iConfig.getParameter<std::string>("electronsVeto")},
+  eleLoose_ {iConfig.getParameter<std::string>("electronsLoose")},
+  eleMedium_{iConfig.getParameter<std::string>("electronsMedium")},
+  eleTight_ {iConfig.getParameter<std::string>("electronsTight")}
   //prefweight_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProb"))),
   //prefweightup_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbUp"))),
   //prefweightdown_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbDown")))
@@ -340,12 +335,6 @@ void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
   iEvent.getByToken(triggerResultsToken_, triggerResultsHandle);
   iEvent.getByToken(metFilterResultsToken_, metFilterResultsHandle);
   iEvent.getByToken(inclusiveSecondaryVertices_, secondaryVertexHandle);
-
-  //iEvent.getByToken(eleMvaToken_, electronsMva);
-  iEvent.getByToken(eleVetoToken_,electronsVeto);
-  iEvent.getByToken(eleLooseToken_,electronsLoose);
-  iEvent.getByToken(eleMediumToken_,electronsMedium);
-  iEvent.getByToken(eleTightToken_,electronsTight);
 
   if (isMC){
     iEvent.getByToken(genParticleToken_, genHandle);
@@ -465,7 +454,17 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
   double _prefiringweightdown =(*theprefweightdown);
 
-  ntuple_.fill_evtInfo(iEvent.id());
+
+  int tnpv = -1000;
+  for (std::vector<PileupSummaryInfo>::const_iterator pvi = puInfoH->begin(); pvi != puInfoH->end(); ++pvi) {
+    int bx = pvi->getBunchCrossing();
+    if (bx == 0) {
+      tnpv = pvi->getTrueNumInteractions();
+      break;
+    }
+  }
+
+  ntuple_.fill_evtInfo(iEvent.id(),tnpv);
   ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
   //============================================================= 
   //
@@ -592,15 +591,12 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
      
      if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
-
-     pat::Electron eleMva = *ele;
-     float  ele_Mva_   = eleMva.electronID("mvaEleID-Fall17-iso-V1-wp90");
-     //float  ele_Mva_   = eleMva.electronID("mvaEleID-Spring15-25ns-Trig-V1-wp90"); to try with 2016
-
-     bool  ele_Veto_   = ((*electronsVeto)[eleRef]);
-     bool  ele_Loose_  = ((*electronsLoose)[eleRef]);
-     bool  ele_Medium_ = ((*electronsMedium)[eleRef]);
-     bool  ele_Tight_  = ((*electronsTight)[eleRef]);
+     
+     float  ele_Mva_   = ele->electronID(eleMva_   );
+     bool  ele_Veto_   = ele->electronID(eleVeto_  );
+     bool  ele_Loose_  = ele->electronID(eleLoose_ );
+     bool  ele_Medium_ = ele->electronID(eleMedium_);
+     bool  ele_Tight_  = ele->electronID(eleTight_ );
 
      ntuple_.fill_eleIDInfo(ele_Mva_, ele_Veto_, ele_Loose_ , ele_Medium_, ele_Tight_);
    }
