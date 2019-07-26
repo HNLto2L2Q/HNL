@@ -59,16 +59,37 @@ int main(int argc, char **argv){
  
   std::ifstream infile_data;
   infile_data.open(static_cast<std::string>(argv[1]));
+  //infile_mc.open("bari_bkg_4mu.txt");
+
   std::string inputfilename_data;
 
  
   Float_t isoCut = 0.15;
   bool isMC = true;
 
+  TH1F* h_nTrueInteractions50      = new TH1F("nTrueInteractions50" , "nTrueInteractions 50 bin" , 50, 0., 50. );
+  TH1F* h_nTrueInteractions100     = new TH1F("nTrueInteractions100" , "nTrueInteractions 100 bin" , 100, 0., 100. );
+
+  //////TFile *oldfile = new TFile(static_cast<TString>(argv[1]));  
   TChain * oldtree = new TChain("HeavyNeutralLepton/tree_","");
+  /////TTree *oldtree = (TTree*)oldfile->Get("HeavyNeutralLepton/tree_");
+  //oldtree->Add(static_cast<TString>(argv[1])+"/HeavyNeutralLepton/tree_");
+
+  //----------- prova tree -----------//
+  //oldtree->Add("/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/Analysis_output.root/HeavyNeutralLepton/tree_");
+  //std::string name_tree;
+
+  //name_tree="skimmed_"+static_cast<std::string>(argv[1]);
+
+  //TFile *newfile = new TFile(static_cast<TString>(name_tree),"recreate");
+  //Create a new file + a clone of old tree in new file
+  //TTree *newtree = oldtree->CloneTree(0);
+  //TTree *newtree  = new TTree("newtree","Analysis Tree");
 
   std::string name_tree;
   std::string str;
+  //str = static_cast<std::string>(argv[1]);
+  //str = static_cast<std::TString>(argv[1]);
   while (std::getline(infile_data, str)){
   cout << str << "\n"; 
 
@@ -76,7 +97,8 @@ int main(int argc, char **argv){
   int cont = 0;
   std::vector<std::string> vs;
   char* token;
-  const char* delim = "/";
+  // const char* delim = "/";
+  const char* delim = "_";
   token=strtok((char*)str.c_str(), delim);
 
   while (token != NULL)
@@ -87,10 +109,15 @@ int main(int argc, char **argv){
     }
 
 
-    name_tree="skimmed_" + vs[cont-1];
+    name_tree="skimmed_sample_" + vs[cont-1];
     
     TFile *newfile = new TFile(static_cast<TString>(name_tree),"recreate");
+    //Create a new file + a clone of old tree in new file 
+  //TTree *newtree = Oldtree->CloneTree(0); 
     TTree *newtree  = new TTree("newtree","Analysis Tree");
+    //cout<<"cloning done"<<endl;
+  
+    // Long64_t nentries = oldtree->GetEntries();
     Long64_t nentries = oldtree->GetEntriesFast();
     cout  <<nentries<<endl;
     cout << str <<endl;    
@@ -98,13 +125,42 @@ int main(int argc, char **argv){
     // These are the variables I cut on 
     Bool_t passIsoMu24All;
     Bool_t passIsoMu27All;
-    
+
+    Bool_t passMu17      ;
+    Bool_t passMu17_Mu8_SameSign;
+    Bool_t passMu20             ;
+    Bool_t passMu17_Mu8         ;
+    Bool_t passMu27_TkMu8       ;    
+
     oldtree->SetBranchAddress("passIsoMu24All",&passIsoMu24All);
     oldtree->SetBranchAddress("passIsoMu27All",&passIsoMu27All);
     
     //vector<Float_t>   *PU_Weight = 0;
     //oldtree->SetBranchAddress("PU_Weight",&PU_Weight);
+    /*
+    oldtree->SetBranchAddress("passMu17",&passMu17);
+    oldtree->SetBranchAddress("passMu17_Mu8_SameSign",&passMu17_Mu8_SameSign);
+    oldtree->SetBranchAddress("passMu20",&passMu20);
+    oldtree->SetBranchAddress("passMu17_Mu8",&passMu17_Mu8);
+    oldtree->SetBranchAddress("passMu27_TkMu8",&passMu27_TkMu8);
+    */
+
+
+    /*
+    vector<Float_t>   *PU_Weight = 0;
+    vector<Float_t>   *PU_WeightUp = 0;
+    vector<Float_t>   *PU_WeightDown = 0;
+    vector<Float_t>   *npT = 0;
     
+    oldtree->SetBranchAddress("PU_Weight",&PU_Weight);
+    oldtree->SetBranchAddress("PU_WeightUp",&PU_WeightUp);
+    oldtree->SetBranchAddress("PU_WeightDown",&PU_WeightDown);
+    oldtree->SetBranchAddress("npT",&npT);
+    */
+    int pu_trueInteraction_;
+
+    oldtree->SetBranchAddress("pu_trueInteraction",&pu_trueInteraction_);
+
     vector<Float_t>   *mu_isTightMuon_ = 0;
     vector<Float_t>   *mu_isLooseMuon_ = 0;
     vector<Float_t>   *mu_pt_ = 0;
@@ -333,6 +389,19 @@ int main(int argc, char **argv){
     oldtree->SetBranchAddress("mu_rpc_timeErr", &mu_rpc_timeErr_);
     
     
+    //================================ trigger info ============================================// 
+
+    Int_t trig_IsoMu24All,trig_IsoMu27All,trig_Mu17,trig_Mu17_Mu8_SameSign,trig_Mu20,trig_Mu17_Mu8,trig_Mu27_TkMu8;
+
+    TBranch* branch_trig_IsoMu24All          = newtree->Branch("trig_IsoMu24All", &trig_IsoMu24All, "trig_IsoMu24All/I");
+    TBranch* branch_trig_IsoMu27All          = newtree->Branch("trig_IsoMu27All", &trig_IsoMu27All, "trig_IsoMu27All/I");
+    TBranch* branch_trig_Mu17                = newtree->Branch("trig_Mu17", &trig_Mu17, "trig_Mu17/I");
+    TBranch* branch_trig_Mu17_Mu8_SameSign   = newtree->Branch("trig_Mu17_Mu8_SameSign", &trig_Mu17_Mu8_SameSign, "trig_Mu17_Mu8_SameSign/I");
+    TBranch* branch_trig_Mu20                = newtree->Branch("trig_Mu20", &trig_Mu20, "trig_Mu20/I");
+    TBranch* branch_trig_Mu17_Mu8            = newtree->Branch("trig_Mu17_Mu8", &trig_Mu17_Mu8, "trig_Mu17_Mu8/I");
+    TBranch* branch_trig_Mu27_TkMu8          = newtree->Branch("trig_Mu27_TkMu8", &trig_Mu27_TkMu8, "trig_Mu27_TkMu8/I");
+
+
     //Throw away some branches -- thos are all the  one I don't want to keep in the ntuples
     //IMPORTANT: we cannot throw away the branches with the variable we are using in the loop!
     oldtree->SetBranchStatus("ele_*",    0);
@@ -342,6 +411,13 @@ int main(int argc, char **argv){
     //Float_t pu_weight;
     
     //TBranch* branch_pu_weight = newtree->Branch("pu_weight",&pu_weight,"pu_weight/F");
+    Float_t pu_weight, pu_weightUp, pu_weightDown,TrueNumInteractions;
+
+    TBranch* branch_pu_weight               = newtree->Branch("pu_weight",&pu_weight,"pu_weight/F");
+    TBranch* branch_pu_weightUp             = newtree->Branch("pu_weightUp",&pu_weightUp,"pu_weightUp/F");
+    TBranch* branch_pu_weightDown           = newtree->Branch("pu_weightDown",&pu_weightDown,"pu_weightDown/F");
+    TBranch* branch_TrueNumInteractions     = newtree->Branch("TrueNumInteractions",&TrueNumInteractions,"TrueNumInteractions/F");
+
     //======================= First Muon Variables ==========================================//   
     Float_t mu_promptPt_, mu_promptEta_, mu_promptPhi_, mu_promptCharge_, mu_promptEt_, mu_promptE_;
     
@@ -563,22 +639,47 @@ int main(int argc, char **argv){
     TBranch* branch_cmb_time_ = newtree->Branch("cmb_time_", &mu_cmb_time_newtree_, "mu_cmb_time_newtree_/D");
     TBranch* branch_cmb_timeErr_ = newtree->Branch("cmb_timeErr_", &mu_cmb_timeErr_newtree_, "mu_cmb_timeErr_newtree_/D");
     
-    
-    
+    //=============================== pile up ===========================================//
+    int pu_true_interaction_;
+    TBranch* pu_number_true_interaction_ = newtree->Branch("pu_number_true_interaction_", &pu_true_interaction_, "pu_true_interaction_/I");
     
     //======================= Start the running over input branches ==========================================//
     for (int i=0;i<oldtree->GetEntriesFast(); i++) {
       if (i%10000==0) cout<<i<<endl;
       oldtree->GetEntry(i);
+      /*
+      unsigned npt_ = -1;
+      for(unsigned i=0; i<npT->size(); ++i){
+	h_nTrueInteractions50->Fill(npT->at(i));
+	h_nTrueInteractions100->Fill(npT->at(i));
+	npt_ = i;
+	}*/
       
-      if (passIsoMu24All==0 && passIsoMu27All == 0) continue;  // cut on the trigger!
-      
+      //      if (passIsoMu24All==0 && passIsoMu27All == 0) continue;  // cut on the trigger!
+      if(passIsoMu27All == 0) continue;      
+
       /*
 	unsigned pu = -1;
 	for(unsigned i=0; i<PU_Weight->size(); ++i){
 	pu = i;
 	}*/
-      
+      /*    
+      unsigned pu = -1;
+      for(unsigned i=0; i<PU_Weight->size(); ++i){
+	pu = i;
+      }
+
+      unsigned pu_Up = -1;
+      for(unsigned i=0; i<PU_WeightUp->size(); ++i){
+	pu_Up = i;
+      }
+      unsigned pu_Down = -1;
+      for(unsigned i=0; i<PU_WeightDown->size(); ++i){
+	pu_Down = i;
+      }
+*/
+
+      pu_true_interaction_ = pu_trueInteraction_;
       Float_t   minPt_prompt = -1000;
       unsigned  FirstMuon = -1;
       for(unsigned i=0; i<mu_isTightMuon_->size(); i++){
@@ -612,7 +713,23 @@ int main(int argc, char **argv){
 	
 	//pile up weight
       //pu_weight = PU_Weight->at(pu);
-	
+
+
+	trig_IsoMu24All = passIsoMu24All;
+	trig_IsoMu27All = passIsoMu27All;
+	trig_Mu17       = passMu17;
+	trig_Mu17_Mu8_SameSign = passMu17_Mu8_SameSign;
+	trig_Mu20       = passMu20;
+	trig_Mu17_Mu8   = passMu17_Mu8; 
+	trig_Mu27_TkMu8 = passMu27_TkMu8;
+
+	//pile up weight
+	/*pu_weight     = (isMC) ? PU_Weight->at(pu) : 0 ;
+	pu_weightUp   = (isMC) ? PU_WeightUp->at(pu_Up) : 0 ;
+	pu_weightDown = (isMC) ? PU_WeightDown->at(pu_Down) : 0 ;
+
+	TrueNumInteractions = (isMC) ? npT->at(npt_) : 0;
+	*/
      //prompt muon 
 	mu_promptPt_ = mu_pt_->at(FirstMuon);
 	mu_promptEta_ = mu_eta_->at(FirstMuon);
