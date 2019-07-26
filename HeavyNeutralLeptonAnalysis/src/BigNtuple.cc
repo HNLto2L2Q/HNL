@@ -807,8 +807,8 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp 
   jet_neutralHadronMultiplicity_.push_back(jet.neutralHadronMultiplicity());
   jet_neutralMultiplicity_.push_back(jet.neutralMultiplicity());
   jet_pileUpid_.push_back(jet.userFloat("pileupJetId:fullDiscriminant"));
-  jet_L1ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
-  jet_L2ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
+  jet_L1ptcorrection_.push_back(jet.correctedP4("L1FastJet").Pt());
+  jet_L2ptcorrection_.push_back(jet.correctedP4("L2Relative").Pt());
   jet_L3ptcorrection_.push_back(jet.correctedP4("L3Absolute").Pt());
   jet_ptuncorrected_.push_back(jet.correctedP4("Uncorrected").Pt());
 

@@ -5,11 +5,11 @@ config = config()
 config.section_('General')
 config.General.transferOutputs = True
 config.General.transferLogs = True
-config.General.workArea = 'HNL_mc_2017_pileupr'
+config.General.workArea = 'HNL_mc_2017_pileup_trig'
 config.section_('Data')
 config.Data.splitting = 'FileBased'
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/%s/HNL_mc_2017_pileup' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/HNL_mc_2017_pileup_trig' % (getUsernameFromSiteDB())
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'HeavyNeutralLeptonAnalyzer_cfg.py'

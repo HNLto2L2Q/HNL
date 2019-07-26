@@ -23,11 +23,11 @@ import FWCore.ParameterSet.Config as cms
 
 #hasLHE_ = options.Flag
 
-hasLHE_ = True
+hasLHE_ = False
 
 debugLevel    = -1 
 
-isMC_         = True
+isMC_         = False
 isMCSignal_    = False
 #hasLHE_       = False #Only for MC with Matrix Element generators
 
@@ -58,6 +58,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 import FWCore.PythonUtilities.LumiList as LumiList
 LumiList.LumiList().getVLuminosityBlockRange()
+#LumiList.LumiList(filename = 'Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt').getVLuminosityBlockRange()
 
 #from Configuration.AlCa.GlobalTag import GlobalTag
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
@@ -93,14 +94,14 @@ process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 #-------------------------------------------------------------------
     
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(500)
+    input = cms.untracked.int32(100)
     )
     
     
 
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
-
+'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/90000/FEC62083-1E39-E811-B2A1-0CC47A4D75F8.root')
 #'root://xrootd-cms.infn.it//store/data/Run2017B/SingleElectron/MINIAOD/31Mar2018-v1/30000/04B05308-0038-E811-99AB-008CFAC94314.root')
 #'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/PromptReco-v2/000/299/329/00000/D6E915C7-3E6D-E711-8384-02163E014126.root')
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D4B7750A-4D94-E811-B78B-842B2B1\
@@ -115,7 +116,7 @@ process.source = cms.Source("PoolSource",
 #'file:/afs/cern.ch/user/a/atalierc/Signal-RunIIFall17MiniAODv2-00666_38.root'
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
 
-'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root') 
+#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root') 
 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
@@ -139,7 +140,7 @@ process.source = cms.Source("PoolSource",
 #'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17/displaced/HeavyNeutrino_lljj_M-1_V-0.00836660026534_e_onshell_pre2017_leptonFirst_NLO/heavyNeutrino_96.root'
 )#)
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output_data.root"))
 process.load('HNL.HeavyNeutralLeptonAnalysis.MetaNtuplizer_cfi')
 process.metaTree.isMC = isMC_
 process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
