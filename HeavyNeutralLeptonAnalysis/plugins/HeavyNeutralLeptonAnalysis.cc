@@ -187,10 +187,6 @@ private:
   edm::EDGetTokenT                < LHEEventProduct > lheEventProductToken_;
   edm::EDGetTokenT         < reco::VertexCollection > inclusiveSecondaryVertices_;
 
-  // const std::string bDiscbb_;
-  // const std::string bDiscbbb_;
-  // const std::string bDiscbc_;
-
 
   const std::string eleMva_;
   const std::string eleVeto_;
@@ -224,9 +220,9 @@ protected:
   edm::Handle                < LHEEventProduct > lheEPHandle;
 
   //Prefiring stuff
-  edm::EDGetTokenT< double > prefweight_token;
-  edm::EDGetTokenT< double > prefweightup_token;
-  edm::EDGetTokenT< double > prefweightdown_token;
+  //edm::EDGetTokenT< double > prefweight_token;
+  // edm::EDGetTokenT< double > prefweightup_token;
+  // edm::EDGetTokenT< double > prefweightdown_token;
 
 
 };
@@ -280,9 +276,9 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   //prefweightdown_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbDown")))
 {
 
-  prefweight_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProb"));
-  prefweightup_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbUp"));
-  prefweightdown_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbDown"));
+  //  prefweight_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProb"));
+  // prefweightup_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbUp"));
+  // prefweightdown_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbDown"));
 
   //now do what ever initialization is needed
   usesResource("TFileService");
@@ -295,7 +291,7 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
     ntuple_.set_pv_genInfo(tree_);
     ntuple_.set_sv_genInfo(tree_);
   }
-  ntuple_.set_prefiring(tree_);
+  // ntuple_.set_prefiring(tree_);
   ntuple_.set_trigInfo(tree_);
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_muInfo(tree_);
@@ -304,8 +300,8 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_sv_Info(tree_);
   ntuple_.set_jetInfo(tree_);
   ntuple_.set_metInfo(tree_);
-  ntuple_.set_transverseMassInfo(tree_);
-  ntuple_.set_massCorrection(tree_);  
+  //  ntuple_.set_transverseMassInfo(tree_);
+  // ntuple_.set_massCorrection(tree_);  
   //ntuple_.set_bjetInfo(tree_);
 }
 
@@ -441,7 +437,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 
   ntuple_.reset();
 
-
+  /*
   edm::Handle< double > theprefweight;
   iEvent.getByToken(prefweight_token, theprefweight ) ;
   double _prefiringweight =(*theprefweight);
@@ -453,19 +449,22 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   edm::Handle< double > theprefweightdown;
   iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
   double _prefiringweightdown =(*theprefweightdown);
-
+  */
 
   int tnpv = -1000;
-  for (std::vector<PileupSummaryInfo>::const_iterator pvi = puInfoH->begin(); pvi != puInfoH->end(); ++pvi) {
-    int bx = pvi->getBunchCrossing();
-    if (bx == 0) {
-      tnpv = pvi->getTrueNumInteractions();
-      break;
+
+  if(isMC){
+    for (std::vector<PileupSummaryInfo>::const_iterator pvi = puInfoH->begin(); pvi != puInfoH->end(); ++pvi) {
+      int bx = pvi->getBunchCrossing();
+      if (bx == 0) {
+	tnpv = pvi->getTrueNumInteractions();
+	break;
+      }
     }
   }
-
+  //  std::cout<<"tmpv is "<<tnpv <<std::endl;
   ntuple_.fill_evtInfo(iEvent.id(),tnpv);
-  ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
+  // ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
   //============================================================= 
   //
   //                 Gen level Info
@@ -539,8 +538,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
    ntuple_.fill_trigInfo(triggerResults, trigNames);    
 
-   if(ntuple_.get_passIsoMu24All() == false || ntuple_.get_passIsoMu27All() == false) return;
-   cout << "getter " << ntuple_.get_passIsoMu24All() << "\n";
+   // if(ntuple_.get_passIsoMu24All() == false || ntuple_.get_passIsoMu27All() == false) return;
+   //cout << "getter " << ntuple_.get_passIsoMu24All() << "\n";
 
    //=============================================================
    //
@@ -592,7 +591,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      
      if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
      
-     float  ele_Mva_   = ele->electronID(eleMva_   );
+     float  ele_Mva_   = ele->userFloat(eleMva_   );
      bool  ele_Veto_   = ele->electronID(eleVeto_  );
      bool  ele_Loose_  = ele->electronID(eleLoose_ );
      bool  ele_Medium_ = ele->electronID(eleMedium_);
@@ -622,8 +621,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
 
-	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_mu) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
-	 ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true);	 
+	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_lep2_x(), ntuple_.get_lep2_y(), ntuple_.get_lep2_z(), vtx_mu) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
+	 ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true);  // true for muons
        }
      }
      //file muon branches with events contain sv
@@ -649,8 +648,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
-	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_ele) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
-	 ntuple_.fill_sv_Info(vtx_ele, pvs.at(0), matching_vtx, false);
+	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_lep2_x(), ntuple_.get_lep2_y(), ntuple_.get_lep2_z(), vtx_ele) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
+	 ntuple_.fill_sv_Info(vtx_ele, pvs.at(0), matching_vtx, false); // false for electrons
        }
      }
 
@@ -737,12 +736,16 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
      //cout<< "Sono dentro l'if e sono un handle della met " <<  metsHandle.isValid() << " e questa e' la size del sv " << sv.size() << "\n";
    }
 
-   pat::TauCollection taus;
-   if(tausHandle.isValid()){ taus = *tausHandle;}
+   //pat::TauCollection taus;
+   //if(tausHandle.isValid()){ taus = *tausHandle;}
    
-   pat::PackedCandidateCollection pfCandidates;
-   if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
+   //pat::PackedCandidateCollection pfCandidates;
+   //if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
 
+
+   //TO ADD TO THE SKIMMING - HERE IS WRONG
+   
+   /*
    TLorentzVector ivf_, prompt_lep;
    ivf_.SetPxPyPzE(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz(), ntuple_.get_sv_en());
    prompt_lep.SetPtEtaPhiE(ntuple_.get_lep1_pt(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), ntuple_.get_lep1_en());
@@ -767,6 +770,8 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    
    ntuple_.fill_massCorrection(mass_corrected);
    }
+
+   */
    tree_->Fill();   
 }
    
