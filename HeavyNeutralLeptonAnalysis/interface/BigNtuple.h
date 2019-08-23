@@ -39,45 +39,20 @@ public:
 	//getter
 
 	//vertex info
-        float get_pv_x()const{return lep1_gen_vx_;}
-        float get_pv_y()const{return lep1_gen_vy_;}
-	float get_pv_z()const{return lep1_gen_vz_;}
-
-        float get_sv_x()const{return lep2_gen_vx_;}
-        float get_sv_y()const{return lep2_gen_vy_;}
-        float get_sv_z()const{return lep2_gen_vz_;}
-
-	float get_sv_pt()const{return best_sv_pt_;}
-	float get_sv_px()const{return best_sv_px_;}
-	float get_sv_py()const{return best_sv_py_;}
-	float get_sv_pz()const{return best_sv_pz_;}
-	float get_sv_en()const{return best_sv_energy_;}
-
-        float get_sv_recox()const{return best_sv_recox_;}
-        float get_sv_recoy()const{return best_sv_recoy_;}
-        float get_sv_recoz()const{return best_sv_recoz_;}
-
-        float get_met_pt()const{return pfMet_pt_;}
-        float get_met_px()const{return pfMet_px_;}
-        float get_met_py()const{return pfMet_py_;}
-
-	float get_pvTosv_rho()const{return pvTosv_rho_;}
-	float get_pvTosv_phi()const{return pvTosv_phi_;}
-	float get_pvTosv_theta()const{return pvTosv_theta_;}
-
-	//phi info
-	float get_lep1_phi()const{return lep1_gen_Phi_;}
-	float get_lep1_pt()const{return lep1_gen_Pt_;}
-	float get_lep1_eta()const{return lep1_gen_Eta_;}
-	float get_lep1_en()const{return lep1_gen_En_;}
-
+        float get_lep2_x()const{return lep2_gen_vx_;}
+        float get_lep2_y()const{return lep2_gen_vy_;}
+        float get_lep2_z()const{return lep2_gen_vz_;}
 	float get_lep2_phi()const{return lep2_gen_Phi_;}
 	float get_lep2_eta()const{return lep2_gen_Eta_;}
 
+        float get_lep1_phi()const{return lep1_gen_Phi_;}
+        float get_lep1_pt()const{return lep1_gen_Pt_;}
+        float get_lep1_eta()const{return lep1_gen_Eta_;}
+        float get_lep1_en()const{return lep1_gen_En_;}
 
 	//trigger info
-	bool get_passIsoMu24All()const{return passIsoMu24All_;}
-        bool get_passIsoMu27All()const{return passIsoMu27All_;}
+	//bool get_passIsoMu24All()const{return passIsoMu24All_;}
+        //bool get_passIsoMu27All()const{return passIsoMu27All_;}
 
 	//setter
 
@@ -86,7 +61,7 @@ public:
 	//void set_sv_z(float sv_z){lep2_gen_vz_ = sv_z;}
 
 	void set_evtInfo(TTree* tree);
-	void fill_evtInfo(const edm::EventID& id, int& pile_up_info);
+	void fill_evtInfo(const edm::EventID& id, int pile_up_info);
 
         void set_prefiring(TTree* tree);
         void fill_prefiring(double weight, double weightup, double weightdown);
@@ -213,45 +188,45 @@ private:
 
 	//trigger infos
 	bool passEle32_WPTight_Gsf_ = 0;
-	bool passMu3_PFJet40_    = 0;
-	bool passMu8_TrkIsoVVL_  = 0;
-	bool passMu17_TrkIsoVVL_ = 0;
+	//bool passMu3_PFJet40_    = 0;
+	//bool passMu8_TrkIsoVVL_  = 0;
+	//bool passMu17_TrkIsoVVL_ = 0;
 
-	bool passIsoMuTk18_  = 0;
-	bool passIsoMuTk20_  = 0;
-	bool passIsoMuTk22_  = 0;
-	bool passIsoMuTk24_  = 0;
-	bool passIsoMuTk27_  = 0;
-	bool passIsoMuTk17e_ = 0;
-	bool passIsoMuTk22e_ = 0;
+	//bool passIsoMuTk18_  = 0;
+	//bool passIsoMuTk20_  = 0;
+	//bool passIsoMuTk22_  = 0;
+	//bool passIsoMuTk24_  = 0;
+	//bool passIsoMuTk27_  = 0;
+	//bool passIsoMuTk17e_ = 0;
+	//bool passIsoMuTk22e_ = 0;
 	
-	bool passIsoMu18_  = 0;
-	bool passIsoMu20_  = 0;
-	bool passIsoMu22_  = 0;
+	//bool passIsoMu18_  = 0;
+	//bool passIsoMu20_  = 0;
+	//bool passIsoMu22_  = 0;
 	bool passIsoMu24_  = 0;
-	bool passIsoMu27_  = 0;
-	bool passIsoMu17e_ = 0;
-	bool passIsoMu22e_ = 0;
-	bool passTkMu17_   = 0;
-	bool passTkMu20_   = 0;
+	//bool passIsoMu27_  = 0;
+	//bool passIsoMu17e_ = 0;
+	//bool passIsoMu22e_ = 0;
+	//bool passTkMu17_   = 0;
+	//bool passTkMu20_   = 0;
 	
-	bool passIsoMu24All_ = 0;
-	bool passIsoMu27All_ = 0;
+	//bool passIsoMu24All_ = 0;
+	//bool passIsoMu27All_ = 0;
 	
-	bool passDoubleMu17TrkIsoMu8_     = 0;
-	bool passDoubleMu17TrkIsoTkMu8_   = 0;
-	bool passDoubleTkMu17TrkIsoTkMu8_ = 0;
+	//bool passDoubleMu17TrkIsoMu8_     = 0;
+	//bool passDoubleMu17TrkIsoTkMu8_   = 0;
+	//bool passDoubleTkMu17TrkIsoTkMu8_ = 0;
 
-	bool passIsoEle27_              = 0;
-	bool passNonIsoEle115_          = 0;
-	bool passDoubleEle23andEle12DZ_ = 0;
-	bool passDoubleEle23andEle12_   = 0;
+	//bool passIsoEle27_              = 0;
+	//bool passNonIsoEle115_          = 0;
+	//bool passDoubleEle23andEle12DZ_ = 0;
+	//bool passDoubleEle23andEle12_   = 0;
 
-	bool passDoubleEle33TrkMW_      = 0;
-	bool passDoubleEle33MW_         = 0;
-	bool passDoubleEle33_           = 0;
+	//bool passDoubleEle33TrkMW_      = 0;
+	//bool passDoubleEle33MW_         = 0;
+	//bool passDoubleEle33_           = 0;
 
-	bool passDoubleMu33Ele33_       = 0;
+	//bool passDoubleMu33Ele33_       = 0;
 
 	float best_sv_px_ = 999;
 	float best_sv_py_ = 999;
@@ -272,6 +247,9 @@ private:
 	std::vector<float> sv_xErr_;
 	std::vector<float> sv_yErr_;
 	std::vector<float> sv_zErr_;
+	std::vector<float> sv_Lx_;
+	std::vector<float> sv_Ly_;
+	std::vector<float> sv_Lz_;
 	std::vector<float> sv_LxySig_;
 	std::vector<float> sv_LxyzSig_;
 	std::vector<float> sv_Lxy_;
@@ -305,9 +283,6 @@ private:
 
 	float sv_match_dxyz_;
 	float sv_match_dxy_;
-	std::vector<float> sv_lx_;
-	std::vector<float> sv_ly_;
-	std::vector<float> sv_lz_;
 
 	std::vector<int  > sv_tracks_Sumcharge_;
 	std::vector<float> sv_tracks_Sumpt_;
@@ -337,24 +312,22 @@ private:
 	std::vector<float> mu_trkKinkMuonBestTrack_;
 	std::vector<float> mu_chi2LocalPositionMuonBestTrack_;
 	std::vector<float> mu_normalizedChi2_ ;
-	std::vector<int>   mu_numberOfMatchedStations_ ;
-	std::vector<int>   mu_numberOfValidPixelHits_ ;
-	std::vector<int>   mu_numberOftrackerLayersWithMeasurement_ ;
-	std::vector<int>   mu_numberOfpixelLayersWithMeasurement_ ;
-	std::vector<int>   mu_TrackQuality_ ;
-	std::vector<int>   mu_InnerTrackQuality_ ;
-	std::vector<float> mu_InnerTrackValidFraction_;
-	std::vector<float> mu_pxTunePMuonBestTrack_ ;
-	std::vector<float> mu_pyTunePMuonBestTrack_ ;
-	std::vector<float> mu_pzTunePMuonBestTrack_ ;
-	std::vector<float> mu_pTunePMuonBestTrack_ ;
+	//std::vector<int>   mu_numberOfMatchedStations_ ;
+	//std::vector<int>   mu_numberOfValidPixelHits_ ;
+	//std::vector<int>   mu_numberOftrackerLayersWithMeasurement_ ;
+	//std::vector<int>   mu_numberOfpixelLayersWithMeasurement_ ;
+	//std::vector<int>   mu_TrackQuality_ ;
+	//std::vector<int>   mu_InnerTrackQuality_ ;
+	//std::vector<float> mu_InnerTrackValidFraction_;
+	//std::vector<float> mu_pxTunePMuonBestTrack_ ;
+	//std::vector<float> mu_pyTunePMuonBestTrack_ ;
+	//std::vector<float> mu_pzTunePMuonBestTrack_ ;
+	//std::vector<float> mu_pTunePMuonBestTrack_ ;
 	std::vector<float> mu_etaTunePMuonBestTrack_ ;
-	std::vector<float> mu_LXYZ_ ;
-	std::vector<float> mu_LXY_ ;
 	std::vector<float> mu_ptTunePMuonBestTrack_ ;
-	std::vector<float> mu_phiTunePMuonBestTrack_ ;
-	std::vector<float> mu_thetaTunePMuonBestTrack_ ;
-	std::vector<float> mu_chargeTunePMuonBestTrack_ ;
+	//std::vector<float> mu_phiTunePMuonBestTrack_ ;
+	//std::vector<float> mu_thetaTunePMuonBestTrack_ ;
+	//std::vector<float> mu_chargeTunePMuonBestTrack_ ;
 	std::vector<float> mu_dPToverPTTunePMuonBestTrack_ ;
 	std::vector<float> mu_absdxyTunePMuonBestTrack_ ;
 	std::vector<float> mu_absdxyErrorTunePMuonBestTrack_ ;
@@ -369,28 +342,27 @@ private:
 	std::vector<float> mu_isPFMuon_ ;
 	std::vector<float> mu_isRPCMuon_ ;
 	std::vector<float> mu_isTrackerMuon_ ;
-	std::vector<float> mu_isGoodMuon_ ;
 	std::vector<float> mu_isSoftMuon_ ;
 	std::vector<float> mu_isLooseMuon_ ;
 	std::vector<float> mu_isTightMuon_ ;
-	std::vector<int>    mu_STAnHits_ ;
-	std::vector<int>    mu_STAnLost_ ;
-	std::vector<int>    mu_STAnStationsWithAnyHits_ ;
-	std::vector<int>    mu_STAnCscChambersWithAnyHits_ ;
-	std::vector<int>    mu_STAnDtChambersWithAnyHits_ ;
-	std::vector<int>    mu_STAnRpcChambersWithAnyHits_ ;
-	std::vector<int>    mu_STAinnermostStationWithAnyHits_ ;
-	std::vector<int>    mu_STAoutermostStationWithAnyHits_ ;
-	std::vector<int>    mu_STAnStationsWithValidHits_ ;
-	std::vector<int>    mu_STAnCscChambersWithValidHits_ ;
-	std::vector<int>    mu_STAnDtChambersWithValidHit_ ;
-	std::vector<int>    mu_STAnRpcChambersWithValidHits_ ;
-	std::vector<int>    mu_STAnValidMuonHits_ ;
-	std::vector<int>    mu_STAnValidCscHits_ ;
-	std::vector<int>    mu_STAnValidDtHits_ ;
-	std::vector<int>    mu_STAnValidRpcHits_ ;
-	std::vector<int>    mu_STAinnermostStationWithValidHits_ ;
-	std::vector<int>    mu_STAoutermostStationWithValidHits_ ;
+	//std::vector<int>    mu_STAnHits_ ;
+	//std::vector<int>    mu_STAnLost_ ;
+	//std::vector<int>    mu_STAnStationsWithAnyHits_ ;
+	//std::vector<int>    mu_STAnCscChambersWithAnyHits_ ;
+	//std::vector<int>    mu_STAnDtChambersWithAnyHits_ ;
+	//std::vector<int>    mu_STAnRpcChambersWithAnyHits_ ;
+	//std::vector<int>    mu_STAinnermostStationWithAnyHits_ ;
+	//std::vector<int>    mu_STAoutermostStationWithAnyHits_ ;
+	//std::vector<int>    mu_STAnStationsWithValidHits_ ;
+	//std::vector<int>    mu_STAnCscChambersWithValidHits_ ;
+	//std::vector<int>    mu_STAnDtChambersWithValidHit_ ;
+	//std::vector<int>    mu_STAnRpcChambersWithValidHits_ ;
+	//std::vector<int>    mu_STAnValidMuonHits_ ;
+	//std::vector<int>    mu_STAnValidCscHits_ ;
+	//std::vector<int>    mu_STAnValidDtHits_ ;
+	//std::vector<int>    mu_STAnValidRpcHits_ ;
+	//std::vector<int>    mu_STAinnermostStationWithValidHits_ ;
+	//std::vector<int>    mu_STAoutermostStationWithValidHits_ ;
 	std::vector<float>  mu_STATofDirection_ ;
 	std::vector<float>  mu_STATofNDof_ ;
 	std::vector<float>  mu_STATofTimeAtIpInOut_ ;
@@ -450,53 +422,53 @@ private:
 	std::vector<float>   ele_pt_; 
 	std::vector<float>   ele_etaSC_;
 	std::vector<float>   ele_phiSC_;
-	std::vector<float>   ele_phiWidth_; 
-	std::vector<float>   ele_etaWidth_; 
+	//std::vector<float>   ele_phiWidth_; 
+	//std::vector<float>   ele_etaWidth_; 
 	std::vector<float>   ele_energySC_;
 	std::vector<float>   ele_thetaSC_;
-	std::vector<float>   ele_preshowerEnergySC_;
+	//std::vector<float>   ele_preshowerEnergySC_;
 	std::vector<float>   ele_etaTrack_; 
 	std::vector<float>   ele_phiTrack_;
 	std::vector<float>   ele_thetaTrack_;   
 	std::vector<float>   ele_x_;
 	std::vector<float>   ele_y_;
 	std::vector<float>   ele_z_;  
-	std::vector<float>   ele_e2x5Max_;
-	std::vector<float>   ele_e1x5_;
-	std::vector<float>   ele_e5x5_;
-	std::vector<float>   ele_e2x5MaxOver5x5_;
-	std::vector<float>   ele_e1x5Over5x5_;
-	std::vector<float>   ele_sigmaIetaIetaFull5x5_;
-	std::vector<float>   ele_e2x5MaxFull5x5_;
-	std::vector<float>   ele_e1x5Full5x5_;
-	std::vector<float>   ele_e5x5Full5x5_;
-	std::vector<float>   ele_e2x5MaxOver5x5Full5x5_;
-	std::vector<float>   ele_e1x5Over5x5Full5x5_;  
-	std::vector<float>   ele_zTrackPositionAtVtx_;
-	std::vector<float>   ele_hadronicOverEm_;
-	std::vector<float>   ele_deltaEtaInSC_;
-	std::vector<float>   ele_deltaPhiInSC_;
-	std::vector<float>   ele_deltaEtaInSeedCluster_;
-	std::vector<float>   ele_deltaPhiInSeedCluster_;
-	std::vector<float>   ele_sigmaIetaIeta_;  
-	std::vector<float>   ele_e2x5Right_;
-	std::vector<float>   ele_e2x5Left_;
-	std::vector<float>   ele_e2x5Top_;
-	std::vector<float>   ele_e2x5Bottom_;
-	std::vector<float>   ele_eMax_;
-	std::vector<float>   ele_eRight_;
-	std::vector<float>   ele_eLeft_;
-	std::vector<float>   ele_eTop_;
-	std::vector<float>   ele_eBottom_;
-	std::vector<float>   ele_e3x3_;
-	std::vector<float>   ele_frac51_;
-	std::vector<float>   ele_frac15_;
+	//std::vector<float>   ele_e2x5Max_;
+	//std::vector<float>   ele_e1x5_;
+	//std::vector<float>   ele_e5x5_;
+	//std::vector<float>   ele_e2x5MaxOver5x5_;
+	//std::vector<float>   ele_e1x5Over5x5_;
+	//std::vector<float>   ele_sigmaIetaIetaFull5x5_;
+	//std::vector<float>   ele_e2x5MaxFull5x5_;
+	//std::vector<float>   ele_e1x5Full5x5_;
+	//std::vector<float>   ele_e5x5Full5x5_;
+	//std::vector<float>   ele_e2x5MaxOver5x5Full5x5_;
+	//std::vector<float>   ele_e1x5Over5x5Full5x5_;  
+	//std::vector<float>   ele_zTrackPositionAtVtx_;
+	//std::vector<float>   ele_hadronicOverEm_;
+	//std::vector<float>   ele_deltaEtaInSC_;
+	//std::vector<float>   ele_deltaPhiInSC_;
+	//std::vector<float>   ele_deltaEtaInSeedCluster_;
+	//std::vector<float>   ele_deltaPhiInSeedCluster_;
+	//std::vector<float>   ele_sigmaIetaIeta_;  
+	//std::vector<float>   ele_e2x5Right_;
+	//std::vector<float>   ele_e2x5Left_;
+	//std::vector<float>   ele_e2x5Top_;
+	//std::vector<float>   ele_e2x5Bottom_;
+	//std::vector<float>   ele_eMax_;
+	//std::vector<float>   ele_eRight_;
+	//std::vector<float>   ele_eLeft_;
+	//std::vector<float>   ele_eTop_;
+	//std::vector<float>   ele_eBottom_;
+	//std::vector<float>   ele_e3x3_;
+	//std::vector<float>   ele_frac51_;
+	//std::vector<float>   ele_frac15_;
 	
-	std::vector<int>   ele_rawId_;
-	std::vector<int>   ele_ieta_;
+	//std::vector<int>   ele_rawId_;
+	//std::vector<int>   ele_ieta_;
 	std::vector<int>   ele_nbOfMissingHits_;
 	std::vector<int>   ele_charge_;
-	std::vector<bool>  ele_isEcalDrivenSeed_;
+	//std::vector<bool>  ele_isEcalDrivenSeed_;
 	std::vector<bool>  ele_isPassConversionVeto_;
   
 	std::vector<float>   ele_dxy_;
@@ -504,8 +476,8 @@ private:
 	std::vector<float>   ele_rhoIso_;
 	std::vector<float>   ele_fbrem_;
 	std::vector<float>   ele_EoverP_;
-	std::vector<float>   ele_Xposition_;   
-	std::vector<float>   ele_Yposition_;   
+	//std::vector<float>   ele_Xposition_;   
+	//std::vector<float>   ele_Yposition_;   
 	std::vector<float>   ele_dr03TkSumPt_;
 	std::vector<float>   ele_hcalDepth1OverEcal_;
 	std::vector<float>   ele_hcalDepth2OverEcal_;
@@ -531,10 +503,10 @@ private:
 	std::vector<float>   ele_CutTight_;
 	std::vector<float>   ele_isEB_;
 	std::vector<float>   ele_isEE_;
-	std::vector<float>   ele_eSuperClusterOverP_;
-	std::vector<float>   ele_ecalEnergy_;
-	std::vector<float>   ele_dEtaInSeed_;
-	std::vector<float>   ele_InvMinusPInv_;
+	//std::vector<float>   ele_eSuperClusterOverP_;
+	//std::vector<float>   ele_ecalEnergy_;
+	//std::vector<float>   ele_dEtaInSeed_;
+	//std::vector<float>   ele_InvMinusPInv_;
 
 	std::vector<float>   ele_PtCorr_;
 	std::vector<float>   ele_PtScaleUp_;
