@@ -13,17 +13,28 @@ import sys
 import re
 import importlib
 import FWCore.ParameterSet.Config as cms
-#from FWCore.ParameterSet.VarParsing import VarParsing
+from FWCore.ParameterSet.VarParsing import VarParsing
 
-#options = VarParsing('analysis')
-#options.register('Flag', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool, "Apply trigger matching for signal objects. Default: True")
-#options.parseArguments()
+options = VarParsing('analysis')
+options.register(
+    'period', 'A', 
+    VarParsing.multiplicity.singleton, VarParsing.varType.string, 
+    "Period: default A"
+)
+
+options.register(
+    'isMC', False,
+    VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    "isMC: default False"
+)
+
+options.parseArguments()
 #hasLHE_ = options.Flag
 
-period_ = 'D'
+period_ = options.period
 hasLHE_ = True
 debugLevel    = -1 
-isMC_         = True
+isMC_         = options.isMC
 isMCSignal_    = False
 
 GT_MC = '102X_upgrade2018_realistic_v18'#94X_mc2017_realistic_v14
@@ -69,7 +80,7 @@ process.source = cms.Source("PoolSource",
                             )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 ####################################################################
 
 
@@ -180,7 +191,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer(
     PUInfo                = cms.InputTag("slimmedAddPileupInfo"),
     lheEventProducts      = cms.InputTag("externalLHEProducer"),
     SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"), 
-    electronsMva   = cms.string("cutBasedElectronID-Fall17-94X-V2-veto"),
+    electronsMVA   = cms.string("ElectronMVAEstimatorRun2Fall17NoIsoV1Values"), # TO CHANGE
     electronsVeto  = cms.string("cutBasedElectronID-Fall17-94X-V2-veto"),
     electronsLoose = cms.string("cutBasedElectronID-Fall17-94X-V2-loose"),
     electronsMedium= cms.string("cutBasedElectronID-Fall17-94X-V2-medium"),

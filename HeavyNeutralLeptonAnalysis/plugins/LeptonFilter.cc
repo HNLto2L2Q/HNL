@@ -136,8 +136,8 @@ LeptonFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iEvent.getByToken(electronsMiniAODToken_, electronsHandle);
   iEvent.getByToken(triggerResultsToken_, triggers);
 
-  //const edm::TriggerResults triggerResults =  *triggers.product();
-  //const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
+  const edm::TriggerResults triggerResults =  *triggers.product();
+  const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
 
   bool result = false;
   
@@ -159,29 +159,40 @@ LeptonFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   //electrons selection
   for(auto ele = electronsHandle->begin(); ele != electronsHandle->end(); ++ele){
     if(ele->gsfTrack().isNull() || ele->pt() < 5 || fabs(ele->eta()) > 2.5 ) continue;
-    if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1){
-      electrons_count++;
+    //if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1){ //this full5x5_sigmaIetaIeta cut is wrong for 2017 AND 2018!!
+    if (ele->passConversionVeto() == 1){
+    electrons_count++;
     }
   }
 
   
   //if((muons_count + electrons_count) >= 2){
-  if((muons_count >= 2) || (electrons_count >= 2)){ 
-   result = true;
+  //  if((muons_count >= 2) || (electrons_count >= 2)){ 
+
+  //VALID ONLY FOR MUON CASE - when run on SingleMuon
+  if(muons_count >= 2){
+    //result = true;
+    for (size_t i = 0; i < trigNames.size(); ++i) {
+      const std::string &name = trigNames.triggerName(i);
+      bool fired = triggerResults.accept(i);
+      if(fired && ( name.find("HLT_IsoMu24_v") != std::string::npos))
+	//      if(fired && (name.compare("HLT_IsoMu24_v") == 0))
+	result = true;
+    }
   }
   
   
     
 
   //trigger level cut
-  /*
+  /*  
   for (size_t i = 0; i < trigNames.size(); ++i) {
     const std::string &name = trigNames.triggerName(i);
     bool fired = triggerResults.accept(i);
     if(fired && (name.compare("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") == 0 || name.compare("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") == 0))
       result = true;
-  }*/
-
+  }
+  */
   //number of leptons cut
   /*
     if ( (muons->size() + electrons->size() ) >= 2 && (muons->size() + electrons->size() ) <= 4) {

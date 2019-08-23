@@ -40,6 +40,7 @@ if __name__ == '__main__':
          dataset    = doc['samples'][sample]['dsname']
          period     = doc['samples'][sample]['period'] 
          if 'SingleMuon' not in dataset: continue
+         if 'D' not in period: continue
 
          group      = doc['samples'][sample]['group']
          print dataset, unitPerJob, name
