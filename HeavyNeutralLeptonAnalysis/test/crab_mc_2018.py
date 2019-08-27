@@ -29,6 +29,7 @@ if __name__ == '__main__':
     from httplib import HTTPException
     from multiprocessing import Process
 
+ 
 #    for dataset, infos in dataset_files.items():
     with open('input_mc_2018.yml','r') as f:
        doc = yaml.load(f)
@@ -37,21 +38,28 @@ if __name__ == '__main__':
          name       = sample
          unitPerJob = doc['samples'][sample]['unit_per_job'] 
          dataset    = doc['samples'][sample]['dsname']
-         #period     = doc['samples'][sample]['period'] 
-         #if 'SingleMuon' not in dataset: continue
-
          group      = doc['samples'][sample]['group']
-         print dataset, unitPerJob, name
+         prescaleValue = int(doc['samples'][sample]['prescale'])
+
+         print dataset, unitPerJob, name, prescaleValue
          config.Data.inputDataset = dataset
          config.General.requestName = name
          config.Data.unitsPerJob = int(unitPerJob)
          config.JobType.pyCfgParams = ['isMC=True']
          
-         #if group == 'data':
-         #  lumi_file = doc['samples'][sample]['lumi_file']
-         #  config.Data.lumiMask = lumi_file
-         #  print '\t '+lumi_file
-         
-         crabCommand('submit', config = config, dryrun = True)
+         if prescaleValue > 0:
+             print 'further splitting...'
+             offsetValue = [i for i in range(prescaleValue)]
+             for i in offsetValue: 
+                 print "offset is: ", i
+                 config.Data.inputDataset = dataset
+                 config.General.requestName = name + '_'  + str(i)
+                 config.Data.unitsPerJob = int(unitPerJob)
+                 config.JobType.pyCfgParams = ['isMC=True','prescale=%s'%prescaleValue, 'offset=%s'%i]
+                 crabCommand('submit', config = config, dryrun = False)
+
+
+         else:
+             crabCommand('submit', config = config, dryrun = False)
 
 

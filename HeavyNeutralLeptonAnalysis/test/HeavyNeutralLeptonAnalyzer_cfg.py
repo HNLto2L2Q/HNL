@@ -8,6 +8,7 @@ from PhysicsTools.SelectorUtils.centralIDRegistry import central_id_registry
 from RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi import *
 from HNL.HeavyNeutralLeptonAnalysis.ele_Sequence_cff import addElectronSequence
 
+
 import sys
 
 import re
@@ -28,6 +29,19 @@ options.register(
     "isMC: default False"
 )
 
+options.register(
+    'prescale', -1,
+    VarParsing.multiplicity.singleton, VarParsing.varType.int,
+    "prescale to split sample"
+)
+
+options.register(
+    'offset', 0,
+    VarParsing.multiplicity.singleton, VarParsing.varType.int,
+    "offset to split sample"
+)
+
+
 options.parseArguments()
 #hasLHE_ = options.Flag
 
@@ -36,7 +50,8 @@ hasLHE_ = True
 debugLevel    = -1 
 isMC_         = options.isMC
 isMCSignal_    = False
-
+prescale_ = options.prescale
+offset_ = options.offset
 GT_MC = '102X_upgrade2018_realistic_v18'#94X_mc2017_realistic_v14
 edmOut = False
 
@@ -73,6 +88,12 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
     
 
+##################### prescale #######################################
+if prescale_ >= 0:
+  process.prescale = cms.EDFilter("EventPrescaler",
+                                  prescale=cms.int32(prescale_),
+                                  offset=cms.int32(offset_))
+
 ###################### input file for testing ##########################
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
@@ -82,7 +103,6 @@ process.source = cms.Source("PoolSource",
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 ####################################################################
-
 
 
 ###################### output file #############################
@@ -206,16 +226,11 @@ process.MessageLogger = cms.Service(
     suppressWarning= cms.untracked.vstring('displacedInclusiveVertexFinder')
 )
 
-process.p = cms.Path(
-    process.metaTree
-    *process.LeptonsFilter
-    *process.egammaPostRecoSeq
-    *process.ecalBadCalibReducedMINIAODFilter
-    *process.fullPatMetSequence
-    *process.displacedInclusiveVertexing
-    *process.jetSmearingSeq
-    *process.HeavyNeutralLepton
-)
+process.p = cms.Path()
+if prescale_ >= 0:  process.p *= process.prescale
+
+process.p *= process.metaTree*process.LeptonsFilter*process.egammaPostRecoSeq*process.ecalBadCalibReducedMINIAODFilter*process.fullPatMetSequence*process.displacedInclusiveVertexing*process.jetSmearingSeq*process.HeavyNeutralLepton
+
 
 # crea un output EDM
 if edmOut:
