@@ -95,12 +95,12 @@ int main(int argc, char **argv){
     cout  <<nentries<<endl;
     cout << str <<endl;    
     //======================= Old Tree Variables ==========================================// 
-    // These are the variables I cut on 
-    Bool_t passIsoMu24All;
-    Bool_t passIsoMu27All;
+    // Trigger variables 
+    Bool_t passIsoMu24=0;
+    Bool_t  passEle32_WPTight_Gsf=0;
     
-    oldtree->SetBranchAddress("passIsoMu24All",&passIsoMu24All);
-    oldtree->SetBranchAddress("passIsoMu27All",&passIsoMu27All);
+    oldtree->SetBranchAddress("passIsoMu24",&passIsoMu24);
+    oldtree->SetBranchAddress("passEle32_WPTight_Gsf",&passEle32_WPTight_Gsf);
     
     //vector<Float_t>   *PU_Weight = 0;
     //oldtree->SetBranchAddress("PU_Weight",&PU_Weight);
@@ -122,7 +122,7 @@ int main(int argc, char **argv){
     vector<Float_t>   *mu_pfSumPUPt_ = 0 ;
     vector<Float_t>   *mu_emIso_ = 0 ;
     vector<Float_t>   *mu_hadIso_ = 0 ;
-    vector<Float_t>   *mu_normalizedChi2_ = 0 ;
+    //vector<Float_t>   *mu_normalizedChi2_ = 0 ;
     vector<Float_t>   *mu_dPToverPTTunePMuonBestTrack_ = 0 ;
     vector<Float_t>   *mu_absdxyTunePMuonBestTrack_ = 0 ;
     vector<Float_t>   *mu_absdxyErrorTunePMuonBestTrack_ = 0 ;
@@ -131,17 +131,17 @@ int main(int argc, char **argv){
     vector<Float_t>   *mu_absdzErrorTunePMuonBestTrack_ = 0 ;
     vector<Float_t>   *mu_absdzSigTunePMuonBestTrack_ = 0 ;
     vector<Float_t>   *mu_recoiso_ = 0 ;
-    vector<Float_t>   *mu_STATofDirection_ = 0 ;
+    // vector<Float_t>   *mu_STATofDirection_ = 0 ;
     vector<Float_t>   *mu_STATofNDof_ = 0 ;
     vector<Float_t>   *mu_STATofTimeAtIpInOut_ = 0 ;
     vector<Float_t>   *mu_STATofTimeAtIpInOutErr_ = 0 ;
     vector<Float_t>   *mu_STATofTimeAtIpOutIn_ = 0 ;
     vector<Float_t>   *mu_STATofTimeAtIpOutInErr_ = 0 ;
     vector<Int_t>     *mu_numberOfValidMuonHits_ = 0 ;
-    vector<Int_t>     *mu_numberOfMatchedStations_ = 0 ;
-    vector<Int_t>     *mu_numberOfValidPixelHits_ = 0 ;
-    vector<Int_t>     *mu_TrackQuality_ = 0 ;
-    vector<Int_t>     *mu_InnerTrackQuality_ = 0 ;
+    //vector<Int_t>     *mu_numberOfMatchedStations_ = 0 ;
+    //vector<Int_t>     *mu_numberOfValidPixelHits_ = 0 ;
+    //vector<Int_t>     *mu_TrackQuality_ = 0 ;
+    // vector<Int_t>     *mu_InnerTrackQuality_ = 0 ;
     vector<Int_t>     *mu_FirstGenMatch_ = 0;
     vector<Int_t>     *mu_SecondGenMatch_ = 0;
     
@@ -155,6 +155,7 @@ int main(int argc, char **argv){
     vector<Float_t> *sv_mu_phi_ = 0 ;
     vector<Float_t> *sv_mu_pt_ = 0 ;
     vector<Float_t> *sv_mu_p_ = 0 ;
+    vector<Float_t> *sv_mu_en_ = 0 ;
     vector<Float_t> *sv_mu_Beta_ = 0 ;
     vector<Float_t> *sv_mu_Gamma_ = 0 ;
     vector<Float_t> *sv_mu_CTau0_ = 0 ;
@@ -190,6 +191,9 @@ int main(int argc, char **argv){
     
     Float_t   pfMet_et;
     Float_t   pfMet_pt;
+    Float_t   pfMet_px;
+    Float_t   pfMet_py;
+    Float_t   pfMet_pz;
     Float_t   pfMet_phi;
     Float_t   pfMet_en;
     Float_t   pfMet_sumEt;
@@ -231,7 +235,7 @@ int main(int argc, char **argv){
     oldtree->SetBranchAddress("mu_pfSumPUPt", &mu_pfSumPUPt_);
     oldtree->SetBranchAddress("mu_emIso", &mu_emIso_);
     oldtree->SetBranchAddress("mu_hadIso", &mu_hadIso_);
-    oldtree->SetBranchAddress("mu_normalizedChi2", &mu_normalizedChi2_);
+    //oldtree->SetBranchAddress("mu_normalizedChi2", &mu_normalizedChi2_);
     oldtree->SetBranchAddress("mu_dPToverPTTunePMuonBestTrack", &mu_dPToverPTTunePMuonBestTrack_);
     oldtree->SetBranchAddress("mu_absdxyTunePMuonBestTrack", &mu_absdxyTunePMuonBestTrack_);
     oldtree->SetBranchAddress("mu_absdxyErrorTunePMuonBestTrack", &mu_absdxyErrorTunePMuonBestTrack_);
@@ -240,23 +244,26 @@ int main(int argc, char **argv){
     oldtree->SetBranchAddress("mu_absdzErrorTunePMuonBestTrack", &mu_absdzErrorTunePMuonBestTrack_);
     oldtree->SetBranchAddress("mu_absdzSigTunePMuonBestTrack", &mu_absdzSigTunePMuonBestTrack_);
     oldtree->SetBranchAddress("mu_recoiso", &mu_recoiso_);
-    oldtree->SetBranchAddress("mu_STATofDirection", &mu_STATofDirection_);
+    //oldtree->SetBranchAddress("mu_STATofDirection", &mu_STATofDirection_);
     oldtree->SetBranchAddress("mu_STATofNDof", &mu_STATofNDof_);
     oldtree->SetBranchAddress("mu_STATofTimeAtIpInOut", &mu_STATofTimeAtIpInOut_);
     oldtree->SetBranchAddress("mu_STATofTimeAtIpInOutErr", &mu_STATofTimeAtIpInOutErr_);
     oldtree->SetBranchAddress("mu_STATofTimeAtIpOutIn", &mu_STATofTimeAtIpOutIn_);
     oldtree->SetBranchAddress("mu_STATofTimeAtIpOutInErr", &mu_STATofTimeAtIpOutInErr_);
     oldtree->SetBranchAddress("mu_numberOfValidMuonHits", &mu_numberOfValidMuonHits_);
-    oldtree->SetBranchAddress("mu_numberOfMatchedStations", &mu_numberOfMatchedStations_);
-    oldtree->SetBranchAddress("mu_numberOfValidPixelHits", &mu_numberOfValidPixelHits_);
-    oldtree->SetBranchAddress("mu_TrackQuality", &mu_TrackQuality_);
-    oldtree->SetBranchAddress("mu_InnerTrackQuality", &mu_InnerTrackQuality_);
+    //oldtree->SetBranchAddress("mu_numberOfMatchedStations", &mu_numberOfMatchedStations_);
+    //oldtree->SetBranchAddress("mu_numberOfValidPixelHits", &mu_numberOfValidPixelHits_);
+    //oldtree->SetBranchAddress("mu_TrackQuality", &mu_TrackQuality_);
+    //oldtree->SetBranchAddress("mu_InnerTrackQuality", &mu_InnerTrackQuality_);
     //    oldtree->SetBranchAddress("mu_FirstGenMatch", &mu_FirstGenMatch_);
     //oldtree->SetBranchAddress("mu_SecondGenMatch", &mu_SecondGenMatch_);
     
     //oldtree->SetBranchAddress("sv_tracks_pt", &sv_mu_TrackSize_);
     oldtree->SetBranchAddress("sv_LxySig", &sv_mu_LXYSig_);
     oldtree->SetBranchAddress("sv_LxyzSig", &sv_mu_LXYZSig_);
+    oldtree->SetBranchAddress("sv_Lx", &sv_mu_LX_);
+    oldtree->SetBranchAddress("sv_Ly", &sv_mu_LY_);
+    oldtree->SetBranchAddress("sv_Lz", &sv_mu_LZ_);
     oldtree->SetBranchAddress("sv_Lxy", &sv_mu_LXY_);
     oldtree->SetBranchAddress("sv_Lxyz", &sv_mu_LXYZ_);
     oldtree->SetBranchAddress("sv_mass", &sv_mu_mass_);
@@ -264,6 +271,7 @@ int main(int argc, char **argv){
     oldtree->SetBranchAddress("sv_phi", &sv_mu_phi_);  
     oldtree->SetBranchAddress("sv_pt", &sv_mu_pt_);  
     oldtree->SetBranchAddress("sv_p", &sv_mu_p_);  
+    oldtree->SetBranchAddress("sv_energy", &sv_mu_en_);
     oldtree->SetBranchAddress("sv_Beta", &sv_mu_Beta_);
     oldtree->SetBranchAddress("sv_Gamma", &sv_mu_Gamma_); 
     oldtree->SetBranchAddress("sv_CTau0", &sv_mu_CTau0_);  
@@ -290,7 +298,10 @@ int main(int argc, char **argv){
     oldtree->SetBranchAddress("pfMet_sumEt", &pfMet_sumEt);
     oldtree->SetBranchAddress("caloMet_pt", &caloMet_pt);
     oldtree->SetBranchAddress("caloMet_phi", &caloMet_phi);
-    
+    oldtree->SetBranchAddress("pfMet_px", &pfMet_px);
+    oldtree->SetBranchAddress("pfMet_py", &pfMet_py);
+    oldtree->SetBranchAddress("pfMet_pz", &pfMet_pz);    
+
     oldtree->SetBranchAddress("jet_charge", &jet_charge);
     oldtree->SetBranchAddress("jet_et", &jet_et);
     oldtree->SetBranchAddress("jet_pt", &jet_pt);
@@ -315,12 +326,12 @@ int main(int argc, char **argv){
     
     
     //transverse mass
-    oldtree->SetBranchAddress("tranvsverseMass_ivf", &transverseMass_ivf_);
-    oldtree->SetBranchAddress("tranvsverseMass_lep1", &transverseMass_lep1_);
-    oldtree->SetBranchAddress("tranvsverseMass_ivfPluslep1", &transverseMass_ivfPluslep1_);
+    //oldtree->SetBranchAddress("tranvsverseMass_ivf", &transverseMass_ivf_);
+    //oldtree->SetBranchAddress("tranvsverseMass_lep1", &transverseMass_lep1_);
+    //oldtree->SetBranchAddress("tranvsverseMass_ivfPluslep1", &transverseMass_ivfPluslep1_);
     
     //sv mass correction
-    oldtree->SetBranchAddress("sv_mass_corr", &sv_mass_corr_);
+    //oldtree->SetBranchAddress("sv_mass_corr", &sv_mass_corr_);
     
     
     //RPC info
@@ -336,7 +347,6 @@ int main(int argc, char **argv){
     //Throw away some branches -- thos are all the  one I don't want to keep in the ntuples
     //IMPORTANT: we cannot throw away the branches with the variable we are using in the loop!
     oldtree->SetBranchStatus("ele_*",    0);
-    //oldtree->SetBranchStatus("mu_ST*", 0);
     
     //================================ PU Weight ============================================// 
     //Float_t pu_weight;
@@ -347,15 +357,14 @@ int main(int argc, char **argv){
     
     Float_t mu_promptRhoIso_,        mu_promptTrackiso_,       mu_promptPfSumChHadPt_,
       mu_promptPFSumPhotonEt_,  mu_promptPfSumPUPt_,      mu_promptEmIso_,
-      mu_promptHadIso_,        mu_promptNormalizedChi2_, mu_promptDPToverPT_,
+      mu_promptHadIso_,        mu_promptDPToverPT_,
       mu_promptAbsdxy_,        mu_promptAbsdxyError_,    mu_promptAbsdxySig_,
       mu_promptAbsdz_,         mu_promptAbsdzError_,     mu_promptAbsdzSig_,
-      mu_promptRecoDeltaBeta_, mu_promptRecoiso_,        mu_promptDirection_,
+      mu_promptRecoDeltaBeta_, mu_promptRecoiso_,  
       mu_promptNDof_,          mu_promptTimeAtIpInOut_,  mu_promptTimeAtIpInOutErr_,
       mu_promptTimeAtIpOutIn_, mu_promptTimeAtIpOutInErr_,  mu_promptPfSumNHadEt_;
     
-    Int_t   mu_promptValidMuonHits_, mu_promptMatchedStations_, mu_promptValidPixelHits_, 
-      mu_promptTrackQuality_,  mu_promptInrTrackQuality_, mu_promptGenMatch_;
+    Int_t   mu_promptValidMuonHits_, mu_promptGenMatch_;
     
     
     TBranch* branch_mu_promptPt = newtree->Branch("mu_promptPt",&mu_promptPt_,"mu_promptPt/F");
@@ -372,7 +381,7 @@ int main(int argc, char **argv){
     TBranch* branch_mu_promptPfSumPUPt = newtree->Branch("mu_promptPfSumPUPt", &mu_promptPfSumPUPt_, "mu_promptPfSumPUPt/F");
     TBranch* branch_mu_promptEmIso = newtree->Branch("mu_promptEmIso", &mu_promptEmIso_, "mu_promptEmIso/F");
     TBranch* branch_mu_promptHadIso = newtree->Branch("mu_promptHadIso", &mu_promptHadIso_, "mu_promptHadIso/F");
-    TBranch* branch_mu_promptNormalizedChi2 = newtree->Branch("mu_promptNormalizedChi2", &mu_promptNormalizedChi2_, "mu_promptNormalizedChi2/F");
+    //TBranch* branch_mu_promptNormalizedChi2 = newtree->Branch("mu_promptNormalizedChi2", &mu_promptNormalizedChi2_, "mu_promptNormalizedChi2/F");
     TBranch* branch_mu_promptDPToverPT = newtree->Branch("mu_promptDPToverPT", &mu_promptDPToverPT_, "mu_promptDPToverPT/F");
     TBranch* branch_mu_promptAbsdxy = newtree->Branch("mu_promptAbsdxy", &mu_promptAbsdxy_, "mu_promptAbsdxy/F");
     TBranch* branch_mu_promptAbsdxyError = newtree->Branch("mu_promptAbsdxyError", &mu_promptAbsdxyError_, "mu_promptAbsdxyError/F");
@@ -382,16 +391,16 @@ int main(int argc, char **argv){
     TBranch* branch_mu_promptAbsdzSig = newtree->Branch("mu_promptAbsdzSig", &mu_promptAbsdz_, "mu_promptAbsdzSig/F");
     TBranch* branch_mu_promptRecoDeltaBeta = newtree->Branch("mu_promptRecoDeltaBeta", &mu_promptRecoDeltaBeta_, "mu_promptRecoDeltaBeta/F");
     TBranch* branch_mu_promptRecoiso = newtree->Branch("mu_promptRecoiso", &mu_promptRecoiso_, "mu_promptRecoiso/F");
-    TBranch* branch_mu_promptDirection = newtree->Branch("mu_promptDirection", &mu_promptDirection_, "mu_promptDirection/F");
+    //TBranch* branch_mu_promptDirection = newtree->Branch("mu_promptDirection", &mu_promptDirection_, "mu_promptDirection/F");
     TBranch* branch_mu_promptNDof = newtree->Branch("mu_promptNDof", &mu_promptNDof_, "mu_promptNDof/F");
     TBranch* branch_mu_promptTimeAtIpInOut = newtree->Branch("mu_promptTimeAtIpInOut", &mu_promptTimeAtIpInOut_, "mu_promptTimeAtIpInOut/F");
     TBranch* branch_mu_promptTimeAtIpInOutErr = newtree->Branch("mu_promptTimeAtIpInOutErr", &mu_promptTimeAtIpInOutErr_, "mu_promptTimeAtIpInOutErr/F");
     TBranch* branch_mu_promptTimeAtIpOutIn = newtree->Branch("mu_promptTimeAtIpOutIn", &mu_promptTimeAtIpOutIn_, "mu_promptTimeAtIpOutIn/F");
     TBranch* branch_mu_promptTimeAtIpOutInErr = newtree->Branch("mu_promptTimeAtIpOutInErr", &mu_promptTimeAtIpOutInErr_, "mu_promptTimeAtIpOutInErr/F");
-    TBranch* branch_mu_promptMatchedStations = newtree->Branch("mu_promptMatchedStations", &mu_promptMatchedStations_, "mu_promptMatchedStations/I");
-    TBranch* branch_mu_promptValidPixelHits = newtree->Branch("mu_promptValidPixelHits", &mu_promptValidPixelHits_, "mu_promptValidPixelHits/I");
-    TBranch* branch_mu_promptTrackQuality = newtree->Branch("mu_promptTrackQuality", &mu_promptTrackQuality_, "mu_promptTrackQuality/I");
-    TBranch* branch_mu_promptInrTrackQuality = newtree->Branch("mu_promptInrTrackQuality", &mu_promptInrTrackQuality_, "mu_promptInrTrackQuality/I");
+    //TBranch* branch_mu_promptMatchedStations = newtree->Branch("mu_promptMatchedStations", &mu_promptMatchedStations_, "mu_promptMatchedStations/I");
+    //TBranch* branch_mu_promptValidPixelHits = newtree->Branch("mu_promptValidPixelHits", &mu_promptValidPixelHits_, "mu_promptValidPixelHits/I");
+    //TBranch* branch_mu_promptTrackQuality = newtree->Branch("mu_promptTrackQuality", &mu_promptTrackQuality_, "mu_promptTrackQuality/I");
+    //TBranch* branch_mu_promptInrTrackQuality = newtree->Branch("mu_promptInrTrackQuality", &mu_promptInrTrackQuality_, "mu_promptInrTrackQuality/I");
     TBranch* branch_mu_promptValidMuonHits = newtree->Branch("mu_promptValidMuonHits", &mu_promptValidMuonHits_, "mu_promptValidMuonHits/I");
     TBranch* branch_mu_promptGenMatch = newtree->Branch("mu_promptGenMatch", &mu_promptGenMatch_, "mu_promptGenMatch/I");
     
@@ -401,17 +410,16 @@ int main(int argc, char **argv){
     
     Float_t mu_secondRhoIso_,        mu_secondTrackiso_,  mu_secondPfSumChHadPt_,
       mu_secondPFSumPhotonEt_, mu_secondPfSumPUPt_,      mu_secondEmIso_,        
-      mu_secondHadIso_,        mu_secondNormalizedChi2_, mu_secondDPToverPT_,   
+      mu_secondHadIso_,         mu_secondDPToverPT_,   
       mu_secondAbsdxy_,        mu_secondAbsdxyError_,    mu_secondAbsdxySig_, 
       mu_secondAbsdz_,         mu_secondAbsdzError_,     mu_secondAbsdzSig_,
-      mu_secondRecoDeltaBeta_, mu_secondRecoiso_,        mu_secondDirection_,
+      mu_secondRecoDeltaBeta_, mu_secondRecoiso_,  
       mu_secondNDof_,          mu_secondTimeAtIpInOut_,  mu_secondTimeAtIpInOutErr_, 
       mu_secondTimeAtIpOutIn_, mu_secondTimeAtIpOutInErr_,  mu_secondPfSumNHadEt_;
     
     Float_t mu_DeltaBetaR3_, mu_DiMuMass_, mu_Size_, mu_DeltaR_;
     
-    Int_t   mu_secondValidMuonHits_, mu_secondMatchedStations_, mu_secondValidPixelHits_, 
-      mu_secondTrackQuality_,  mu_secondInrTrackQuality_, mu_secondGenMatch_;
+    Int_t   mu_secondValidMuonHits_, mu_secondGenMatch_;
     
     TBranch* branch_mu_secondPt  = newtree->Branch("mu_secondPt",&mu_secondPt_,"mu_secondPt/F");
     TBranch* branch_mu_secondEta = newtree->Branch("mu_secondEta",&mu_secondEta_,"mu_secondEta/F");
@@ -427,7 +435,7 @@ int main(int argc, char **argv){
     TBranch* branch_mu_secondPfSumPUPt = newtree->Branch("mu_secondPfSumPUPt", &mu_secondPfSumPUPt_, "mu_secondPfSumPUPt/F");
     TBranch* branch_mu_secondEmIso  = newtree->Branch("mu_secondEmIso", &mu_secondEmIso_, "mu_secondEmIso/F");
     TBranch* branch_mu_secondHadIso = newtree->Branch("mu_secondHadIso", &mu_secondHadIso_, "mu_secondHadIso/F");
-    TBranch* branch_mu_secondNormalizedChi2 = newtree->Branch("mu_secondNormalizedChi2", &mu_secondNormalizedChi2_, "mu_secondNormalizedChi2/F");
+    //TBranch* branch_mu_secondNormalizedChi2 = newtree->Branch("mu_secondNormalizedChi2", &mu_secondNormalizedChi2_, "mu_secondNormalizedChi2/F");
     TBranch* branch_mu_secondDPToverPT = newtree->Branch("mu_secondDPToverPT", &mu_secondDPToverPT_, "mu_secondDPToverPT/F");
     TBranch* branch_mu_secondAbsdxy = newtree->Branch("mu_secondAbsdxy", &mu_secondAbsdxy_, "mu_secondAbsdxy/F");
     TBranch* branch_mu_secondAbsdxyError = newtree->Branch("mu_secondAbsdxyError", &mu_secondAbsdxyError_, "mu_secondAbsdxyError/F");
@@ -443,10 +451,10 @@ int main(int argc, char **argv){
     TBranch* branch_mu_secondTimeAtIpInOutErr = newtree->Branch("mu_secondTimeAtIpInOutErr", &mu_secondTimeAtIpInOutErr_, "mu_secondTimeAtIpInOutErr/F");
     TBranch* branch_mu_secondTimeAtIpOutIn = newtree->Branch("mu_secondTimeAtIpOutIn", &mu_secondTimeAtIpOutIn_, "mu_secondTimeAtIpOutIn/F");
     TBranch* branch_mu_secondTimeAtIpOutInErr = newtree->Branch("mu_secondTimeAtIpOutInErr", &mu_secondTimeAtIpOutInErr_, "mu_secondTimeAtIpOutInErr/F");
-    TBranch* branch_mu_secondMatchedStations  = newtree->Branch("mu_secondMatchedStations", &mu_secondMatchedStations_, "mu_secondMatchedStations/I");
-    TBranch* branch_mu_secondValidPixelHits   = newtree->Branch("mu_secondValidPixelHits", &mu_secondValidPixelHits_, "mu_secondValidPixelHits/I");
-    TBranch* branch_mu_secondTrackQuality    = newtree->Branch("mu_secondTrackQuality", &mu_secondTrackQuality_, "mu_secondTrackQuality/I");
-    TBranch* branch_mu_secondInrTrackQuality = newtree->Branch("mu_secondInrTrackQuality", &mu_secondInrTrackQuality_, "mu_secondInrTrackQuality/I");
+    //TBranch* branch_mu_secondMatchedStations  = newtree->Branch("mu_secondMatchedStations", &mu_secondMatchedStations_, "mu_secondMatchedStations/I");
+    //TBranch* branch_mu_secondValidPixelHits   = newtree->Branch("mu_secondValidPixelHits", &mu_secondValidPixelHits_, "mu_secondValidPixelHits/I");
+    //TBranch* branch_mu_secondTrackQuality    = newtree->Branch("mu_secondTrackQuality", &mu_secondTrackQuality_, "mu_secondTrackQuality/I");
+    //TBranch* branch_mu_secondInrTrackQuality = newtree->Branch("mu_secondInrTrackQuality", &mu_secondInrTrackQuality_, "mu_secondInrTrackQuality/I");
     TBranch* branch_mu_secondValidMuonHits   = newtree->Branch("mu_secondValidMuonHits", &mu_secondValidMuonHits_, "mu_secondValidMuonHits/I");
     TBranch* branch_mu_secondGenMatch        = newtree->Branch("mu_secondGenMatch", &mu_secondGenMatch_, "mu_secondGenMatch/I");
     
@@ -456,34 +464,38 @@ int main(int argc, char **argv){
     TBranch* branch_mu_Size        = newtree->Branch("mu_Size", &mu_Size_, "mu_Size/F");
     
     //======================= Second Vertex Variables ==========================================//
-    Float_t  sv_LXYSig_new_,  sv_LXYZSig_new_, sv_LXY_new_,  sv_LXYZ_new_, sv_mass_new_, 
-      sv_eta_new_,     sv_phi_new_,     sv_pt_new_,   sv_p_new_,    sv_Beta_new_, 
+    Float_t  sv_LXYSig_new_,  sv_LXYZSig_new_, sv_LXY_new_, sv_LX_new_,sv_LY_new_,sv_LZ_new_, sv_LXYZ_new_, sv_mass_new_, 
+      sv_eta_new_,     sv_phi_new_,     sv_pt_new_,   sv_p_new_,  sv_en_new_,  sv_Beta_new_, 
       sv_Gamma_new_,   sv_CTau0_new_,   sv_NDof_new_, sv_Chi2_new_, sv_Angle3D_new_, 
       sv_Angle2D_new_, sv_tracks_Sumpt_new_, sv_match_dxyz_new_; 
     
     
     Int_t sv_TrackSize_new_, sv_tracks_Sumcharge_new_;
     
-    TBranch* branch_sv_TrackSize  = newtree->Branch("sv_TrackSize_new", &sv_TrackSize_new_, "sv_TrackSize_new/I");
-    TBranch* branch_sv_LXYSig     = newtree->Branch("sv_LXYSig_new", &sv_LXYSig_new_, "sv_LXYSig_new/F");
-    TBranch* branch_sv_LXYZSig    = newtree->Branch("sv_LXYZSig_new", &sv_LXYZSig_new_, "sv_LXYZSig_new/F");
-    TBranch* branch_sv_LXY        = newtree->Branch("sv_LXY_new", &sv_LXY_new_, "sv_LXY_new/F");
-    TBranch* branch_sv_LXYZ       = newtree->Branch("sv_LXYZ_new", &sv_LXYZ_new_, "sv_LXYZ_new/F");
-    TBranch* branch_sv_mass       = newtree->Branch("sv_mass_new", &sv_mass_new_, "sv_mass_new/F");
-    TBranch* branch_sv_eta        = newtree->Branch("sv_eta_new", &sv_eta_new_, "sv_eta_new/F");
-    TBranch* branch_sv_phi        = newtree->Branch("sv_phi_new", &sv_phi_new_, "sv_phi_new/F");
-    TBranch* branch_sv_pt         = newtree->Branch("sv_pt_new", &sv_pt_new_, "sv_pt_new/F");
-    TBranch* branch_sv_p          = newtree->Branch("sv_p_new", &sv_p_new_, "sv_p_new/F");
-    TBranch* branch_sv_Beta       = newtree->Branch("sv_Beta_new", &sv_Beta_new_, "sv_Beta_new/F");
-    TBranch* branch_sv_Gamma      = newtree->Branch("sv_Gamma_new", &sv_Gamma_new_, "sv_Gamma_new/F");
-    TBranch* branch_sv_CTau0      = newtree->Branch("sv_CTau0_new", &sv_CTau0_new_, "sv_CTau0_new/F");
-    TBranch* branch_sv_NDof       = newtree->Branch("sv_NDof_new", &sv_NDof_new_, "sv_NDof_new/F");
-    TBranch* branch_sv_Chi2       = newtree->Branch("sv_Chi2_mew", &sv_Chi2_new_, "sv_Chi2_new/F");
-    TBranch* branch_sv_Angle3D    = newtree->Branch("sv_Angle3D_new", &sv_Angle3D_new_, "sv_Angle3D_new/F");
-    TBranch* branch_sv_Angle2D    = newtree->Branch("sv_Angle2D_new", &sv_Angle2D_new_, "sv_Angle2D_new/F");
-    TBranch* branch_sv_tracks_Sumcharge = newtree->Branch("sv_tracks_Sumcharge_new", &sv_tracks_Sumcharge_new_, "sv_tracks_Sumcharge_new/I");
-    TBranch* branch_sv_tracks_Sumpt     = newtree->Branch("sv_tracks_Sumpt_new", &sv_tracks_Sumpt_new_, "sv_tracks_Sumpt_new/F");
-    TBranch* branch_sv_match_dxyz            = newtree->Branch("sv_match_dxyz_new_", &sv_match_dxyz_new_, "sv_match_dxyz_new_/F");
+    TBranch* branch_sv_TrackSize  = newtree->Branch("sv_TrackSize", &sv_TrackSize_new_, "sv_TrackSize/I");
+    TBranch* branch_sv_LXYSig     = newtree->Branch("sv_LXYSig", &sv_LXYSig_new_, "sv_LXYSig/F");
+    TBranch* branch_sv_LXYZSig    = newtree->Branch("sv_LXYZSig", &sv_LXYZSig_new_, "sv_LXYZSig/F");
+    TBranch* branch_sv_LX        = newtree->Branch("sv_LX", &sv_LX_new_, "sv_LX/F");
+    TBranch* branch_sv_LY        = newtree->Branch("sv_LY", &sv_LY_new_, "sv_LY/F");
+    TBranch* branch_sv_LZ        = newtree->Branch("sv_LZ", &sv_LZ_new_, "sv_LZ/F");
+    TBranch* branch_sv_LXY        = newtree->Branch("sv_LXY", &sv_LXY_new_, "sv_LXY/F");
+    TBranch* branch_sv_LXYZ       = newtree->Branch("sv_LXYZ", &sv_LXYZ_new_, "sv_LXYZ/F");
+    TBranch* branch_sv_mass       = newtree->Branch("sv_mass", &sv_mass_new_, "sv_mass/F");
+    TBranch* branch_sv_eta        = newtree->Branch("sv_eta", &sv_eta_new_, "sv_eta/F");
+    TBranch* branch_sv_phi        = newtree->Branch("sv_phi", &sv_phi_new_, "sv_phi/F");
+    TBranch* branch_sv_pt         = newtree->Branch("sv_pt", &sv_pt_new_, "sv_pt/F");
+    TBranch* branch_sv_p          = newtree->Branch("sv_p", &sv_p_new_, "sv_p/F");
+    TBranch* branch_sv_en         = newtree->Branch("sv_en", &sv_en_new_, "sv_en/F");
+    TBranch* branch_sv_Beta       = newtree->Branch("sv_Beta", &sv_Beta_new_, "sv_Beta/F");
+    TBranch* branch_sv_Gamma      = newtree->Branch("sv_Gamma", &sv_Gamma_new_, "sv_Gamma/F");
+    TBranch* branch_sv_CTau0      = newtree->Branch("sv_CTau0", &sv_CTau0_new_, "sv_CTau0/F");
+    TBranch* branch_sv_NDof       = newtree->Branch("sv_NDof", &sv_NDof_new_, "sv_NDof/F");
+    TBranch* branch_sv_Chi2       = newtree->Branch("sv_Chi2_mew", &sv_Chi2_new_, "sv_Chi2/F");
+    TBranch* branch_sv_Angle3D    = newtree->Branch("sv_Angle3D", &sv_Angle3D_new_, "sv_Angle3D/F");
+    TBranch* branch_sv_Angle2D    = newtree->Branch("sv_Angle2D", &sv_Angle2D_new_, "sv_Angle2D/F");
+    TBranch* branch_sv_tracks_Sumcharge = newtree->Branch("sv_tracks_Sumcharge", &sv_tracks_Sumcharge_new_, "sv_tracks_Sumcharge/I");
+    TBranch* branch_sv_tracks_Sumpt     = newtree->Branch("sv_tracks_Sumpt", &sv_tracks_Sumpt_new_, "sv_tracks_Sumpt/F");
+    TBranch* branch_sv_match_dxyz            = newtree->Branch("sv_match_dxyz_", &sv_match_dxyz_new_, "sv_match_dxyz/F");
     //================================= Jets Variables ==============================================//
     Float_t jet_charge_, jet_et_,    jet_pt_, jet_eta_, jet_NEmEnFraction_,
       jet_phi_,    jet_theta_, jet_en_, jet_chEmEn_, jet_NHadEnFraction_,
@@ -628,7 +640,7 @@ int main(int argc, char **argv){
 	mu_promptPfSumPUPt_ = mu_pfSumPUPt_->at(FirstMuon);   
 	mu_promptEmIso_     = mu_emIso_->at(FirstMuon);  
 	mu_promptHadIso_    = mu_hadIso_->at(FirstMuon); 
-	mu_promptNormalizedChi2_ = mu_normalizedChi2_->at(FirstMuon);
+	//mu_promptNormalizedChi2_ = mu_normalizedChi2_->at(FirstMuon);
 	mu_promptDPToverPT_      = mu_dPToverPTTunePMuonBestTrack_->at(FirstMuon); 
 	mu_promptAbsdxy_      = mu_absdxyTunePMuonBestTrack_->at(FirstMuon);   
 	mu_promptAbsdxyError_ = mu_absdxyErrorTunePMuonBestTrack_->at(FirstMuon);
@@ -639,17 +651,17 @@ int main(int argc, char **argv){
 	mu_promptRecoDeltaBeta_ = deltaBeta_->at(FirstMuon);  
 	mu_promptRecoiso_   = mu_recoiso_->at(FirstMuon);  
 	
-	mu_promptDirection_ = mu_STATofDirection_->at(FirstMuon); 
+	//mu_promptDirection_ = mu_STATofDirection_->at(FirstMuon); 
 	mu_promptNDof_      = mu_STATofNDof_->at(FirstMuon);  
 	mu_promptTimeAtIpInOut_    = mu_STATofTimeAtIpInOut_->at(FirstMuon);
 	mu_promptTimeAtIpInOutErr_ = mu_STATofTimeAtIpInOutErr_->at(FirstMuon);
 	mu_promptTimeAtIpOutIn_   = mu_STATofTimeAtIpOutIn_->at(FirstMuon); 
 	mu_promptTimeAtIpOutInErr_ = mu_STATofTimeAtIpOutInErr_->at(FirstMuon);
 	
-	mu_promptMatchedStations_  = mu_numberOfMatchedStations_->at(FirstMuon); 
-	mu_promptValidPixelHits_   = mu_numberOfValidPixelHits_->at(FirstMuon);  
-	mu_promptTrackQuality_     = mu_TrackQuality_->at(FirstMuon);   
-	mu_promptInrTrackQuality_  = mu_InnerTrackQuality_->at(FirstMuon);
+	//mu_promptMatchedStations_  = mu_numberOfMatchedStations_->at(FirstMuon); 
+	//mu_promptValidPixelHits_   = mu_numberOfValidPixelHits_->at(FirstMuon);  
+	//mu_promptTrackQuality_     = mu_TrackQuality_->at(FirstMuon);   
+	//mu_promptInrTrackQuality_  = mu_InnerTrackQuality_->at(FirstMuon);
 	mu_promptValidMuonHits_    = mu_numberOfValidMuonHits_->at(FirstMuon); 
 	//mu_promptGenMatch_         = mu_FirstGenMatch_->at(FirstMuon); 
 	
@@ -668,7 +680,7 @@ int main(int argc, char **argv){
 	mu_secondPfSumPUPt_ = mu_pfSumPUPt_->at(SecondMuon);   
 	mu_secondEmIso_     = mu_emIso_->at(SecondMuon);  
 	mu_secondHadIso_    = mu_hadIso_->at(SecondMuon); 
-	mu_secondNormalizedChi2_ = mu_normalizedChi2_->at(SecondMuon);
+	//mu_secondNormalizedChi2_ = mu_normalizedChi2_->at(SecondMuon);
 	mu_secondDPToverPT_      = mu_dPToverPTTunePMuonBestTrack_->at(SecondMuon); 
 	mu_secondAbsdxy_      = mu_absdxyTunePMuonBestTrack_->at(SecondMuon);   
 	mu_secondAbsdxyError_ = mu_absdxyErrorTunePMuonBestTrack_->at(SecondMuon);
@@ -679,17 +691,17 @@ int main(int argc, char **argv){
 	mu_secondRecoDeltaBeta_ = deltaBeta_->at(SecondMuon);  
 	mu_secondRecoiso_   = mu_recoiso_->at(SecondMuon);  
 	
-	mu_secondDirection_ = mu_STATofDirection_->at(SecondMuon); 
+	//mu_secondDirection_ = mu_STATofDirection_->at(SecondMuon); 
 	mu_secondNDof_      = mu_STATofNDof_->at(SecondMuon);  
 	mu_secondTimeAtIpInOut_    = mu_STATofTimeAtIpInOut_->at(SecondMuon);
 	mu_secondTimeAtIpInOutErr_ = mu_STATofTimeAtIpInOutErr_->at(SecondMuon);
 	mu_secondTimeAtIpOutIn_    = mu_STATofTimeAtIpOutIn_->at(SecondMuon); 
 	mu_secondTimeAtIpOutInErr_ = mu_STATofTimeAtIpOutInErr_->at(SecondMuon);
 	
-	mu_secondMatchedStations_  = mu_numberOfMatchedStations_->at(SecondMuon); 
-	mu_secondValidPixelHits_   = mu_numberOfValidPixelHits_->at(SecondMuon);  
-	mu_secondTrackQuality_     = mu_TrackQuality_->at(SecondMuon);   
-	mu_secondInrTrackQuality_  = mu_InnerTrackQuality_->at(SecondMuon);
+	//mu_secondMatchedStations_  = mu_numberOfMatchedStations_->at(SecondMuon); 
+	//mu_secondValidPixelHits_   = mu_numberOfValidPixelHits_->at(SecondMuon);  
+	//mu_secondTrackQuality_     = mu_TrackQuality_->at(SecondMuon);   
+	//mu_secondInrTrackQuality_  = mu_InnerTrackQuality_->at(SecondMuon);
 	mu_secondValidMuonHits_    = mu_numberOfValidMuonHits_->at(SecondMuon); 
 	//mu_secondGenMatch_         = mu_SecondGenMatch_->at(SecondMuon);
 	
@@ -717,6 +729,9 @@ int main(int argc, char **argv){
 	//sv_TrackSize_new_ =  sv_mu_TrackSize_->at(SecondVertex);
 	sv_LXYSig_new_ =  sv_mu_LXYSig_->at(SecondVertex);
 	sv_LXYZSig_new_ =  sv_mu_LXYZSig_->at(SecondVertex);
+	sv_LX_new_ =  sv_mu_LX_->at(SecondVertex);
+	sv_LY_new_ =  sv_mu_LY_->at(SecondVertex);
+	sv_LZ_new_ =  sv_mu_LZ_->at(SecondVertex);
 	sv_LXY_new_ =  sv_mu_LXY_->at(SecondVertex);
 	sv_LXYZ_new_ =  sv_mu_LXYZ_->at(SecondVertex);
 	sv_mass_new_ =  sv_mu_mass_->at(SecondVertex);
@@ -724,6 +739,7 @@ int main(int argc, char **argv){
 	sv_phi_new_ =  sv_mu_phi_->at(SecondVertex);
 	sv_pt_new_ =  sv_mu_pt_->at(SecondVertex);
 	sv_p_new_ =  sv_mu_p_->at(SecondVertex);
+	sv_en_new_ =  sv_mu_en_->at(SecondVertex);
 	sv_Beta_new_ =  sv_mu_Beta_->at(SecondVertex);
 	sv_Gamma_new_ =  sv_mu_Gamma_->at(SecondVertex);
 	sv_CTau0_new_ =  sv_mu_CTau0_->at(SecondVertex);
@@ -842,12 +858,32 @@ int main(int argc, char **argv){
     */
     
 	//transverse Mass info
-	trMass_ivf_ = transverseMass_ivf_;
-	trMass_lep1_ = transverseMass_lep1_;
-	trMass_ivfPluslep1_ = transverseMass_ivfPluslep1_;
+
+
+	TLorentzVector ivf;
+	ivf.SetPtEtaPhiE(sv_pt_new_,sv_eta_new_,sv_phi_new_,sv_en_new_);
+	TLorentzVector ivfPluslep1 = ivf_ + Mu1;
+
+
+	float transverse_mass_ivf = sqrt(pow(ivf.Pt() + pfMet_pt, 2) - pow(ivf.Px() + pfMet_px, 2) - pow(ivf.Py() + pfMet_py, 2));//ivf transverse mass
+	float transverse_mass_lep1 = sqrt(pow(Mu1.Pt() + pfMet_pt, 2) - pow(Mu1.Px() + pfMet_px, 2) - pow(Mu1.Py() + pfMet_py, 2));//prompt lepton transverse mass
+	float transverse_mass_ivfPluslep1 = sqrt(pow(hnl.Pt() + pfMet_pt, 2) - pow(hnl.Px() + pfMet_px, 2) - pow(hnl.Py() + pfMet_py, 2));//ivf + prompt lepton transverse mass
+
+	  //mass correction
+	TVector3 dir_sv;
+
+	double ivf_mass = ivf.M();
+	dir_sv.SetXYZ(sv_LX_new_, sv_LY_new_, sv_LZ_new_);	
+	double vertexPt2 = dir_sv.Cross(ivf.Vect()).Mag2() / dir_sv.Mag2();
+	double mass_corrected = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
+
+
+	trMass_ivf_ = transverse_mass_ivf;
+	trMass_lep1_ = transverse_mass_lep1;
+	trMass_ivfPluslep1_ = transverse_mass_ivfPluslep1;
 
 	//sv mass correction
-	sv_mass_correction_ = sv_mass_corr_;
+	sv_mass_correction_ = mass_corrected;
 
 	//rpc info
 	mu_rpc_nDof_newtree_ = mu_rpc_nDof_;
