@@ -340,7 +340,7 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
    tree->Branch("mu_pfSumNeutralHadronEt" , &mu_pfSumNeutralHadronEt_);
    tree->Branch("mu_PFSumPhotonEt" , &mu_PFSumPhotonEt_);
    tree->Branch("mu_pfSumPUPt" , &mu_pfSumPUPt_);
-   tree->Branch("mu_numberOfValidMuonHits" , &mu_numberOfValidMuonHits_);
+   //tree->Branch("mu_numberOfValidMuonHits" , &mu_numberOfValidMuonHits_);
    tree->Branch("mu_emIso" , &mu_emIso_);
    tree->Branch("mu_hadIso" , &mu_hadIso_);
    tree->Branch("mu_segmentCompatibilityMuonBestTrack" ,&mu_segmentCompatibilityMuonBestTrack_);

@@ -1,2 +1,1 @@
-/lustre/cms/store/user/atalierc/HNL_2017_mc_good/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_DYJetsToLL_M-50_MLML_ext/190308_131226/0000/Analysis_output_98.root
-/lustre/cms/store/user/atalierc/HNL_2017_mc_good/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_DYJetsToLL_M-50_MLML_ext/190308_131226/0000/Analysis_output_99.root
+/storage/data/cms/store/user/jpriscia/HNL_MC_2018/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8/crab_DYJetsToLL_M-10to50/190827_102204/0000/Analysis_output_prova_465.root

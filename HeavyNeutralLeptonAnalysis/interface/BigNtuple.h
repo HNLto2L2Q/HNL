@@ -305,7 +305,7 @@ private:
 	std::vector<float> mu_pfSumNeutralHadronEt_ ;
 	std::vector<float> mu_PFSumPhotonEt_ ;
 	std::vector<float> mu_pfSumPUPt_ ;
-	std::vector<int>   mu_numberOfValidMuonHits_ ;
+	//std::vector<int>   mu_numberOfValidMuonHits_ ;
 	std::vector<float> mu_emIso_ ;
 	std::vector<float> mu_hadIso_ ;
 	std::vector<float> mu_segmentCompatibilityMuonBestTrack_;
