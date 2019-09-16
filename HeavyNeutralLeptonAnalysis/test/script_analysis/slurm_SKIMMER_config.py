@@ -33,7 +33,8 @@ config.batchScriptsDir = config.sbatch_workdir + '/slurm_batch_scripts'
 
 config.stageout = True
 config.stageoutFiles = ['skimmed_*.root']
-config.stageoutDir = '/nfs/user/ccaputo/HNL_Skim/2017/Data/job_array_${SLURM_ARRAY_JOB_ID}'
+config.stageoutDir = '/nfs/user/jpriscia/outputHNL/2018/data/job_array_${SLURM_ARRAY_JOB_ID}'
+#config.stageoutDir = '/nfs/user/jpriscia/outputHNL/2018/mc/d'
 # We chose the filename of the outputs to be independent of the job array id number (but dependent on the job array task id number).
 # So let's put the output files in a directory whose name contains the job array id number,
 # so that each job array we may submit will write in a different directory.
@@ -58,7 +59,7 @@ config.numJobs = None
 config.inputParamsNames = ['inputFile','job_num']
 
 # Get a list with all the input files.
-inputFiles = glob.glob('/home/users/c/c/ccaputo/HNL/CMSSW_9_4_13_patch4/src/HNL/HeavyNeutralLeptonAnalysis/test/script_analysis/SingleMuon_2017*.txt')
+inputFiles = glob.glob('/home/ucl/cp3/jpriscia/CMSSW_10_2_15_patch2/src/HNL/HeavyNeutralLeptonAnalysis/test/script_analysis/to_submit/SingleMuon_2018*.txt')
 
 #num_lines = sum(1 for line in open(inputFiles[0]))
 #print num_lines
@@ -84,6 +85,9 @@ for inputFile in inputFiles:
         tmp_files_list_path = os.path.abspath(tmp_files_list)
         # print '\t '+tmp_files_list
         config.inputParams.append([tmp_files_list_path, '${SLURM_ARRAY_TASK_ID}'])
+
+from pdb import set_trace
+set_trace()
 
 config.payload = \
 """
