@@ -6,6 +6,10 @@ Repository for analyzer Heavy Neutral Leptons in CMS
 Instructions:
 
 ```bash
+cmsrel CMSSW_10_2_15_patch2
+cd CMSSW_10_2_15_patch2/src
+cmsenv
+
 ## Egamma POG
 ## Ref: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes#2018_Data_MC
 
