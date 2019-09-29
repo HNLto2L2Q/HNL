@@ -14,7 +14,7 @@ displacedTrackVertexArbitrator = cms.EDProducer("TrackVertexArbitrator",
        fitterTini = cms.double(256),
        fitterRatio = cms.double(0.25),
        trackMinLayers = cms.int32(4), #old 4-> 0
-       trackMinPt = cms.double(.4), 
+       trackMinPt = cms.double(.4), ###########  20
        trackMinPixels = cms.int32(0) #old 1 -> 0
 )
 

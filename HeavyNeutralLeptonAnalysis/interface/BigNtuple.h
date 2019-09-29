@@ -12,6 +12,11 @@
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
+#include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
+#include "CondFormats/JetMETObjects/interface/JetResolutionObject.h"
+#include "CondFormats/JetMETObjects/interface/JetResolution.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
@@ -31,19 +36,68 @@
 #include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 #include "DataFormats/Common/interface/Handle.h"
+#include "RecoEgamma/EgammaTools/interface/EffectiveAreas.h"
 
 class BigNtuple {
 public:
 	BigNtuple(){} //default, empty constructor
 
+	//getter
+
+	//vertex info
+        float get_pv_x()const{return lep1_gen_vx_;}
+        float get_pv_y()const{return lep1_gen_vy_;}
+	float get_pv_z()const{return lep1_gen_vz_;}
+
+        float get_sv_x()const{return lep2_gen_vx_;}
+        float get_sv_y()const{return lep2_gen_vy_;}
+        float get_sv_z()const{return lep2_gen_vz_;}
+
+	float get_sv_pt()const{return best_sv_pt_;}
+	float get_sv_px()const{return best_sv_px_;}
+	float get_sv_py()const{return best_sv_py_;}
+	float get_sv_pz()const{return best_sv_pz_;}
+	float get_sv_en()const{return best_sv_energy_;}
+
+        float get_sv_recox()const{return best_sv_recox_;}
+        float get_sv_recoy()const{return best_sv_recoy_;}
+        float get_sv_recoz()const{return best_sv_recoz_;}
+
+        float get_met_pt()const{return pfMet_pt_;}
+        float get_met_px()const{return pfMet_px_;}
+        float get_met_py()const{return pfMet_py_;}
+
+	float get_pvTosv_rho()const{return pvTosv_rho_;}
+	float get_pvTosv_phi()const{return pvTosv_phi_;}
+	float get_pvTosv_theta()const{return pvTosv_theta_;}
+
+	//phi info
+	float get_lep1_phi()const{return lep1_gen_Phi_;}
+	float get_lep1_pt()const{return lep1_gen_Pt_;}
+	float get_lep1_eta()const{return lep1_gen_Eta_;}
+	float get_lep1_en()const{return lep1_gen_En_;}
+
+	float get_lep2_phi()const{return lep2_gen_Phi_;}
+	float get_lep2_eta()const{return lep2_gen_Eta_;}
+        float get_lep2_pt()const{return lep2_gen_Pt_;}
+
+	//setter
+
+	//void set_sv_x(float sv_x){lep2_gen_vx_ = sv_x;}
+	//void set_sv_y(float sv_y){lep2_gen_vy_ = sv_y;}
+	//void set_sv_z(float sv_z){lep2_gen_vz_ = sv_z;}
+
 	void set_evtInfo(TTree* tree);
 	void fill_evtInfo(const edm::EventID& id);
 
+        void set_prefiring(TTree* tree);
+        void fill_prefiring(float weight, float weightup, float weightdown);
+
 	void set_pv_genInfo(TTree* tree);
-        void fill_pv_genInfo(const reco::GenParticle prt , const reco::Candidate*  mom);
+        void fill_pv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
 
 	void set_sv_genInfo(TTree* tree);
-        void fill_sv_genInfo(const reco::GenParticle prt , const reco::Candidate*  mom);
+        void fill_sv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
 
 	void set_pvInfo(TTree* tree);
 	void fill_pvInfo(const reco::VertexCollection& pvs);
@@ -52,49 +106,52 @@ public:
 	void fill_trigInfo(const edm::TriggerResults& triggerResults, const edm::TriggerNames& trigNames);
 
 	void set_pileupInfo(TTree* tree);
-        void fill_pileupInfo( float npt, float npit, float pu_weight, float pu_weightup, float pu_weightdown);
+        void fill_pileupInfo( float npt, float npit);
 
-	void set_sv_mu_Info(TTree* tree);
-        void fill_sv_mu_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
-
-        void set_sv_ele_Info(TTree* tree);
-        void fill_sv_ele_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, double match);
+	void set_sv_Info(TTree* tree);
+        void fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, std::pair<float, float> match, bool lept);
 
 	void set_muInfo(TTree* tree);
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
 	
 	void set_jetInfo(TTree* tree);
-	void fill_jetInfo(const pat::Jet& jet);
+	void fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp ,float smearedDown ,double un , double unSmeared );
 
         void set_metInfo(TTree* tree);
         void fill_metInfo(const pat::MET& met);
 
+	void set_transverseMassInfo(TTree* tree);
+	void fill_transverseMassInfo(float tr_mass_ivf, float tr_mass_lep1, float tr_mass_ivfPluslep1);
+
+	void set_massCorrection(TTree* tree);
+	void fill_massCorrection(double mass_corr);
+
         void set_eleInfo(TTree* tree);
-        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal);
-
-
+        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double  match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal , double Iso);
         void set_eleIDInfo(TTree* tree);
         void fill_eleIDInfo(float ele_mva , bool ele_veto , bool ele_loose , bool ele_medium , bool ele_tight);
-
-        void set_bjetInfo(TTree* tree);
-	void fill_bjetInfo(const pat::Jet& jet,  const std::string & bDiscr, int flavor);
  
 	void reset() {
 	  BigNtuple dummy; //create a new one
 	  *this = dummy; //use assignment to reset
 	}
 
+	//float lep2_gen_vx_ = -1000;
+	//float lep2_gen_vy_ = -1000;
+	//float lep2_gen_vz_ = -1000;
 private:
+
 	unsigned int lumi_ = 0;
 	unsigned int run_ = 0;
 	unsigned long long evt_ = 0;
 
+	std::vector<float> prefire_weight_ ;
+	std::vector<float> prefire_weightup_ ;
+	std::vector<float> prefire_weightdown_ ;
+
 	std::vector<float> npT_ ; 
 	std::vector<float> npIT_ ;
-	std::vector<float> pu_Weight_ ;
-	std::vector<float> pu_WeightUp_ ;
-	std::vector<float> pu_WeightDown_ ;
-	
+
 	// primary vertex infos  -- they shouldn't be vector 
 	float pvX_ = -1000;
 	float pvY_ = -1000;
@@ -105,134 +162,61 @@ private:
 	float pvMass_ = -1000;
 	float pvLxy_  = -1000;
 	float pvLxyz_ = -1000;
-	float pvLxySig_  = -1000;
-	float pvLxyzSig_ = -1000;
+	float pvLxySigma_  = -1000;
+	float pvLxyzSigma_ = -1000;
 	float pvChi2_ = -1000;
 	int pvNTrack_ = -1000;
 	float pvSumPtSq_ = -1000;
 	int numberPV_    = -1000;
 
 	//gen infos mu @ pv
-	std::vector<int>     mu_gen_PID1_;
-	std::vector<int>     mu_gen_Status1_;
-	std::vector<int>     mu_gen_Charge1_;
-	std::vector<float>   mu_gen_Pt1_;
-	std::vector<float>   mu_gen_Eta1_;
-	std::vector<float>   mu_gen_Phi1_;
-	std::vector<float>   mu_gen_VX1_;
-	std::vector<float>   mu_gen_VY1_;
-	std::vector<float>   mu_gen_VZ1_;
-	std::vector<float>   mu_gen_Lxy1_;
-	std::vector<float>   mu_gen_Lxyz1_;
-	std::vector<int>     mu_gen_MomPID1_;
-	std::vector<int>     mu_gen_MomStatus1_;
-	std::vector<float>   mu_gen_MomMass1_;
-	std::vector<int>     mu_gen_MomCharge1_;
-	std::vector<float>   mu_gen_MomPt1_;
-	std::vector<float>   mu_gen_MomEta1_;
-	std::vector<float>   mu_gen_MomPhi1_;
-	std::vector<float>   mu_gen_MomBeta1_;
-	std::vector<float>   mu_gen_MomGamma1_;
-	std::vector<float>   mu_gen_MomLxyz1_;
-	std::vector<float>   mu_gen_MomLz1_;
-	std::vector<float>   mu_gen_MomLxy1_;
+	int     lep1_gen_PID_     = -1000;
+	int     lep1_gen_Charge_  = -1000;
+	float   lep1_gen_Pt_      = -1000;
+	float   lep1_gen_Eta_      = -1000;
+	float   lep1_gen_Phi_      = -1000;
+	float   lep1_gen_En_       = -1000;
+	float   lep1_gen_vx_       = -1000;
+	float   lep1_gen_vy_       = -1000;
+	float   lep1_gen_vz_       = -1000;
+	float   lep1_gen_Lxy_      = -1000;
+	float   lep1_gen_Lxyz_     = -1000;
+	int     HNL_gen_PID_       = -1000;
+	float   HNL_gen_Mass_      = -1000;
+	int     HNL_gen_Charge_    = -1000;
+	float   HNL_gen_Pt_        = -1000;
+	float   HNL_gen_Eta_       = -1000;
+	float   HNL_gen_Phi_       = -1000;
 
 	//gen Info mu @ sv
-	std::vector<int>     mu_gen_PID2_;
-	std::vector<int>     mu_gen_Status2_;
-	std::vector<int>     mu_gen_Charge2_;
-	std::vector<float>   mu_gen_Pt2_;
-	std::vector<float>   mu_gen_Eta2_;
-	std::vector<float>   mu_gen_Phi2_;
-	std::vector<float>   mu_gen_VX2_;
-	std::vector<float>   mu_gen_VY2_;
-	std::vector<float>   mu_gen_VZ2_;
-	std::vector<float>   mu_gen_Lxy2_;
-	std::vector<float>   mu_gen_Lxyz2_;
-	std::vector<int>     mu_gen_MomPID2_;
-	std::vector<float>   mu_gen_MomMass2_;
-	std::vector<int>     mu_gen_MomCharge2_;
-	std::vector<int>     mu_gen_MomStatus2_;
-	std::vector<float>   mu_gen_MomPt2_;
-	std::vector<float>   mu_gen_MomEta2_;
-	std::vector<float>   mu_gen_MomPhi2_;
-	std::vector<float>   mu_gen_MomBeta2_;
-	std::vector<float>   mu_gen_MomGamma2_;
-	std::vector<float>   mu_gen_MomLxyz2_;
-	std::vector<float>   mu_gen_MomLz2_;
-	std::vector<float>   mu_gen_MomLxy2_;
-	std::vector<float>   mu_gen_MomCTau02_;
+	int     lep2_gen_PID_      = -1000;
+	int     lep2_gen_Charge_   = -1000;
+	float   lep2_gen_Pt_       = -1000;
+	float   lep2_gen_Eta_      = -1000;
+	float   lep2_gen_Phi_      = -1000;
+	float   lep2_gen_vx_       = -1000;
+	float   lep2_gen_vy_       = -1000;
+	float   lep2_gen_vz_       = -1000;
+	float   lep2_gen_MomLxyz_  = -1000;
+	float   lep2_gen_MomLz_    = -1000;
+	float   lep2_gen_MomLxy_   = -1000;
+	float   lep2_gen_MomCTau0_ = -1000;
 
-	//gen infos ele @ pv
-	std::vector<int>     ele_gen_PID1_;
-	std::vector<int>     ele_gen_Status1_;
-	std::vector<int>     ele_gen_Charge1_;
-	std::vector<float>   ele_gen_Pt1_;
-	std::vector<float>   ele_gen_Eta1_;
-	std::vector<float>   ele_gen_Phi1_;
-	std::vector<float>   ele_gen_VX1_;
-	std::vector<float>   ele_gen_VY1_;
-	std::vector<float>   ele_gen_VZ1_;
-	std::vector<float>   ele_gen_Lxy1_;
-	std::vector<float>   ele_gen_Lxyz1_;
-	std::vector<int>     ele_gen_MomPID1_;
-	std::vector<int>     ele_gen_MomStatus1_;
-	std::vector<float>   ele_gen_MomMass1_;
-	std::vector<int>     ele_gen_MomCharge1_;
-	std::vector<float>   ele_gen_MomPt1_;
-	std::vector<float>   ele_gen_MomEta1_;
-	std::vector<float>   ele_gen_MomPhi1_;
-	std::vector<float>   ele_gen_MomBeta1_;
-	std::vector<float>   ele_gen_MomGamma1_;
-	std::vector<float>   ele_gen_MomLxyz1_;
-	std::vector<float>   ele_gen_MomLz1_;
-	std::vector<float>   ele_gen_MomLxy1_;
 
-	//gen Info ele @ sv
-	std::vector<int>     ele_gen_PID2_;
-	std::vector<int>     ele_gen_Status2_;
-	std::vector<int>     ele_gen_Charge2_;
-	std::vector<float>   ele_gen_Pt2_;
-	std::vector<float>   ele_gen_Eta2_;
-	std::vector<float>   ele_gen_Phi2_;
-	std::vector<float>   ele_gen_VX2_;
-	std::vector<float>   ele_gen_VY2_;
-	std::vector<float>   ele_gen_VZ2_;
-	std::vector<float>   ele_gen_Lxy2_;
-	std::vector<float>   ele_gen_Lxyz2_;
-	std::vector<int>     ele_gen_MomPID2_;
-	std::vector<float>   ele_gen_MomMass2_;
-	std::vector<int>     ele_gen_MomCharge2_;
-	std::vector<int>     ele_gen_MomStatus2_;
-	std::vector<float>   ele_gen_MomPt2_;
-	std::vector<float>   ele_gen_MomEta2_;
-	std::vector<float>   ele_gen_MomPhi2_;
-	std::vector<float>   ele_gen_MomBeta2_;
-	std::vector<float>   ele_gen_MomGamma2_;
-	std::vector<float>   ele_gen_MomLxyz2_;
-	std::vector<float>   ele_gen_MomLz2_;
-	std::vector<float>   ele_gen_MomLxy2_;
-	std::vector<float>   ele_gen_MomCTau02_;
+        //float get_sv_x(){return lep2_gen_vx_;}
+        //float get_sv_y(){return lep2_gen_vy_;}
+        //float get_sv_z(){return lep2_gen_vz_;}
 
 	// final state hadrons
-	std::vector<int>     had_gen_PID_;
-	std::vector<int>     had_gen_Status_;
-	std::vector<int>     had_gen_Charge_;
-	std::vector<float>   had_gen_Pt_;
-	std::vector<float>   had_gen_Eta_;
-	std::vector<float>   had_gen_Phi_;
-	std::vector<float>   had_gen_Mass_;
-
-	//quarks @ gen
-	std::vector<int>     quarks_gen_PID_;
-	std::vector<int>     quarks_gen_Status_;
-	std::vector<int>     quarks_gen_Charge_;
-	std::vector<float>   quarks_gen_Pt_;
-	std::vector<float>   quarks_gen_Eta_;
-	std::vector<float>   quarks_gen_Phi_;
-	std::vector<float>   quarks_gen_Mass_;
+	std::vector<int>     daugh_gen_PID_;
+	std::vector<int>     daugh_gen_Charge_;
+	std::vector<float>   daugh_gen_Pt_;
+	std::vector<float>   daugh_gen_Eta_;
+	std::vector<float>   daugh_gen_Phi_;
+	std::vector<float>   daugh_gen_Mass_;
 
 	//trigger infos
+	bool passEle32_WPTight_Gsf_ = 0;
 	bool passMu3_PFJet40_    = 0;
 	bool passMu8_TrkIsoVVL_  = 0;
 	bool passMu17_TrkIsoVVL_ = 0;
@@ -273,112 +257,65 @@ private:
 
 	bool passDoubleMu33Ele33_       = 0;
 
+	float best_sv_px_ = 999;
+	float best_sv_py_ = 999;
+	float best_sv_pz_ = 999;
+	float best_sv_pt_ = 999;
+	float best_sv_energy_ = 999;
  
+        float best_sv_recox_ = 999;
+        float best_sv_recoy_ = 999;
+	float best_sv_recoz_ = 999;
+
 	//secondary verteces info due to mu
-	std::vector<int>   sv_mu_TrackSize_;
-	std::vector<float> sv_mu_Xpos_;
-	std::vector<float> sv_mu_Ypos_;
-	std::vector<float> sv_mu_Zpos_;
-	std::vector<float> sv_mu_xError_;
-	std::vector<float> sv_mu_yError_;
-	std::vector<float> sv_mu_zError_;
-	std::vector<float> sv_mu_pvX_;
-	std::vector<float> sv_mu_pvY_;
-	std::vector<float> sv_mu_pvZ_;
-	std::vector<float> sv_mu_pvXError_;
-	std::vector<float> sv_mu_pvYError_;
-	std::vector<float> sv_mu_pvZError_;
-	std::vector<float> sv_mu_LXYSig_;
-	std::vector<float> sv_mu_LXYZSig_;
-	std::vector<float> sv_mu_LXY_;
-	std::vector<float> sv_mu_LXYZ_;
-	std::vector<float> sv_mu_mass_;
-	std::vector<int>   sv_mu_charge_;
-	std::vector<float> sv_mu_eta_;
-	std::vector<float> sv_mu_phi_;
-	std::vector<float> sv_mu_pt_;
-	std::vector<float> sv_mu_p_;
-	std::vector<float> sv_mu_px_;
-	std::vector<float> sv_mu_py_;
-	std::vector<float> sv_mu_pz_;
-	std::vector<float> sv_mu_energy_;
-	std::vector<float> sv_mu_Beta_;
-	std::vector<float> sv_mu_Gamma_;
-	std::vector<float> sv_mu_CTau0_;
-	std::vector<float> sv_mu_NDof_;
-	std::vector<float> sv_mu_Chi2_;
-	std::vector<float> sv_mu_Angle3D_;
-	std::vector<float> sv_mu_Angle2D_;
+	std::vector<bool> sv_hasMuon_;
+	std::vector<int>   sv_numTracks_;
+	std::vector<float> sv_x_;
+	std::vector<float> sv_y_;
+	std::vector<float> sv_z_;
+	std::vector<float> sv_xErr_;
+	std::vector<float> sv_yErr_;
+	std::vector<float> sv_zErr_;
+	std::vector<float> sv_LxySig_;
+	std::vector<float> sv_LxyzSig_;
+	std::vector<float> sv_Lxy_;
+	std::vector<float> sv_Lxyz_;
+	std::vector<float> sv_mass_;
+	std::vector<int>   sv_charge_;
+	std::vector<float> sv_eta_;
+	std::vector<float> sv_phi_;
+	std::vector<float> sv_pt_;
+	std::vector<float> sv_p_;
+	std::vector<float> sv_px_;
+	std::vector<float> sv_py_;
+	std::vector<float> sv_pz_;
+	std::vector<float> sv_energy_;
+	std::vector<float> sv_Beta_;
+	std::vector<float> sv_Gamma_;
+	std::vector<float> sv_CTau0_;
+	std::vector<float> sv_NDof_;
+	std::vector<float> sv_Chi2_;
+	std::vector<float> sv_Angle3D_;
+	std::vector<float> sv_Angle2D_;
 
-	std::vector<std::vector<int  > > sv_mu_tracks_charge_;
-	std::vector<std::vector<float> > sv_mu_tracks_eta_;
-	std::vector<std::vector<float> > sv_mu_tracks_phi_;
-	std::vector<std::vector<float> > sv_mu_tracks_pt_;
-	std::vector<std::vector<float> > sv_mu_tracks_en_;
-	std::vector<std::vector<float> > sv_mu_tracks_dxySig_;
-	std::vector<std::vector<float> > sv_mu_tracks_dxy_;
-	std::vector<std::vector<float> > sv_mu_tracks_dxyz_;
+	std::vector<std::vector<int  > > sv_tracks_charge_;
+	std::vector<std::vector<float> > sv_tracks_eta_;
+	std::vector<std::vector<float> > sv_tracks_phi_;
+	std::vector<std::vector<float> > sv_tracks_pt_;
+	std::vector<std::vector<float> > sv_tracks_p_;
+	std::vector<std::vector<float> > sv_tracks_dxySig_;
+	std::vector<std::vector<float> > sv_tracks_dxy_;
+	std::vector<std::vector<float> > sv_tracks_dxyz_;
 
-	std::vector<float> sv_mu_dir_x_;
-	std::vector<float> sv_mu_dir_y_;
-	std::vector<float> sv_mu_dir_z_;
+	std::vector<float> sv_lx_;
+	std::vector<float> sv_ly_;
+	std::vector<float> sv_lz_;
 
-	std::vector<int  > sv_mu_tracks_Sumcharge_;
-	std::vector<float> sv_mu_tracks_Sumpt_;
-	std::vector<float> sv_mu_match_;
+	std::vector<int  > sv_tracks_Sumcharge_;
+	std::vector<float> sv_tracks_Sumpt_;
+	std::vector<float> sv_match_dxy_;
+	std::vector<float> sv_match_dxyz_;
 
-	//secondary verteces info due to ele
-	std::vector<int>   sv_ele_TrackSize_;
-	std::vector<float> sv_ele_Xpos_;
-	std::vector<float> sv_ele_Ypos_;
-	std::vector<float> sv_ele_Zpos_;
-	std::vector<float> sv_ele_xError_;
-	std::vector<float> sv_ele_yError_;
-	std::vector<float> sv_ele_zError_;
-	std::vector<float> sv_ele_pvX_;
-	std::vector<float> sv_ele_pvY_;
-	std::vector<float> sv_ele_pvZ_;
-	std::vector<float> sv_ele_pvXError_;
-	std::vector<float> sv_ele_pvYError_;
-	std::vector<float> sv_ele_pvZError_;
-	std::vector<float> sv_ele_LXYSig_;
-	std::vector<float> sv_ele_LXYZSig_;
-	std::vector<float> sv_ele_LXY_;
-	std::vector<float> sv_ele_LXYZ_;
-	std::vector<float> sv_ele_mass_;
-	std::vector<int>   sv_ele_charge_;
-	std::vector<float> sv_ele_eta_;
-	std::vector<float> sv_ele_phi_;
-	std::vector<float> sv_ele_pt_;
-	std::vector<float> sv_ele_p_;
-	std::vector<float> sv_ele_px_;
-	std::vector<float> sv_ele_py_;
-	std::vector<float> sv_ele_pz_;
-	std::vector<float> sv_ele_energy_;
-	std::vector<float> sv_ele_Beta_;
-	std::vector<float> sv_ele_Gamma_;
-	std::vector<float> sv_ele_CTau0_;
-	std::vector<float> sv_ele_NDof_;
-	std::vector<float> sv_ele_Chi2_;
-	std::vector<float> sv_ele_Angle3D_;
-	std::vector<float> sv_ele_Angle2D_;
-
-	std::vector<std::vector<int  > > sv_ele_tracks_charge_;
-	std::vector<std::vector<float> > sv_ele_tracks_eta_;
-	std::vector<std::vector<float> > sv_ele_tracks_phi_;
-	std::vector<std::vector<float> > sv_ele_tracks_pt_;
-	std::vector<std::vector<float> > sv_ele_tracks_en_;
-	std::vector<std::vector<float> > sv_ele_tracks_dxySig_;
-	std::vector<std::vector<float> > sv_ele_tracks_dxy_;
-	std::vector<std::vector<float> > sv_ele_tracks_dxyz_;
-
-	std::vector<float> sv_ele_dir_x_;
-	std::vector<float> sv_ele_dir_y_;
-	std::vector<float> sv_ele_dir_z_;
-
-	std::vector<int  > sv_ele_tracks_Sumcharge_;
-	std::vector<float> sv_ele_tracks_Sumpt_;
-	std::vector<float> sv_ele_match_;
 
 	//muon infos
 	std::vector<float> mu_en_ ;
@@ -387,8 +324,8 @@ private:
 	std::vector<float> mu_phi_ ;
 	std::vector<float> mu_et_ ;
 	std::vector<float> mu_charge_ ;
-	std::vector<int>   mu_FirstGenMatch_ ;
-	std::vector<int>   mu_SecondGenMatch_ ;
+	std::vector<double> mu_FirstGenMatch_ ;
+	std::vector<double> mu_SecondGenMatch_ ;
 	std::vector<float> mu_trackiso_ ;
 	std::vector<float> mu_rhoIso_;
 	std::vector<float> mu_pfSumChargedHadronPt_ ;
@@ -431,12 +368,12 @@ private:
 	std::vector<float> mu_recoiso_ ;
 	std::vector<float> mu_isGlobalMuon_ ;
 	std::vector<float> mu_isStandAloneMuon_ ;
-	std::vector<float> mu_isPF_ ;
+	std::vector<float> mu_isPFMuon_ ;
 	std::vector<float> mu_isRPCMuon_ ;
 	std::vector<float> mu_isTrackerMuon_ ;
 	std::vector<float> mu_isGoodMuon_ ;
 	std::vector<float> mu_isSoftMuon_ ;
-	std::vector<float> mu_isLoose_ ;
+	std::vector<float> mu_isLooseMuon_ ;
 	std::vector<float> mu_isTightMuon_ ;
 	std::vector<int>    mu_STAnHits_ ;
 	std::vector<int>    mu_STAnLost_ ;
@@ -462,12 +399,27 @@ private:
 	std::vector<float>  mu_STATofTimeAtIpInOutErr_ ;
 	std::vector<float>  mu_STATofTimeAtIpOutIn_ ;
 	std::vector<float>  mu_STATofTimeAtIpOutInErr_ ;
+	std::vector<float>  mu_RPCTofDirection_ ;
+	std::vector<float>  mu_RPCTofNDof_ ;
+	std::vector<float>  mu_RPCTofTimeAtIpInOut_ ;
+	std::vector<float>  mu_RPCTofTimeAtIpInOutErr_ ;
+	std::vector<float>  mu_RPCTofTimeAtIpOutIn_ ;
+	std::vector<float>  mu_RPCTofTimeAtIpOutInErr_ ;
 
 	//jet info
-
+	std::vector<float>   jetPt_JECUp_;
+	std::vector<float>   jetPt_JECDown_;
+	std::vector<float>   jetSmearedPt_;
+	std::vector<float>   jetSmearedPt_JERUp_;
+	std::vector<float>   jetSmearedPt_JERDown_;
+	std::vector<float>   jetSmearedPt_unUp_;
+	std::vector<float>   jetSmearedPt_unDown_;
 	std::vector<float>   jet_charge_ ;
 	std::vector<float>   jet_et_ ;
 	std::vector<float>   jet_pt_ ;
+	std::vector<float>   jet_px_ ;
+	std::vector<float>   jet_py_ ;
+	std::vector<float>   jet_pz_ ;
 	std::vector<float>   jet_eta_ ;
 	std::vector<float>   jet_phi_ ;
 	std::vector<float>   jet_theta_ ;
@@ -489,12 +441,26 @@ private:
 	std::vector<float>   jet_neutralHadronEnergy_ ;
 	std::vector<float>   jet_neutralHadronMultiplicity_ ;
 	std::vector<float>   jet_neutralMultiplicity_ ;
+	std::vector<float>   jet_pileUpid_ ;
+	std::vector<float>   jet_L1ptcorrection_ ;
+	std::vector<float>   jet_L2ptcorrection_ ;
+	std::vector<float>   jet_L3ptcorrection_ ;
+	std::vector<float>   jet_ptuncorrected_ ;
+	std::vector<float>   jet_CsvV2_;
+	std::vector<float>   jet_DeepCsv_udsg_;
+	std::vector<float>   jet_DeepCsv_b_;
+	std::vector<float>   jet_DeepCsv_c_;
+	std::vector<float>   jet_DeepCsv_bb_;
+	std::vector<float>   jet_HadronFlavor_;
 
 	//electron info
 
 	std::vector<float>   ele_Et_;
 	std::vector<float>   ele_EtFromCaloEn_;    
 	std::vector<float>   ele_pt_; 
+	std::vector<float>   ele_px_;
+	std::vector<float>   ele_py_;
+	std::vector<float>   ele_pz_;
 	std::vector<float>   ele_etaSC_;
 	std::vector<float>   ele_phiSC_;
 	std::vector<float>   ele_phiWidth_; 
@@ -538,6 +504,11 @@ private:
 	std::vector<float>   ele_e3x3_;
 	std::vector<float>   ele_frac51_;
 	std::vector<float>   ele_frac15_;
+
+	std::vector<float>   ele_eta_;
+	std::vector<float>   ele_phi_;
+	std::vector<float>   ele_theta_;
+	std::vector<float>   ele_energy_;
 	
 	std::vector<int>   ele_rawId_;
 	std::vector<int>   ele_ieta_;
@@ -568,8 +539,8 @@ private:
 	std::vector<float>   ele_pfSumNeutralHadronEt_;
 	std::vector<float>   ele_pfSumPUPt_;  
 	std::vector<float>   ele_pfDeltaBeta_;
-	std::vector<float>   ele_FirstGenMatch_;
-	std::vector<float>   ele_SecondGenMatch_;
+	std::vector<double>  ele_FirstGenMatch_;
+	std::vector<double>  ele_SecondGenMatch_;
 
 	std::vector<float>   ele_Mva2016_;
 	std::vector<float>   ele_CutVeto_; 
@@ -583,6 +554,21 @@ private:
 	std::vector<float>   ele_dEtaInSeed_;
 	std::vector<float>   ele_InvMinusPInv_;
 
+	std::vector<float>   ele_PtCorr_;
+	std::vector<float>   ele_PtScaleUp_;
+	std::vector<float>   ele_PtScaleDown_;
+	std::vector<float>   ele_PtResUp_;
+	std::vector<float>   ele_PtResDown_;
+	std::vector<float>   ele_ECorr_;
+	std::vector<float>   ele_EScaleUp_;
+	std::vector<float>   ele_EScaleDown_;
+	std::vector<float>   ele_EResUp_;
+	std::vector<float>   ele_EResDown_;
+
+	std::vector<float>   ele_IsoEffArea_;
+
+
+
 	/*
 	std::vector<float>   ele_Mva_;
 	std::vector<float>   ele_MvaFall17Iso_;
@@ -595,23 +581,38 @@ private:
 
 	//MET info
 	
-	float  pfMet_et_ = -1000;
-	float  pfMet_pt_ = -1000;
+	float  pfMet_et_  = -1000;
+	float  pfMet_pt_  = -1000;
 	float  pfMet_phi_ = -1000;
-	float  pfMet_en_ = -1000;
-	float  pfMet_px_ = -1000;
-	float  pfMet_py_ = -1000;
-	float  pfMet_pz_ = -1000;
+	float  pfMet_en_  = -1000;
+	float  pfMet_px_  = -1000;
+	float  pfMet_py_  = -1000;
+	float  pfMet_pz_  = -1000;
 	float  pfMet_sumEt_ = -1000;
-	float  caloMet_pt_ = -1000;
+	float  caloMet_pt_  = -1000;
 	float  caloMet_phi_ = -1000;
+	float  metJECDown_  = -1000;
+	float  metJECUp_    = -1000;
+	float  metUnclDown_ = -1000;
+	float  metUnclUp_   = -1000;
+	float  metPhiJECDown_  = -1000;
+	float  metPhiJECUp_    = -1000;
+	float  metPhiUnclDown_ = -1000;
+	float  metPhiUnclUp_   = -1000;
+	float  pfmet_Rawpt_    = -1000;
+	float  pfmet_RawPhi_   = -1000;   
 
-	//bJet info
-	std::vector<int>   jet_btag_flavor_;
-	std::vector<float> jet_btag_pfCSVv2IVF_discriminator_;
-	std::vector<float> jet_btag_pt_;
-	std::vector<float> jet_btag_eta_;
-	std::vector<float> jet_btag_phi_;
+
+	//transverse mass info
+	float tranvsverseMass_ivf_ = -999;
+	float tranvsverseMass_lep1_ = -999;
+	float tranvsverseMass_ivfPluslep1_ = -999;
+
+	//correction mass info
+	float pvTosv_rho_ = -999; //respect to primary vertex
+	float pvTosv_phi_ = -999;
+	float pvTosv_theta_ = -999;
+	float sv_mass_corr_ = -999;
 
 }; 
 
