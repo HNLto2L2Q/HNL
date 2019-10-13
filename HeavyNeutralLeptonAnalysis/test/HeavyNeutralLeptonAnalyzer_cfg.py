@@ -23,11 +23,11 @@ import FWCore.ParameterSet.Config as cms
 
 #hasLHE_ = options.Flag
 
-hasLHE_ = True
+hasLHE_ = False
 
 debugLevel    = -1 
 
-isMC_         = True
+isMC_         = False
 isMCSignal_    = False
 #hasLHE_       = False #Only for MC with Matrix Element generators
 
@@ -94,7 +94,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 #-------------------------------------------------------------------
     
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
     )
     
     
@@ -109,14 +109,24 @@ process.source = cms.Source("PoolSource",
 #'file:heavyNeutrino_1.root')
                            #fileNames = myfilelist
 #'file:/afs/cern.ch/user/a/atalierc/Merged_3GeVgood.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D4B7750A-4D94-E811-B78B-842B2B181788.root'
+
+
+#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D4B7750A-4D94-E811-B78B-842B2B181788.root')
+
+
 #'file:/afs/cern.ch/user/a/atalierc/public/HIG-RunIIFall17MiniAODv2-00666_99.root'
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13_patch4/src/HNL/heavyNeutrino_150.root'
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/Signal-RunIIFall17MiniAODv2-00666.root'
 #'file:/afs/cern.ch/user/a/atalierc/Signal-RunIIFall17MiniAODv2-00666_38.root'
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13/src/Signal_300GeV.root'
+#'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/100000/A2A6FA56-9838-E811-BCE5-0CC47A78A456.root')
+#'root://xrootd-cms.infn.it//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/100000/A4369B53-CD38-E811-8F5A-0CC47A78A3EE.root')
+#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root') 
 
-'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root') 
+
+'root://cms-xrd-global.cern.ch//store/data/Run2017B/SingleMuon/MINIAOD/31Mar2018-v1/90000/FEC62083-1E39-E811-B2A1-0CC47A4D75F8.root')
+
+
 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
@@ -269,7 +279,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',#HeavyN
                                             tauSrc                = cms.InputTag("slimmedTaus"),
                                             packCandSrc           = cms.InputTag("packedPFCandidates"),
                                             jetSrc                = cms.InputTag("slimmedJetsJEC"),
-                                            pfMETSrc              = cms.InputTag("slimmedMETsModifiedMET"),
+                                            pfMETSrc              = cms.InputTag("slimmedMETsModifiedMET" if isMC_ else "slimmedMETs"),
                                             triggerResultSrc      = cms.InputTag("TriggerResults","","HLT"),
                                             metFilterResultSrc    = cms.InputTag("TriggerResults","","PAT"),
                                             genParticleSrc        = cms.InputTag("prunedGenParticles"),
@@ -313,7 +323,7 @@ if (isMC_):
         )
 else:
     process.p = cms.Path(
-        process.LeptonsFilter
+        #process.LeptonsFilter
 #        *process.egmGsfElectronIDSequence
 #        *process.prefiringweight
 #        *process.fullPatMetSequenceModifiedMET
@@ -324,7 +334,7 @@ else:
 #        *process.jetCorrFactors
 #        *process.slimmedJetsJEC
 #        *process.HeavyNeutralLepton
-        *process.ecalBadCalibReducedMINIAODFilter
+        process.ecalBadCalibReducedMINIAODFilter
         *process.egmGsfElectronIDSequence
         *process.jetCorrFactors
         *process.slimmedJetsJEC
