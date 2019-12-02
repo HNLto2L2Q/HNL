@@ -29,6 +29,28 @@ void BigNtuple::fill_prefiring(float weight, float weightup, float weightdown){
   prefire_weightdown_.push_back(weightdown);
 }
 
+void BigNtuple::set_mc_genInfo(TTree* tree) {
+  tree->Branch("lep_PID",   &lep_PID_);
+  tree->Branch("lep_Charge",&lep_Charge_);
+  tree->Branch("lep_Pt",    &lep_Pt_);
+  tree->Branch("lep_Eta",   &lep_Eta_);
+  tree->Branch("lep_Phi",   &lep_Phi_);
+  tree->Branch("lep_En",    &lep_En_);
+}
+void  BigNtuple::fill_mc_genInfo(std::vector<reco::GenParticle> prtCollection ){
+
+  for (auto genPart: prtCollection){
+
+    lep_PID_.push_back(genPart.pdgId());
+    lep_Charge_.push_back(genPart.charge());
+    lep_Pt_.push_back(genPart.pt());
+    lep_Eta_.push_back(genPart.eta());
+    lep_Phi_.push_back(genPart.phi());
+    lep_En_.push_back(genPart.energy());
+  }
+
+}
+
 void BigNtuple::set_pv_genInfo(TTree* tree) {
   
   tree->Branch("lep1_gen_PID" , &lep1_gen_PID_, "lep1_gen_PID/I");
@@ -246,6 +268,11 @@ void BigNtuple::set_trigInfo(TTree* tree){
     tree->Branch("passDoubleMu33Ele33", &passDoubleMu33Ele33_,"passDoubleMu33Ele33/O");
     tree->Branch("passEle32_WPTight_Gsf", &passEle32_WPTight_Gsf_, "passEle32_WPTight_Gsf/O");
 
+    tree->Branch("pass_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30",  & pass_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_ , "pass_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30/O");
+    tree->Branch("pass_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30", & pass_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_ , "pass_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30/O");
+    tree->Branch("pass_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30", & pass_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_ , "pass_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30/O");
+    tree->Branch("pass_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30", & pass_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_ , "pass_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30/O");
+
 }
 
 void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const edm::TriggerNames& trigNames){
@@ -295,6 +322,12 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
 
     passDoubleMu33Ele33_         |=  name.find("HLT_Mu33_Ele33_CaloIdL_GsfTrkIdVL_v") != std::string::npos;
 
+    pass_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_   |=  name.find("HLT_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_v") != std::string::npos;
+    pass_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_  |=  name.find("HLT_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_v") != std::string::npos;
+    pass_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_  |=  name.find("HLT_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_v") != std::string::npos;
+    pass_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_  |=  name.find("HLT_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_v") != std::string::npos;
+
+
   }
 
   passIsoMu24All_ = passIsoMu24All_   || passIsoMu24_ || passIsoMuTk24_ ;
@@ -326,6 +359,10 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_pfSumNeutralHadronEt" , &mu_pfSumNeutralHadronEt_);
    tree->Branch("mu_PFSumPhotonEt" , &mu_PFSumPhotonEt_);
    tree->Branch("mu_pfSumPUPt" , &mu_pfSumPUPt_);
+   tree->Branch("mu_pfSumPUPt04" ,&mu_pfSumPUPt04_);
+   tree->Branch("mu_PFSumPhotonEt04",&mu_PFSumPhotonEt04_);
+   tree->Branch("mu_pfSumChargedHadronPt04",&mu_pfSumChargedHadronPt04_);
+   tree->Branch("mu_pfSumNeutralHadronEt04",&mu_pfSumNeutralHadronEt04_);
    tree->Branch("mu_numberOfValidMuonHits" , &mu_numberOfValidMuonHits_);
    tree->Branch("mu_emIso" , &mu_emIso_);
    tree->Branch("mu_hadIso" , &mu_hadIso_);
@@ -345,8 +382,6 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_pzTunePMuonBestTrack" , &mu_pzTunePMuonBestTrack_);
    tree->Branch("mu_pTunePMuonBestTrack" , &mu_pTunePMuonBestTrack_);
    tree->Branch("mu_etaTunePMuonBestTrack" , &mu_etaTunePMuonBestTrack_);
-   tree->Branch("mu_LXYZ" , &mu_LXYZ_);
-   tree->Branch("mu_LXY" , &mu_LXY_);
    tree->Branch("mu_ptTunePMuonBestTrack" , &mu_ptTunePMuonBestTrack_);
    tree->Branch("mu_phiTunePMuonBestTrack" , &mu_phiTunePMuonBestTrack_);
    tree->Branch("mu_thetaTunePMuonBestTrack" , &mu_thetaTunePMuonBestTrack_);
@@ -358,6 +393,11 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_absdzTunePMuonBestTrack" , &mu_absdzTunePMuonBestTrack_);
    tree->Branch("mu_absdzErrorTunePMuonBestTrack" , &mu_absdzErrorTunePMuonBestTrack_);
    tree->Branch("mu_absdzSigTunePMuonBestTrack" , &mu_absdzSigTunePMuonBestTrack_);
+   tree->Branch("mu_3dIP",& mu_3dIP);
+   tree->Branch("mu_3dIPSig",& mu_3dIPSig);
+   tree->Branch("mu_2dIP",& mu_2dIP );
+   tree->Branch("mu_2dIPSig",& mu_2dIPSig);
+
    tree->Branch("mu_recoDeltaBeta" , &mu_recoDeltaBeta_);
    tree->Branch("mu_recoiso" , &mu_recoiso_);
    tree->Branch("mu_isGlobalMuon" , &mu_isGlobalMuon_);
@@ -369,6 +409,7 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_isSoftMuon" , &mu_isSoftMuon_);
    tree->Branch("mu_isLooseMuon" , &mu_isLooseMuon_);
    tree->Branch("mu_isTightMuon" , &mu_isTightMuon_);
+   /*
    tree->Branch("mu_STAnHits" , &mu_STAnHits_);
    tree->Branch("mu_STAnLost" , &mu_STAnLost_);
    tree->Branch("mu_STAnStationsWithAnyHits" , &mu_STAnStationsWithAnyHits_);
@@ -387,6 +428,7 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_STAnValidRpcHits" , &mu_STAnValidRpcHits_);
    tree->Branch("mu_STAinnermostStationWithValidHits" , &mu_STAinnermostStationWithValidHits_);
    tree->Branch("mu_STAoutermostStationWithValidHits" , &mu_STAoutermostStationWithValidHits_);
+   */
    tree->Branch("mu_STATofDirection" , &mu_STATofDirection_);
    tree->Branch("mu_STATofNDof" , &mu_STATofNDof_);
    tree->Branch("mu_STATofTimeAtIpInOut" , &mu_STATofTimeAtIpInOut_);
@@ -395,6 +437,7 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_STATofTimeAtIpOutInErr" , &mu_STATofTimeAtIpOutInErr_);
    tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_);
    tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_);
+   tree->Branch("mu_GenMatchTest" , &mu_GenMatchTest_);
    tree->Branch("mu_RPCTofDirection" , &mu_RPCTofDirection_);
    tree->Branch("mu_RPCTofNDof" , &mu_RPCTofNDof_);
    tree->Branch("mu_RPCTofTimeAtIpInOut" , &mu_RPCTofTimeAtIpInOut_);
@@ -405,7 +448,7 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
 
 
 
-void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho,  double match1 ,  double match2){
+void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho,  double match1 ,  double match2 , double match3){
 
   mu_isGlobalMuon_.push_back(mu.isGlobalMuon());
   mu_isPFMuon_.push_back(mu.isPFMuon());
@@ -423,6 +466,7 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
   mu_charge_.push_back(mu.charge());
   mu_FirstGenMatch_.push_back(match1);
   mu_SecondGenMatch_.push_back(match2);
+  mu_GenMatchTest_.push_back(match3);
 
   reco::TrackRef tunePTrack = mu.muonBestTrack();
 
@@ -443,6 +487,12 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
   mu_absdzErrorTunePMuonBestTrack_.push_back(fabs(tunePTrack->dzError())); // longitudinal impact parameter  w.r.t. the primary vertex
   mu_absdzSigTunePMuonBestTrack_.push_back(fabs(tunePTrack->dz(pv.position()))/fabs(tunePTrack->dzError()));
   mu_TrackQuality_.push_back(tunePTrack->quality(reco::TrackBase::highPurity));
+
+  mu_3dIP.push_back(mu.dB(pat::Muon::PV3D));
+  mu_3dIPSig.push_back(mu.dB(pat::Muon::PV3D)/mu.edB(pat::Muon::PV3D));
+  mu_2dIP.push_back(mu.dB());
+  mu_2dIPSig.push_back(mu.dB()/mu.edB());
+
 
   mu_rhoIso_.push_back(Rho); //transverse momentum per unit area
 
@@ -466,7 +516,7 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
     mu_InnerTrackQuality_.push_back(-999);
     mu_InnerTrackValidFraction_.push_back(-999);
   }
-
+  /*
   if(mu.standAloneMuon().isNonnull() ) {
     mu_STAnHits_.push_back(mu.standAloneMuon()->numberOfValidHits());
     mu_STAnLost_.push_back(mu.standAloneMuon()->numberOfLostHits());
@@ -507,7 +557,7 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
     mu_STAoutermostStationWithValidHits_.push_back(-999);
     mu_STAnStationsWithValidHits_.push_back(-999);
   }
-
+  */
   //time info
   reco::MuonTime tofAll = mu.time();
   reco::MuonTime tofRPC = mu.rpcTime();
@@ -541,10 +591,15 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
   mu_trkKinkMuonBestTrack_.push_back(mu.combinedQuality().trkKink);
   mu_chi2LocalPositionMuonBestTrack_.push_back(mu.combinedQuality().chi2LocalPosition);
   //============= Parameters related to PF isolation =====================
-  mu_pfSumPUPt_.push_back(mu.pfIsolationR03().sumPhotonEt);
+  mu_pfSumPUPt_.push_back(mu.pfIsolationR03().sumPUPt);
   mu_PFSumPhotonEt_.push_back(mu.pfIsolationR03().sumPhotonEt);
   mu_pfSumChargedHadronPt_.push_back(mu.pfIsolationR03().sumChargedHadronPt);
   mu_pfSumNeutralHadronEt_.push_back(mu.pfIsolationR03().sumNeutralHadronEt);
+
+  mu_pfSumPUPt04_.push_back(mu.pfIsolationR04().sumPUPt);
+  mu_PFSumPhotonEt04_.push_back(mu.pfIsolationR04().sumPhotonEt);
+  mu_pfSumChargedHadronPt04_.push_back(mu.pfIsolationR04().sumChargedHadronPt);
+  mu_pfSumNeutralHadronEt04_.push_back(mu.pfIsolationR04().sumNeutralHadronEt);
 
 }
 
@@ -907,6 +962,11 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_frac15",&ele_frac15_);
   tree->Branch("ele_dxy",&ele_dxy_);
   tree->Branch("ele_dz",&ele_dz_);
+  tree->Branch("ele_3dIP",& ele_3dIP);
+  tree->Branch("ele_3dIPSig",& ele_3dIPSig); 
+  tree->Branch("ele_2dIP",& ele_2dIP );
+  tree->Branch("ele_2dIPSig",& ele_2dIPSig);
+
   tree->Branch("ele_isEcalDrivenSeed",&ele_isEcalDrivenSeed_);
   tree->Branch("ele_isPassConversionVeto",&ele_isPassConversionVeto_);
   tree->Branch("ele_charge",&ele_charge_);
@@ -933,6 +993,7 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_pfDeltaBeta",&ele_pfDeltaBeta_);
   tree->Branch("ele_FirstGenMatch",&ele_FirstGenMatch_);
   tree->Branch("ele_SecondGenMatch", &ele_SecondGenMatch_);
+  tree->Branch("ele_GenMatchTest", &ele_GenMatchTest_);
   tree->Branch("ele_isEB" ,&ele_isEB_);
   tree->Branch("ele_isEE" ,&ele_isEE_);
   tree->Branch("ele_eSuperClusterOverP" ,&ele_eSuperClusterOverP_);
@@ -953,7 +1014,7 @@ void BigNtuple::set_eleInfo(TTree* tree){
 
 }
 
-void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, double Rho,  double match1, double match2,  std::auto_ptr<EcalClusterLazyTools> recHitEcal, double Iso){
+void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, double Rho,  double match1, double match2,  std::auto_ptr<EcalClusterLazyTools> recHitEcal, double Iso, double match3){
 
   float dEtaInSeed;
 
@@ -964,6 +1025,8 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
 
   ele_FirstGenMatch_.push_back(match1);
   ele_SecondGenMatch_.push_back(match2);
+  ele_GenMatchTest_.push_back(match3);
+
   ele_Et_.push_back(ele_.superCluster()->energy() * sin(ele_.p4().theta()));
   ele_EtFromCaloEn_.push_back(ele_.caloEnergy() * sin(ele_.p4().theta()));
   
@@ -1039,6 +1102,11 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
 
   ele_dxy_.push_back(ele_.gsfTrack()->dxy(pv.position()));   //GSF -> Gaussian Sum Filter
   ele_dz_.push_back(ele_.gsfTrack()->dz(pv.position()));
+
+  ele_3dIP.push_back(ele_.dB(pat::Electron::PV3D));
+  ele_3dIPSig.push_back(ele_.dB(pat::Electron::PV3D)/ele_.edB(pat::Electron::PV3D));
+  ele_2dIP.push_back(ele_.dB());
+  ele_2dIPSig.push_back(ele_.dB()/ele_.edB());
 
   ele_isEcalDrivenSeed_.push_back(ele_.ecalDrivenSeed());
   ele_isPassConversionVeto_.push_back(ele_.passConversionVeto());

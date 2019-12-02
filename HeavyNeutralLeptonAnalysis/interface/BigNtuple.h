@@ -93,6 +93,9 @@ public:
         void set_prefiring(TTree* tree);
         void fill_prefiring(float weight, float weightup, float weightdown);
 
+	void set_mc_genInfo(TTree* tree);
+        void fill_mc_genInfo(const std::vector<reco::GenParticle>);
+
 	void set_pv_genInfo(TTree* tree);
         void fill_pv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
 
@@ -112,7 +115,7 @@ public:
         void fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, std::pair<float, float> match, bool lept);
 
 	void set_muInfo(TTree* tree);
-        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 );
+        void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 , double match3);
 	
 	void set_jetInfo(TTree* tree);
 	void fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp ,float smearedDown ,double un , double unSmeared );
@@ -127,7 +130,7 @@ public:
 	void fill_massCorrection(double mass_corr);
 
         void set_eleInfo(TTree* tree);
-        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double  match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal , double Iso);
+        void fill_eleInfo(const pat::Electron& ele_ , const reco::Vertex& pv, double Rho, double match1, double  match2 , std::auto_ptr<EcalClusterLazyTools> recHitEcal , double Iso , double match3);
         void set_eleIDInfo(TTree* tree);
         void fill_eleIDInfo(float ele_mva , bool ele_veto , bool ele_loose , bool ele_medium , bool ele_tight);
  
@@ -168,6 +171,13 @@ private:
 	int pvNTrack_ = -1000;
 	float pvSumPtSq_ = -1000;
 	int numberPV_    = -1000;
+	//gen mc info's
+	std::vector<float> lep_PID_;
+	std::vector<float> lep_Charge_;
+	std::vector<float> lep_Pt_;
+	std::vector<float> lep_Eta_;
+	std::vector<float> lep_Phi_;
+	std::vector<float> lep_En_;
 
 	//gen infos mu @ pv
 	int     lep1_gen_PID_     = -1000;
@@ -257,6 +267,11 @@ private:
 
 	bool passDoubleMu33Ele33_       = 0;
 
+	bool pass_Ele8_CaloIdL_TrackIdL_IsoVL_PFJet30_   = 0;
+	bool pass_Ele12_CaloIdL_TrackIdL_IsoVL_PFJet30_  = 0;
+	bool pass_Ele17_CaloIdL_TrackIdL_IsoVL_PFJet30_  = 0;
+	bool pass_Ele23_CaloIdL_TrackIdL_IsoVL_PFJet30_  = 0;
+
 	float best_sv_px_ = 999;
 	float best_sv_py_ = 999;
 	float best_sv_pz_ = 999;
@@ -326,12 +341,17 @@ private:
 	std::vector<float> mu_charge_ ;
 	std::vector<double> mu_FirstGenMatch_ ;
 	std::vector<double> mu_SecondGenMatch_ ;
+	std::vector<float> mu_GenMatchTest_;
 	std::vector<float> mu_trackiso_ ;
 	std::vector<float> mu_rhoIso_;
 	std::vector<float> mu_pfSumChargedHadronPt_ ;
 	std::vector<float> mu_pfSumNeutralHadronEt_ ;
 	std::vector<float> mu_PFSumPhotonEt_ ;
 	std::vector<float> mu_pfSumPUPt_ ;
+	std::vector<float> mu_pfSumPUPt04_;
+	std::vector<float> mu_PFSumPhotonEt04_;
+	std::vector<float> mu_pfSumChargedHadronPt04_;
+	std::vector<float> mu_pfSumNeutralHadronEt04_;
 	std::vector<int>   mu_numberOfValidMuonHits_ ;
 	std::vector<float> mu_emIso_ ;
 	std::vector<float> mu_hadIso_ ;
@@ -351,8 +371,6 @@ private:
 	std::vector<float> mu_pzTunePMuonBestTrack_ ;
 	std::vector<float> mu_pTunePMuonBestTrack_ ;
 	std::vector<float> mu_etaTunePMuonBestTrack_ ;
-	std::vector<float> mu_LXYZ_ ;
-	std::vector<float> mu_LXY_ ;
 	std::vector<float> mu_ptTunePMuonBestTrack_ ;
 	std::vector<float> mu_phiTunePMuonBestTrack_ ;
 	std::vector<float> mu_thetaTunePMuonBestTrack_ ;
@@ -364,6 +382,10 @@ private:
 	std::vector<float> mu_absdzTunePMuonBestTrack_ ;
 	std::vector<float> mu_absdzErrorTunePMuonBestTrack_ ;
 	std::vector<float> mu_absdzSigTunePMuonBestTrack_ ;
+	std::vector<float> mu_3dIP;
+	std::vector<float> mu_3dIPSig;
+	std::vector<float> mu_2dIP;
+	std::vector<float> mu_2dIPSig;
 	std::vector<float> mu_recoDeltaBeta_ ;
 	std::vector<float> mu_recoiso_ ;
 	std::vector<float> mu_isGlobalMuon_ ;
@@ -375,6 +397,7 @@ private:
 	std::vector<float> mu_isSoftMuon_ ;
 	std::vector<float> mu_isLooseMuon_ ;
 	std::vector<float> mu_isTightMuon_ ;
+	/*
 	std::vector<int>    mu_STAnHits_ ;
 	std::vector<int>    mu_STAnLost_ ;
 	std::vector<int>    mu_STAnStationsWithAnyHits_ ;
@@ -393,6 +416,7 @@ private:
 	std::vector<int>    mu_STAnValidRpcHits_ ;
 	std::vector<int>    mu_STAinnermostStationWithValidHits_ ;
 	std::vector<int>    mu_STAoutermostStationWithValidHits_ ;
+	*/
 	std::vector<float>  mu_STATofDirection_ ;
 	std::vector<float>  mu_STATofNDof_ ;
 	std::vector<float>  mu_STATofTimeAtIpInOut_ ;
@@ -519,6 +543,10 @@ private:
   
 	std::vector<float>   ele_dxy_;
 	std::vector<float>   ele_dz_; 
+	std::vector<float>   ele_3dIP;
+	std::vector<float>   ele_3dIPSig;
+	std::vector<float>   ele_2dIP;
+	std::vector<float>   ele_2dIPSig;
 	std::vector<float>   ele_rhoIso_;
 	std::vector<float>   ele_fbrem_;
 	std::vector<float>   ele_EoverP_;
@@ -541,6 +569,7 @@ private:
 	std::vector<float>   ele_pfDeltaBeta_;
 	std::vector<double>  ele_FirstGenMatch_;
 	std::vector<double>  ele_SecondGenMatch_;
+	std::vector<float>   ele_GenMatchTest_;
 
 	std::vector<float>   ele_Mva2016_;
 	std::vector<float>   ele_CutVeto_; 

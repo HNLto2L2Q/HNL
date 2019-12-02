@@ -181,8 +181,10 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 		}
 
 		weight = lheinfo->weights()[0].wgt;
+		//std::cout<<" weight = "<<weight<< std::endl;
 		for(size_t i=0; i<nws; ++i) {
 			sumw_[i] += lheinfo->weights()[i].wgt;
+			//std::cout <<"lheinfo->weights()[i].wgt "  <<lheinfo->weights()[i].wgt <<std::endl; 
 		}
 	}
 	processedWeighted_ += (weight < 0. ? -1. : 1.);

@@ -224,10 +224,31 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             jetsSmearedUp   = cms.InputTag("jetSmearingUp" if isMC_ else "slimmedJetsJEC"),
                                             jetsSmearedDown = cms.InputTag("jetSmearingDown" if isMC_ else "slimmedJetsJEC"),
                                             electronsEffectiveAreas = cms.FileInPath('RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt')
-                                            )
+
+                                        )
+triggers = [
+    'HLT_IsoMu24_v*',
+    'HLT_IsoTkMu24_v*',
+    'HLT_IsoTkMu27_v*',
+    'HLT_IsoMu27_v*',
+    'HLT_Ele27_WPTight_Gsf_v*',
+
+]
+process.TriggerSelection = cms.EDFilter( "TriggerResultsFilter",
+                                         triggerConditions = cms.vstring(*triggers),
+                                         hltResults = cms.InputTag( "TriggerResults", "", "HLT" ),
+                                         l1tResults = cms.InputTag( "" ),
+                                         l1tIgnoreMask = cms.bool( False ),
+                                         l1techIgnorePrescales = cms.bool( False ),
+                                         daqPartitions = cms.uint32( 1 ),
+                                         throw = cms.bool( True )
+                                     )
+
+
 if isMC_:
-    process.p = cms.Path(
+        process.p = cms.Path(
         process.metaTree
+        #*process.TriggerSelection
         *process.LeptonsFilter
         *process.egmGsfElectronIDSequence
         *process.jetCorrFactors
