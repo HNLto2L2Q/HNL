@@ -129,6 +129,25 @@ public:
   std::pair<double, double> MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
   double MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton);
   double MatchGenLeptonsMC(const reco::Candidate& lepton , int pdgId);
+
+  void getDecayChain(const reco::GenParticle& gen, const std::vector<reco::GenParticle>& gen_part, std::set<int>& table);
+  unsigned GetMotherID(const reco::GenParticle* gen, const std::vector<reco::GenParticle>& genParticles);
+
+  bool bosonInTable(const std::set<int>& decays);
+  bool bQuarkInTable(const std::set<int>& decays);
+  bool bMesonInTable(const std::set<int>& decays);
+  bool bBaryonInTable(const std::set<int>& decays);
+  bool cQuarkInTable(const std::set<int>& decays);
+  bool cMesonInTable(const std::set<int>& decays);
+  bool cBaryonInTable(const std::set<int>& decays);
+  bool sBaryonInTable(const std::set<int>& decays);
+  bool lightMesonInTable(const std::set<int>& decays);
+  bool lightBaryonInTable(const std::set<int>& decays);
+  bool pi0InTable(const std::set<int>& decays);
+  bool photonInTable(const std::set<int>& decays);
+  bool tauInTable(const std::set<int>& decays);
+  bool udsInTable(const std::set<int>& decays);
+
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
   //transverse mass
@@ -412,59 +431,142 @@ bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,cons
     }
   return false;
 }
-
 //===================================== Electron - Muon Gen Match ================================================//
- double HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton){
-  
+ double HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton){  
   double dR = deltaR(lepton.eta(), lepton.phi(), v_eta, v_phi);
   double deta = sqrt( (lepton.eta() - v_eta ) * (lepton.eta() - v_eta ) );
-
   if(dR < 0.03 or (dR < 0.1 and deta < 0.03)){ 
   //if(dR < 0.2){
     return dR;
   }else{return -999.; }
 }//returns the lepton's tipe (true if is muon - false if is electron) and 1 or 0 if the lepton matches with the vertex defined by v_eta and v_phi
+//====================================   get the decay's table   ================================================// 
+void HeavyNeutralLeptonAnalysis::getDecayChain(const reco::GenParticle& gen, const std::vector<reco::GenParticle>& gp, std::set<int>& table){
+  if((table.empty() or table.find(gen.pdgId())==table.end()) and gen.pdgId() != 2212) table.insert(gen.pdgId());
+  if(gen.numberOfMothers() > 1) getDecayChain(gp[gen.motherRef(1).key()], gp, table);
+  if(gen.numberOfMothers() > 0) getDecayChain(gp[gen.motherRef(0).key()], gp, table);
+}
+//==================================== check whcih was the mother ================================================// 
+bool HeavyNeutralLeptonAnalysis::bosonInTable(const std::set<int>& decays){ 
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry) > 22 && abs(entry) < 26) || (abs(entry) == 9900012);});
+}
+ 
+bool HeavyNeutralLeptonAnalysis::bQuarkInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry) == 5);});
+}
+
+bool HeavyNeutralLeptonAnalysis::bBaryonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry)/1000)%10 == 5;});
+}
+
+bool HeavyNeutralLeptonAnalysis::bMesonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ unsigned mod = abs(entry)%10000; return mod >= 500 && mod < 600;});
+}
+
+bool HeavyNeutralLeptonAnalysis::cQuarkInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry) == 4);});
+}
+
+ bool HeavyNeutralLeptonAnalysis::cBaryonInTable(const std::set<int>& decays){
+   return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry)/1000)%10 == 4;});
+ }
+
+bool HeavyNeutralLeptonAnalysis::cMesonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ unsigned mod = abs(entry)%10000; return mod >= 400 && mod < 500;});
+}
+
+bool HeavyNeutralLeptonAnalysis::sBaryonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry)/1000)%10 == 3;});
+}
+
+bool HeavyNeutralLeptonAnalysis::lightMesonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ unsigned mod = abs(entry)%10000; return (mod >= 100 && mod < 400) || entry == 21;});
+}
+
+bool HeavyNeutralLeptonAnalysis::lightBaryonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(),
+		     [](const int entry){
+		       if(abs(entry) == 2212) return false; // useless? there are no protons saved in the chain; actually those wo do appear you want to have here
+		       unsigned red = (abs(entry)/1000)%10; 
+		       return (red == 1 || red == 2); 
+		     });
+}
+bool HeavyNeutralLeptonAnalysis::pi0InTable(const std::set<int>& decays){return decays.count(111);}
+bool HeavyNeutralLeptonAnalysis::photonInTable(const std::set<int>& decays){return decays.count(22);}
+bool HeavyNeutralLeptonAnalysis::tauInTable(const std::set<int>& decays){return decays.count(15) or decays.count(-15);}
+bool HeavyNeutralLeptonAnalysis::udsInTable(const std::set<int>& decays){
+  if(sBaryonInTable(decays))      return true;
+  if(lightMesonInTable(decays))   return true;
+  if(lightBaryonInTable(decays))   return true;
+  return false;
+}
+//==================================== check and get the mother ID ================================================//  
+unsigned HeavyNeutralLeptonAnalysis::GetMotherID(const reco::GenParticle* gen, const std::vector<reco::GenParticle>& genParticles){
+  if(!gen) return -10; 
+  std::set<int> decays;
+  getDecayChain(*gen, genParticles, decays);
+  if(bosonInTable(decays)){
+    if(bMesonInTable(decays)){
+      if(cMesonInTable(decays)){
+	if(tauInTable(decays))      return 10 ; //Boson -> BMeson -> CMeson -> Tau -> Lep;
+	else                        return 20 ; //Boson -> BMeson -> CMeson -> Lep;
+      }
+      if(tauInTable(decays))        return 30 ; //Boson -> BMeson -> Tau -> Lep;
+      else                          return 40 ; //Boson -> BMeson -> Lep;
+    }
+    if(cMesonInTable(decays)){
+      if(tauInTable(decays))        return 50 ; //Boson -> CMeson -> Tau -> Lep;
+      else                          return 60 ; //Boson -> CMeson -> Lep;
+    }
+    if(udsInTable(decays))          return 70 ; //Boson -> pi_0 -> Lep;
+    if(tauInTable(decays))          return 80 ; //Boson -> Tau -> Lep;
+    else                            return 90 ; //Boson -> Lep;
+  }
+  if(bMesonInTable(decays)){
+    if(cMesonInTable(decays)){
+      if(tauInTable(decays))        return 100 ; //BMeson -> CMeson -> Tau -> Lep;
+      else                          return 120 ; //BMeson -> CMeson -> Lep;
+    }
+    if(tauInTable(decays))          return 130 ; //BMeson -> Tau -> Lep;
+    else                            return 140 ; //BMeson -> Lep;
+  }
+  if(cMesonInTable(decays)){
+    if(tauInTable(decays))          return 150 ; //CMeson -> Tau -> Lep;
+    else                            return 170 ; //CMeson -> Lep;
+  }
+  if(bBaryonInTable(decays))        return 180 ; //B_Baryon -> Lep;
+  if(cBaryonInTable(decays))        return 190 ; //C_Baryon -> Lep;
+  if(photonInTable(decays))         return 200 ; //photon -> Lep;
+  if(udsInTable(decays))            return 210 ; //pi_0 -> Lep;
+  if(bQuarkInTable(decays))         return 220 ; //B_Quark -> Lep;
+  if(cQuarkInTable(decays))         return 230 ; //C_Quark -> Lep;
+  else return 0;
+}
 //===================================== MC samples Lepton Match ==================================================//
 double HeavyNeutralLeptonAnalysis::MatchGenLeptonsMC(const reco::Candidate& lepton , int pdgId){
-
-  reco::GenParticle ZBoson;   
-  std::vector<reco::GenParticle> genParticles = *(genHandle.product());   
-  for(auto& genPart: genParticles){   
-    if (abs(genPart.pdgId()) == 23){
-      ZBoson = genPart;
-      break;
-    }
-  }
-
-  reco::GenParticle WBoson;
-  for(auto& genPart: genParticles){
-    if (abs(genPart.pdgId()) == 24){
-      WBoson = genPart;
-      break;
-    }
-  }
+  std::vector<reco::GenParticle> genParticles = *(genHandle.product());
   double minDeltaR=999;
   double minDeltaEta=999;
+  float decayChain = 9999;
   for(auto& gp: genParticles) {
     if (gp.status()==1 and gp.isLastCopy() and abs(gp.pdgId()) == pdgId ){
-      const reco::Candidate * mom = gp.mother(0) ;
-      if (isAncestor(&ZBoson, mom)  or isAncestor(&WBoson, mom)){
+      float  MotherID  =   GetMotherID(&gp , genParticles);
+      //if (MotherID > 0 ){
 	double dR = deltaR(lepton.eta(), lepton.phi(), gp.eta(), gp.phi());
 	double deta = sqrt( (lepton.eta() - gp.eta() ) * (lepton.eta() - gp.eta() ) );
 	if (dR<minDeltaR) {
 	  minDeltaR   = dR;
 	  minDeltaEta = deta;
-	}
+	  decayChain = MotherID;
+	  //}
       }
     }
   }
-  if(minDeltaR < 0.03 or (minDeltaR < 0.1 and minDeltaEta < 0.03)) return minDeltaR;
-  else return -999.; 
-  
+  if(minDeltaR < 0.1 or (minDeltaR < 0.2 and minDeltaEta < 0.1)) return decayChain;
+  else return -999.;   
 }//returns the lepton's tipe (true if is muon - false if is electron) and 1 or 0 if the lepton matches with the vertex defined by v_eta and v_phi                                    
-
-//===================================== Displaced Vertex Gen Match ================================================// 
-std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco) {
+  //===================================== Displaced Vertex Gen Match ================================================// 
+  std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco) {
   double metric_xyz = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())) + ((vgen_z-vreco.z())*(vgen_z-vreco.z())));
   double metric_xy = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())));      
   if(metric_xyz < 0.2){
@@ -499,34 +601,15 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
   //
   //=============================================================
   if(isMC){
-  reco::GenParticle WBoson;
-  reco::GenParticle ZBoson;
-  std::vector<reco::GenParticle> genParticles = *(genHandle.product());
-  for(auto& genPart: genParticles){
-    if (abs(genPart.pdgId()) == 24){
-      WBoson = genPart;
-      break;
+    std::vector<reco::GenParticle> genParticles = *(genHandle.product());  
+    for(auto& gp: genParticles){
+      if ( (gp.status()==1 and (abs(gp.pdgId()) == 11 or abs(gp.pdgId()) == 13)) or (gp.isLastCopy() and gp.status()==2 and abs(gp.pdgId()) == 15) ){
+	float  MotherID =   GetMotherID(&gp , genParticles); //feed GetMotherID(all particles , the lep interst)      
+	//cout<<" prt pdgId() = "<<gp.pdgId()<<" part mother()->pdgId() = "<<gp.mother()->pdgId()<<" part pt() = "<<gp.pt()<<" MotherID = "<<MotherID<<endl;         
+      ntuple_.fill_mc_genInfo(&gp, MotherID);
+      }    
     }
   }
-  for(auto& genPart: genParticles){
-    if (abs(genPart.pdgId()) == 23){
-      ZBoson = genPart;
-      break;
-    }
-  }
-  vector<reco::GenParticle> mu;
-  for(auto& gp: genParticles) {
-    if (gp.status()==1 and gp.isLastCopy() and (abs(gp.pdgId()) == 13 or abs(gp.pdgId()) == 11 )){
-      const reco::Candidate * mom = gp.mother(0) ;
-      if (isAncestor(&ZBoson, mom)  or isAncestor(&WBoson, mom)){
-	mu.push_back(gp);
-	ntuple_.fill_mc_genInfo(mu);
-      }
-    }
-  }
-  
-  }
-
 
   //=============================================================
   //  
@@ -799,7 +882,6 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        float jetSmearedPt_JERUp   = jetSmearedUpIt->pt();
 
        ntuple_.fill_jetInfo(jet ,jetSmearedPt ,jetSmearedPt_JERUp ,jetSmearedPt_JERDown ,unc ,uncSmeared );
-
      }
    }
    //=============================================================

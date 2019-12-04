@@ -94,7 +94,7 @@ public:
         void fill_prefiring(float weight, float weightup, float weightdown);
 
 	void set_mc_genInfo(TTree* tree);
-        void fill_mc_genInfo(const std::vector<reco::GenParticle>);
+        void fill_mc_genInfo(const reco::Candidate*, float decay);
 
 	void set_pv_genInfo(TTree* tree);
         void fill_pv_genInfo(const reco::GenParticle prt,const std::vector<reco::GenParticle>);
@@ -116,6 +116,9 @@ public:
 
 	void set_muInfo(TTree* tree);
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 , double match3);
+
+	double reducedPdgId( int pdgId );
+	double catchNanOrInf( double value );
 	
 	void set_jetInfo(TTree* tree);
 	void fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp ,float smearedDown ,double un , double unSmeared );
@@ -178,6 +181,12 @@ private:
 	std::vector<float> lep_Eta_;
 	std::vector<float> lep_Phi_;
 	std::vector<float> lep_En_;
+	std::vector<float> lep_motherID_;
+	std::vector<float> lep_DecayChain_;
+	std::vector<float> lep_VX_;
+	std::vector<float> lep_VY_;
+	std::vector<float> lep_VZ_;
+	std::vector<float> lep_status_;
 
 	//gen infos mu @ pv
 	int     lep1_gen_PID_     = -1000;
@@ -476,6 +485,21 @@ private:
 	std::vector<float>   jet_DeepCsv_c_;
 	std::vector<float>   jet_DeepCsv_bb_;
 	std::vector<float>   jet_HadronFlavor_;
+
+	std::vector<std::vector<float> >	jet_daughter_Pt_;
+	std::vector<std::vector<float> >	jet_daughter_Eta_;
+	std::vector<std::vector<float> >	jet_daughter_Phi_;
+	std::vector<std::vector<float> >	jet_daughter_Mass_;
+	std::vector<std::vector<float> >	jet_daughter_PdgId_;
+	std::vector<std::vector<float> >	jet_daughter_PdgIdReduced_;
+	std::vector<std::vector<float> >	jet_daughter_Charge_;
+	std::vector<std::vector<float> >	jet_daughter_dxy_;
+	std::vector<std::vector<float> >	jet_daughter_dz_;
+	std::vector<std::vector<float> >	jet_daughter_dxyErr_;
+	std::vector<std::vector<float> >	jet_daughter_dzErr_;
+	std::vector<std::vector<float> >	jet_daughter_NumberOfHits_;
+	std::vector<std::vector<float> >	jet_daughter_NumberOfPixelHits_;
+	std::vector<std::vector<float> >	jet_daughter_HasTrack_;
 
 	//electron info
 

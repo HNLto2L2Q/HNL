@@ -36,19 +36,27 @@ void BigNtuple::set_mc_genInfo(TTree* tree) {
   tree->Branch("lep_Eta",   &lep_Eta_);
   tree->Branch("lep_Phi",   &lep_Phi_);
   tree->Branch("lep_En",    &lep_En_);
+  tree->Branch("lep_motherID",  &lep_motherID_);
+  tree->Branch("lep_DecayChain",&lep_DecayChain_);
+  tree->Branch("lep_VX",    &lep_VX_);
+  tree->Branch("lep_VY",    &lep_VY_);
+  tree->Branch("lep_VZ",    &lep_VZ_);
+  tree->Branch("lep_status",&lep_status_);
 }
-void  BigNtuple::fill_mc_genInfo(std::vector<reco::GenParticle> prtCollection ){
+void  BigNtuple::fill_mc_genInfo(const reco::Candidate* genPart , float decay){
 
-  for (auto genPart: prtCollection){
-
-    lep_PID_.push_back(genPart.pdgId());
-    lep_Charge_.push_back(genPart.charge());
-    lep_Pt_.push_back(genPart.pt());
-    lep_Eta_.push_back(genPart.eta());
-    lep_Phi_.push_back(genPart.phi());
-    lep_En_.push_back(genPart.energy());
-  }
-
+    lep_PID_.push_back(genPart->pdgId());
+    lep_Charge_.push_back(genPart->charge());
+    lep_Pt_.push_back(genPart->pt());
+    lep_Eta_.push_back(genPart->eta());
+    lep_Phi_.push_back(genPart->phi());
+    lep_En_.push_back(genPart->energy());
+    lep_motherID_.push_back(genPart->mother()->pdgId());
+    lep_DecayChain_.push_back(decay);
+    lep_VX_.push_back(genPart->vertex().x());
+    lep_VY_.push_back(genPart->vertex().y());
+    lep_VZ_.push_back(genPart->vertex().z());
+    lep_status_.push_back(genPart->status());
 }
 
 void BigNtuple::set_pv_genInfo(TTree* tree) {
@@ -437,7 +445,7 @@ void BigNtuple::fill_pileupInfo( float npt, float npit){
    tree->Branch("mu_STATofTimeAtIpOutInErr" , &mu_STATofTimeAtIpOutInErr_);
    tree->Branch("mu_FirstGenMatch" , &mu_FirstGenMatch_);
    tree->Branch("mu_SecondGenMatch" , &mu_SecondGenMatch_);
-   tree->Branch("mu_GenMatchTest" , &mu_GenMatchTest_);
+   tree->Branch("mu_DecayChain" , &mu_GenMatchTest_);
    tree->Branch("mu_RPCTofDirection" , &mu_RPCTofDirection_);
    tree->Branch("mu_RPCTofNDof" , &mu_RPCTofNDof_);
    tree->Branch("mu_RPCTofTimeAtIpInOut" , &mu_RPCTofTimeAtIpInOut_);
@@ -775,6 +783,35 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
 
 }
 
+double BigNtuple::reducedPdgId( int pdgId ){
+  static const std::map< unsigned, double > pdgIdMap = {
+    { 0, 0.},
+    { 1, 0.125},
+    { 2, 0.25},
+    { 11, 0.375},
+    { 13, 0.5},
+    { 22, 0.625},
+    { 130, 0.75},
+    { 211, 0.875}
+  };
+  auto entry = pdgIdMap.find( fabs( pdgId ) );
+  if( entry != pdgIdMap.cend() ){
+    return entry->second;
+  } else {
+    return 1;
+  }
+}
+
+double BigNtuple::catchNanOrInf( double value ){
+  if( std::isnan( value ) ){
+    return -1;
+  } else if( std::isinf( value ) ){
+    return -1;
+  } else{
+    return value;
+  }
+}
+
 void BigNtuple::set_jetInfo(TTree* tree){
 
   tree->Branch("jetPt_JECUp", &jetPt_JECUp_);
@@ -822,6 +859,21 @@ void BigNtuple::set_jetInfo(TTree* tree){
   tree->Branch("jet_DeepCsv_c", &jet_DeepCsv_c_);
   tree->Branch("jet_DeepCsv_bb", &jet_DeepCsv_bb_);
   tree->Branch("jet_HadronFlavor", &jet_HadronFlavor_);
+
+  tree->Branch("jet_daughter_Pt",&jet_daughter_Pt_);
+  tree->Branch("jet_daughter_Eta",&jet_daughter_Eta_);
+  tree->Branch("jet_daughter_Phi",&jet_daughter_Phi_);
+  tree->Branch("jet_daughter_Mass",&jet_daughter_Mass_);
+  tree->Branch("jet_daughter_PdgId",&jet_daughter_PdgId_);
+  tree->Branch("jet_daughter_PdgIdReduced",&jet_daughter_PdgIdReduced_);
+  tree->Branch("jet_daughter_Charge",&jet_daughter_Charge_);
+  tree->Branch("jet_daughter_dxy",&jet_daughter_dxy_);
+  tree->Branch("jet_daughter_dz",&jet_daughter_dz_);
+  tree->Branch("jet_daughter_dxyErr",&jet_daughter_dxyErr_);
+  tree->Branch("jet_daughter_dzErr",&jet_daughter_dzErr_);
+  tree->Branch("jet_daughter_NumberOfHits",&jet_daughter_NumberOfHits_);
+  tree->Branch("jet_daughter_NumberOfPixelHits",&jet_daughter_NumberOfPixelHits_);
+  tree->Branch("jet_daughter_HasTrack",&jet_daughter_HasTrack_);
 
 }
 
@@ -899,6 +951,43 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp 
   jet_DeepCsv_c_.push_back(DeepCsv_c);
   jet_DeepCsv_bb_.push_back(DeepCsv_bb);
   jet_HadronFlavor_.push_back(jet.hadronFlavour());
+
+  jet_daughter_Pt_.emplace_back();
+  jet_daughter_Eta_.emplace_back();
+  jet_daughter_Phi_.emplace_back();
+  jet_daughter_Mass_.emplace_back();
+  jet_daughter_PdgId_.emplace_back();
+  jet_daughter_PdgIdReduced_.emplace_back();
+  jet_daughter_Charge_.emplace_back();
+  jet_daughter_dxy_.emplace_back();
+  jet_daughter_dz_.emplace_back();
+  jet_daughter_dxyErr_.emplace_back();
+  jet_daughter_dzErr_.emplace_back();
+  jet_daughter_NumberOfHits_.emplace_back();
+  jet_daughter_NumberOfPixelHits_.emplace_back();
+  jet_daughter_HasTrack_.emplace_back();
+
+  for(unsigned d = 0; d < jet.numberOfDaughters(); ++d){
+    const pat::PackedCandidate* daughter = (const pat::PackedCandidate*) jet.daughter(d);
+
+    jet_daughter_Pt_.back().push_back(daughter->pt());
+    jet_daughter_Eta_.back().push_back(daughter->eta());
+    jet_daughter_Phi_.back().push_back(daughter->phi());
+    jet_daughter_Mass_.back().push_back(daughter->mass());
+    jet_daughter_PdgId_.back().push_back(daughter->pdgId());
+    jet_daughter_PdgIdReduced_.back().push_back(reducedPdgId(daughter->pdgId()));
+    jet_daughter_Charge_.back().push_back(daughter->charge());
+
+    if( daughter->hasTrackDetails() ){
+      jet_daughter_dxy_.back().push_back(fabs(daughter->dxy()));
+      jet_daughter_dz_.back().push_back(fabs(daughter->dz()));
+      jet_daughter_dxyErr_.back().push_back(catchNanOrInf(fabs(daughter->dxyError())));
+      jet_daughter_dzErr_.back().push_back(catchNanOrInf(fabs(daughter->dzError())));
+      jet_daughter_NumberOfHits_.back().push_back(daughter->numberOfHits());
+      jet_daughter_NumberOfPixelHits_.back().push_back(daughter->numberOfPixelHits());
+      jet_daughter_HasTrack_.back().push_back(true);
+    } 
+  }
 
 
 }
@@ -993,7 +1082,7 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_pfDeltaBeta",&ele_pfDeltaBeta_);
   tree->Branch("ele_FirstGenMatch",&ele_FirstGenMatch_);
   tree->Branch("ele_SecondGenMatch", &ele_SecondGenMatch_);
-  tree->Branch("ele_GenMatchTest", &ele_GenMatchTest_);
+  tree->Branch("ele_DecayChain", &ele_GenMatchTest_);
   tree->Branch("ele_isEB" ,&ele_isEB_);
   tree->Branch("ele_isEE" ,&ele_isEE_);
   tree->Branch("ele_eSuperClusterOverP" ,&ele_eSuperClusterOverP_);
