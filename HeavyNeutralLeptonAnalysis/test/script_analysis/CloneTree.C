@@ -3,11 +3,9 @@
 //***************************************** To Compile******************************************************************************
 // g++ -g -std=c++11 -Wl,--no-as-needed `root-config --cflags` `root-config --libs` -lMinuit CloneTree.C -o CloneTree.exe
 //**********************************************************************************************************************************
-
 #ifndef __CINT__
 #include "RooGlobalFunc.h"
-//------------------------------------------------
-     
+//------------------------------------------------     
 #endif
 #include "RooMCStudy.h"
 #include "RooFitResult.h"
@@ -76,7 +74,6 @@ using namespace std;
 using namespace RooFit;
 using namespace RooStats;
 
-
 int main(int argc, char** argv){
 
   if(argc < 4) {
@@ -84,45 +81,27 @@ int main(int argc, char** argv){
     std::cout<<"Usage:  "<<argv[0]<<"  path/to/ntuples  input_filename  isMC"<<std::endl;
     return 0;
   }
-  //Get old file, old tree and set top branch address
-  //TFile *oldfile = new TFile("/eos/cms/store/group/phys_exotica/HNL/Background/crab_Analysis_WZToLLLNu/Background_Analysis.root");
-  //TFile *oldfile = new TFile("/user/moanwar/Run2016/CMSSW_8_0_29/src/HNL/HeavyNeutralLeptonAnalysis/test/signal/HNL_M5_mu_2.95.root");
-  //TTree *oldtree = (TTree*)oldfile->Get("HeavyNeutralLepton/tree_");
+
   std::string filepath = argv[1];
   std::string filename = argv[2];
   std::string   flagMC = argv[3];
 
   if( (flagMC.find("true") == string::npos && flagMC.find("True") == string::npos) &&
       (flagMC.find("false") == string::npos && flagMC.find("False") == string::npos) ){
-        std::cout<<" Flag for specifing data or MC processing should be only [true/True] or [false/False]\n";
-        return 0;
-      }
-  //////selection cuts
-
-  Float_t isoCut = 0.15;
+    std::cout<<" Flag for specifing data or MC processing should be only [true/True] or [false/False]\n";
+    return 0;
+  }
+  Float_t isoCut = 0.1;
   bool isMC = (flagMC.find("true") != string::npos || flagMC.find("True") != string::npos);
-  //if I want to use a TChain.....
-  //cout<< "starting..."<<endl;
   TChain * oldtree = new TChain("HeavyNeutralLepton/tree_","");
   string tree ="HeavyNeutralLepton/tree_";
-  //Background
-
   oldtree->Add(Form("%s/%s/%s",filepath.c_str(),filename.c_str(),tree.c_str()));
-
-//=============================================================================================//
 
   TH1F* h_nTrueInteractions50      = new TH1F("nTrueInteractions50" , "nTrueInteractions 50 bin" , 50, 0., 50. );
   TH1F* h_nTrueInteractions100     = new TH1F("nTrueInteractions100" , "nTrueInteractions 100 bin" , 100, 0., 100. );
 
   TFile *newfile = new TFile(filename.c_str(),"recreate");
-
-  //TFile *newfile = new TFile("skimmedSignale.root","recreate");
-  //Create a new file + a clone of old tree in new file 
-  //TTree *newtree = oldtree->CloneTree(0); 
   TTree *newtree  = new TTree("newtree","Analysis Tree");
-  //cout<<"cloning done"<<endl;
-
-  // Long64_t nentries = oldtree->GetEntries();
   Long64_t nentries = oldtree->GetEntries();
   cout  <<nentries<<endl;
 
@@ -130,29 +109,16 @@ int main(int argc, char** argv){
   // These are the variables I cut on 
   Bool_t passIsoMu24All;
   Bool_t passIsoMu27All;
-  Bool_t passMu17      ;
-  Bool_t passMu17_Mu8_SameSign;
-  Bool_t passMu20             ;
-  Bool_t passMu17_Mu8         ;
-  Bool_t passMu27_TkMu8       ;
+  Bool_t passIsoMuTk24;
+  Bool_t passIsoMu24;
 
+
+  oldtree->SetBranchAddress("passIsoMu24" , &passIsoMu24);
+  oldtree->SetBranchAddress("passIsoMuTk24" , &passIsoMuTk24);
   oldtree->SetBranchAddress("passIsoMu24All",&passIsoMu24All);
   oldtree->SetBranchAddress("passIsoMu27All",&passIsoMu27All);
 
-  oldtree->SetBranchAddress("passMu17",&passMu17);
-  oldtree->SetBranchAddress("passMu17_Mu8_SameSign",&passMu17_Mu8_SameSign);
-  oldtree->SetBranchAddress("passMu20",&passMu20);
-  oldtree->SetBranchAddress("passMu17_Mu8",&passMu17_Mu8);
-  oldtree->SetBranchAddress("passMu27_TkMu8",&passMu27_TkMu8);
-
-  vector<Float_t>   *PU_Weight = 0;
-  vector<Float_t>   *PU_WeightUp = 0;
-  vector<Float_t>   *PU_WeightDown = 0;
   vector<Float_t>   *npT = 0;
-
-  oldtree->SetBranchAddress("PU_Weight",&PU_Weight);
-  oldtree->SetBranchAddress("PU_WeightUp",&PU_WeightUp);
-  oldtree->SetBranchAddress("PU_WeightDown",&PU_WeightDown);
   oldtree->SetBranchAddress("npT",&npT);
 
   Float_t pvX ;
@@ -163,30 +129,31 @@ int main(int argc, char** argv){
   Float_t pvZErr ;
   Float_t pvLxy  ;
   Float_t pvLxyz ;
-  Float_t pvLxySig  ;
-  Float_t pvLxyzSig ;
+  Float_t pvLxySigma  ;
+  Float_t pvLxyzSigma ;
   Float_t pvChi2 ;
   Float_t pvSumPtSq ;
-  Int_t numberPV;
-  Int_t pvNTrack ;
+  //int numberPV;
+  //int pvNTrack ;
 
-  oldtree->SetBranchAddress("pvX" , &pvX); 
-  oldtree->SetBranchAddress("pvY" , &pvY); 
-  oldtree->SetBranchAddress("pvZ" , &pvZ); 
+  oldtree->SetBranchAddress("pvX" , &pvX);
+  oldtree->SetBranchAddress("pvY" , &pvY);
+  oldtree->SetBranchAddress("pvZ" , &pvZ);
   oldtree->SetBranchAddress("pvXErr" , &pvXErr);
   oldtree->SetBranchAddress("pvYErr" , &pvYErr);
   oldtree->SetBranchAddress("pvZErr" , &pvZErr);
   oldtree->SetBranchAddress("pvLxy" , &pvLxy);
   oldtree->SetBranchAddress("pvLxyz" , &pvLxyz);
-  oldtree->SetBranchAddress("pvLxySig" , &pvLxySig);
-  oldtree->SetBranchAddress("pvLxyzSig" , &pvLxyzSig);
+  oldtree->SetBranchAddress("pvLxySigma" , &pvLxySigma);
+  oldtree->SetBranchAddress("pvLxyzSigma" , &pvLxyzSigma);
   oldtree->SetBranchAddress("pvChi2" , &pvChi2);
-  oldtree->SetBranchAddress("pvNTrack" , &pvNTrack);
+  //oldtree->SetBranchAddress("pvNTrack" , &pvNTrack);
   oldtree->SetBranchAddress("pvSumPtSq" , &pvSumPtSq);
-  oldtree->SetBranchAddress("numberPV" , &numberPV);
+  //oldtree->SetBranchAddress("numberPV" , &numberPV);
+
 
   vector<Float_t>   *mu_isTightMuon = 0;
-  vector<Float_t>   *mu_isLoose = 0;
+  vector<Float_t>   *mu_isLooseMuon = 0;
   vector<Float_t>   *mu_ptTunePMuonBestTrack = 0;
   vector<Float_t>   *mu_etaTunePMuonBestTrack =0;
   vector<Float_t>   *mu_phiTunePMuonBestTrack=0; 
@@ -243,83 +210,78 @@ int main(int argc, char** argv){
   vector<Float_t>   *mu_RPCTofTimeAtIpOutIn  = 0 ;
   vector<Float_t>   *mu_RPCTofTimeAtIpOutInErr  = 0 ;
 
-  vector<Int_t>   *sv_mu_TrackSize = 0 ;
-  vector<Float_t> *sv_mu_LXYSig = 0 ;
-  vector<Float_t> *sv_mu_LXYZSig = 0 ;
-  vector<Float_t> *sv_mu_LXY = 0 ;
-  vector<Float_t> *sv_mu_LXYZ = 0 ;
-  vector<Float_t> *sv_mu_dir_x = 0 ;
-  vector<Float_t> *sv_mu_dir_y = 0 ;
-  vector<Float_t> *sv_mu_dir_z = 0 ;
-  vector<Float_t> *sv_mu_mass = 0 ;
-  vector<Float_t> *sv_mu_eta = 0 ;
-  vector<Float_t> *sv_mu_phi = 0 ;
-  vector<Float_t> *sv_mu_pt = 0 ;
-  vector<Float_t> *sv_mu_p = 0 ;
-  vector<Float_t> *sv_mu_px = 0 ;
-  vector<Float_t> *sv_mu_py = 0 ;
-  vector<Float_t> *sv_mu_pz = 0 ;
-  vector<Float_t> *sv_mu_energy = 0 ;
-  vector<Float_t> *sv_mu_Beta = 0 ;
-  vector<Float_t> *sv_mu_Gamma = 0 ;
-  vector<Float_t> *sv_mu_CTau0 = 0 ;
-  vector<Float_t> *sv_mu_NDof = 0 ;
-  vector<Float_t> *sv_mu_Chi2 = 0 ;
-  vector<Float_t> *sv_mu_Angle3D = 0 ;
-  vector<Float_t> *sv_mu_Angle2D = 0 ;
-  vector<Int_t>   *sv_mu_tracks_Sumcharge = 0 ;
-  vector<Float_t> *sv_mu_tracks_Sumpt = 0 ;
-  vector<Float_t> *sv_mu_match = 0 ;
 
-  vector<float> *sv_mu_Xpos = 0;
-  vector<float> *sv_mu_Ypos = 0;
-  vector<float> *sv_mu_Zpos = 0;
-  vector<float> *sv_mu_xError = 0;
-  vector<float> *sv_mu_yError = 0;
-  vector<float> *sv_mu_zError = 0;
-  vector<float> *sv_mu_pvX = 0;
-  vector<float> *sv_mu_pvY = 0;
-  vector<float> *sv_mu_pvZ = 0;
-  vector<float> *sv_mu_pvXError = 0;
-  vector<float> *sv_mu_pvYError = 0;
-  vector<float> *sv_mu_pvZError = 0;
-  // this wrong but leave it for now 
-  vector<vector<int> >    *sv_mu_tracks_charge = 0;
-  vector<vector<float> >  *sv_mu_tracks_eta = 0;
-  vector<vector<float> >  *sv_mu_tracks_phi = 0;
-  vector<vector<float> >  *sv_mu_tracks_pt  = 0;
-  vector<vector<float> >  *sv_mu_tracks_dxySig = 0;
-  vector<vector<float> >  *sv_mu_tracks_dxy = 0;
-  vector<vector<float> >  *sv_mu_tracks_dxyz = 0;
-  vector<vector<float> >  *sv_mu_tracks_en = 0;
+   vector<Bool_t>  *sv_hasMuon = 0 ;
+   vector<Int_t>   *sv_munTracks = 0 ;
+   vector<Float_t> *sv_LxySig = 0 ;
+   vector<Float_t> *sv_LxyzSig = 0 ;
+   vector<Float_t> *sv_Lxy = 0 ;
+   vector<Float_t> *sv_Lxyz = 0 ;
+   vector<Float_t> *sv_mass = 0 ;
+   vector<Float_t> *sv_eta = 0 ;
+   vector<Float_t> *sv_phi = 0 ;
+   vector<Float_t> *sv_pt = 0 ;
+   vector<Float_t> *sv_p = 0 ;
+   vector<Float_t> *sv_px = 0 ;
+   vector<Float_t> *sv_py = 0 ;
+   vector<Float_t> *sv_pz = 0 ;
+   vector<Float_t> *sv_energy = 0 ;
+   vector<Float_t> *sv_Beta = 0 ;
+   vector<Float_t> *sv_Gamma = 0 ;
+   vector<Float_t> *sv_CTau0 = 0 ;
+   vector<Float_t> *sv_NDof = 0 ;
+   vector<Float_t> *sv_Chi2 = 0 ;
+   vector<Float_t> *sv_Angle3D = 0 ;
+   vector<Float_t> *sv_Angle2D = 0 ;
+   vector<Int_t>   *sv_tracks_Sumcharge = 0 ;
+   vector<Float_t> *sv_tracks_Sumpt = 0 ;
+   vector<Float_t> *sv_match_dxyz = 0 ;
 
-  // this the correct 
-  //vector<vector<float  > > *sv_mu_tracks_pt  = 0;
+   vector<float> *sv_X = 0;
+   vector<float> *sv_Y = 0;
+   vector<float> *sv_Z = 0;
+   vector<float> *sv_xErr = 0;
+   vector<float> *sv_yErr = 0;
+   vector<float> *sv_zErr = 0;
+   vector<float> *sv_lx = 0;
+   vector<float> *sv_ly = 0;
+   vector<float> *sv_lz = 0;
+   // this wrong but leave it for now                                                                                                                                                                        
+   vector<vector<int> >    *sv_tracks_charge = 0;
+   vector<vector<float> >  *sv_tracks_eta = 0;
+   vector<vector<float> >  *sv_tracks_phi = 0;
+   vector<vector<float> >  *sv_tracks_pt  = 0;
+   vector<vector<float> >  *sv_tracks_dxySig = 0;
+   vector<vector<float> >  *sv_tracks_dxy = 0;
+   vector<vector<float> >  *sv_tracks_dxyz = 0;
+   vector<vector<float> >  *sv_tracks_p = 0;
 
-  vector<Float_t>   *jet_charge = 0;
-  vector<Float_t>   *jet_et = 0;
-  vector<Float_t>   *jet_pt = 0;
-  vector<Float_t>   *jet_eta = 0;
-  vector<Float_t>   *jet_phi = 0;
-  vector<Float_t>   *jet_theta = 0;
-  vector<Float_t>   *jet_en = 0;
-  vector<Float_t>   *jet_chargedEmEnergy = 0;
-  vector<Float_t>   *jet_neutralEmEnergyFraction = 0;
-  vector<Float_t>   *jet_chargedHadronEnergy = 0;
-  vector<Float_t>   *jet_neutralHadronEnergyFraction = 0;
-  vector<Float_t>   *jet_chargedMuEnergy = 0;
-  vector<Float_t>   *jet_chargedMuEnergyFraction = 0;
-  vector<Float_t>   *jet_numberOfDaughters = 0;
-  vector<Float_t>   *jet_muonEnergy = 0;
-  vector<Float_t>   *jet_muonEnergyFraction = 0;
-  vector<Float_t>   *jet_muonMultiplicity = 0;
-  vector<Float_t>   *jet_neutralEmEnergy = 0;
-  vector<Float_t>   *jet_neutralHadronEnergy = 0;
-  vector<Float_t>   *jet_neutralHadronMultiplicity = 0;
-  vector<Float_t>   *jet_neutralMultiplicity = 0;
-  vector<Float_t>   *jet_chargedMultiplicity = 0;
-  vector<Float_t>   *jet_chargedEmEnergyFraction = 0;
-  vector<Float_t>   *jet_chargedHadronEnergyFraction = 0;
+   vector<Float_t>   *jetSmearedPt = 0;
+   vector<Float_t>   *jet_ptuncorrected =0;
+   vector<Float_t>   *jet_charge = 0;
+   vector<Float_t>   *jet_et = 0;
+   vector<Float_t>   *jet_pt = 0;
+   vector<Float_t>   *jet_eta = 0;
+   vector<Float_t>   *jet_phi = 0;
+   vector<Float_t>   *jet_theta = 0;
+   vector<Float_t>   *jet_en = 0;
+   vector<Float_t>   *jet_chargedEmEnergy = 0;
+   vector<Float_t>   *jet_neutralEmEnergyFraction = 0;
+   vector<Float_t>   *jet_chargedHadronEnergy = 0;
+   vector<Float_t>   *jet_neutralHadronEnergyFraction = 0;
+   vector<Float_t>   *jet_chargedMuEnergy = 0;
+   vector<Float_t>   *jet_chargedMuEnergyFraction = 0;
+   vector<Float_t>   *jet_numberOfDaughters = 0;
+   vector<Float_t>   *jet_muonEnergy = 0;
+   vector<Float_t>   *jet_muonEnergyFraction = 0;
+   vector<Float_t>   *jet_muonMultiplicity = 0;
+   vector<Float_t>   *jet_neutralEmEnergy = 0;
+   vector<Float_t>   *jet_neutralHadronEnergy = 0;
+   vector<Float_t>   *jet_neutralHadronMultiplicity = 0;
+   vector<Float_t>   *jet_neutralMultiplicity = 0;
+   vector<Float_t>   *jet_chargedMultiplicity = 0;
+   vector<Float_t>   *jet_chargedEmEnergyFraction = 0;
+   vector<Float_t>   *jet_chargedHadronEnergyFraction = 0;
 
   vector<Float_t>   *jet_CsvV2 = 0;
   vector<Float_t>   *jet_DeepCsv_udsg = 0;
@@ -328,7 +290,6 @@ int main(int argc, char** argv){
   vector<Float_t>   *jet_DeepCsv_bb = 0;
   vector<Float_t>   *jet_HadronFlavor = 0;
 
-
   Float_t   pfMet_et;
   Float_t   pfMet_pt;
   Float_t   pfMet_phi;
@@ -336,16 +297,13 @@ int main(int argc, char** argv){
   Float_t   pfMet_sumEt;
   Float_t   caloMet_pt;
   Float_t   caloMet_phi;
-  /*
-  vector<Float_t>   *jet_btag_pt = 0;
-  vector<Float_t>   *jet_btag_eta = 0;
-  vector<Float_t>   *jet_btag_phi = 0;
-  vector<Int_t>     *jet_btag_flavor = 0;
-  vector<Float_t>   *jet_btag_pfCSVv2IVF_discriminator = 0;
-  */
- 
+  Float_t   pfMet_px;
+  Float_t   pfMet_py;
+  Float_t   pfMet_pz;
+
+
   oldtree->SetBranchAddress("mu_isTightMuon",&mu_isTightMuon);
-  oldtree->SetBranchAddress("mu_isLoose",&mu_isLoose);
+  oldtree->SetBranchAddress("mu_isLooseMuon",&mu_isLooseMuon);
   oldtree->SetBranchAddress("mu_ptTunePMuonBestTrack",&mu_ptTunePMuonBestTrack);
   oldtree->SetBranchAddress("mu_etaTunePMuonBestTrack",&mu_etaTunePMuonBestTrack);
   oldtree->SetBranchAddress("mu_phiTunePMuonBestTrack",&mu_phiTunePMuonBestTrack);
@@ -402,65 +360,50 @@ int main(int argc, char** argv){
   oldtree->SetBranchAddress("mu_FirstGenMatch", &mu_FirstGenMatch);
   oldtree->SetBranchAddress("mu_SecondGenMatch", &mu_SecondGenMatch);
 
- 
-  oldtree->SetBranchAddress("sv_mu_TrackSize", &sv_mu_TrackSize);
-  oldtree->SetBranchAddress("sv_mu_LXYSig", &sv_mu_LXYSig);
-  oldtree->SetBranchAddress("sv_mu_LXYZSig", &sv_mu_LXYZSig);
-  oldtree->SetBranchAddress("sv_mu_LXY", &sv_mu_LXY);
-  oldtree->SetBranchAddress("sv_mu_LXYZ", &sv_mu_LXYZ);
-  oldtree->SetBranchAddress("sv_mu_dir_x", &sv_mu_dir_x);
-  oldtree->SetBranchAddress("sv_mu_dir_y", &sv_mu_dir_y);
-  oldtree->SetBranchAddress("sv_mu_dir_z", &sv_mu_dir_z);
-  oldtree->SetBranchAddress("sv_mu_mass", &sv_mu_mass);
-  oldtree->SetBranchAddress("sv_mu_eta", &sv_mu_eta);   
-  oldtree->SetBranchAddress("sv_mu_phi", &sv_mu_phi);  
-  oldtree->SetBranchAddress("sv_mu_pt", &sv_mu_pt);  
-  oldtree->SetBranchAddress("sv_mu_p", &sv_mu_p);  
-  oldtree->SetBranchAddress("sv_mu_px", &sv_mu_px);
-  oldtree->SetBranchAddress("sv_mu_py", &sv_mu_py);
-  oldtree->SetBranchAddress("sv_mu_pz", &sv_mu_pz);
-  oldtree->SetBranchAddress("sv_mu_energy", &sv_mu_energy);
-  oldtree->SetBranchAddress("sv_mu_Beta", &sv_mu_Beta);
-  oldtree->SetBranchAddress("sv_mu_Gamma", &sv_mu_Gamma); 
-  oldtree->SetBranchAddress("sv_mu_CTau0", &sv_mu_CTau0);  
-  oldtree->SetBranchAddress("sv_mu_NDof", &sv_mu_NDof);   
-  oldtree->SetBranchAddress("sv_mu_Chi2", &sv_mu_Chi2);   
-  oldtree->SetBranchAddress("sv_mu_Angle3D", &sv_mu_Angle3D);
-  oldtree->SetBranchAddress("sv_mu_Angle2D", &sv_mu_Angle2D);  
-  oldtree->SetBranchAddress("sv_mu_tracks_Sumcharge", &sv_mu_tracks_Sumcharge); 
-  oldtree->SetBranchAddress("sv_mu_tracks_Sumpt", &sv_mu_tracks_Sumpt);  
-  oldtree->SetBranchAddress("sv_mu_match", &sv_mu_match);
+   oldtree->SetBranchAddress("sv_munTracks", &sv_munTracks);
+   oldtree->SetBranchAddress("sv_LxySig", &sv_LxySig);
+   oldtree->SetBranchAddress("sv_LxyzSig", &sv_LxyzSig);
+   oldtree->SetBranchAddress("sv_Lxy", &sv_Lxy);
+   oldtree->SetBranchAddress("sv_Lxyz", &sv_Lxyz);
+   oldtree->SetBranchAddress("sv_mass", &sv_mass);
+   oldtree->SetBranchAddress("sv_eta", &sv_eta);
+   oldtree->SetBranchAddress("sv_phi", &sv_phi);
+   oldtree->SetBranchAddress("sv_pt", &sv_pt);
+   oldtree->SetBranchAddress("sv_p", &sv_p);
+   oldtree->SetBranchAddress("sv_px", &sv_px);
+   oldtree->SetBranchAddress("sv_py", &sv_py);
+   oldtree->SetBranchAddress("sv_pz", &sv_pz);
+   oldtree->SetBranchAddress("sv_energy", &sv_energy);
+   oldtree->SetBranchAddress("sv_Beta", &sv_Beta);
+   oldtree->SetBranchAddress("sv_Gamma", &sv_Gamma);
+   oldtree->SetBranchAddress("sv_CTau0", &sv_CTau0);
+   oldtree->SetBranchAddress("sv_NDof", &sv_NDof);
+   oldtree->SetBranchAddress("sv_Chi2", &sv_Chi2);
+   oldtree->SetBranchAddress("sv_Angle3D", &sv_Angle3D);
+   oldtree->SetBranchAddress("sv_Angle2D", &sv_Angle2D);
+   oldtree->SetBranchAddress("sv_tracks_Sumcharge", &sv_tracks_Sumcharge);
+   oldtree->SetBranchAddress("sv_tracks_Sumpt", &sv_tracks_Sumpt);
+   oldtree->SetBranchAddress("sv_match_dxyz", &sv_match_dxyz);
+   oldtree->SetBranchAddress("sv_X" , &sv_X);
+   oldtree->SetBranchAddress("sv_Y" , &sv_Y);
+   oldtree->SetBranchAddress("sv_Z" , &sv_Z);
+   oldtree->SetBranchAddress("sv_xErr" , &sv_xErr);
+   oldtree->SetBranchAddress("sv_yErr" , &sv_yErr);
+   oldtree->SetBranchAddress("sv_zErr" , &sv_zErr);
+   oldtree->SetBranchAddress("sv_lx" , &sv_lx);
+   oldtree->SetBranchAddress("sv_ly" , &sv_ly);
+   oldtree->SetBranchAddress("sv_lz" , &sv_lz);
+   oldtree->SetBranchAddress("sv_tracks_charge" , &sv_tracks_charge);
+   oldtree->SetBranchAddress("sv_tracks_eta" , &sv_tracks_eta);
+   oldtree->SetBranchAddress("sv_tracks_phi" , &sv_tracks_phi);
+   oldtree->SetBranchAddress("sv_tracks_pt" , &sv_tracks_pt);
+   oldtree->SetBranchAddress("sv_tracks_dxySig" , &sv_tracks_dxySig);
+   oldtree->SetBranchAddress("sv_tracks_dxy" , &sv_tracks_dxy);
+   oldtree->SetBranchAddress("sv_tracks_dxyz" , &sv_tracks_dxyz);
+   oldtree->SetBranchAddress("sv_tracks_p" , &sv_tracks_p);
+   oldtree->SetBranchAddress("sv_hasMuon", & sv_hasMuon);
 
-  oldtree->SetBranchAddress("sv_mu_Xpos" , &sv_mu_Xpos);
-  oldtree->SetBranchAddress("sv_mu_Ypos" , &sv_mu_Ypos);
-  oldtree->SetBranchAddress("sv_mu_Zpos" , &sv_mu_Zpos);
-  oldtree->SetBranchAddress("sv_mu_xError" , &sv_mu_xError);
-  oldtree->SetBranchAddress("sv_mu_yError" , &sv_mu_yError);
-  oldtree->SetBranchAddress("sv_mu_zError" , &sv_mu_zError);
-  oldtree->SetBranchAddress("sv_mu_pvX" , &sv_mu_pvX);
-  oldtree->SetBranchAddress("sv_mu_pvY" , &sv_mu_pvY);
-  oldtree->SetBranchAddress("sv_mu_pvZ" , &sv_mu_pvZ);
-  oldtree->SetBranchAddress("sv_mu_pvXError" , &sv_mu_pvXError);
-  oldtree->SetBranchAddress("sv_mu_pvYError" , &sv_mu_pvYError);
-  oldtree->SetBranchAddress("sv_mu_pvZError" , &sv_mu_pvZError);
 
-
-  oldtree->SetBranchAddress("sv_mu_tracks_charge" , &sv_mu_tracks_charge);
-  oldtree->SetBranchAddress("sv_mu_tracks_eta" , &sv_mu_tracks_eta);
-  oldtree->SetBranchAddress("sv_mu_tracks_phi" , &sv_mu_tracks_phi);
-  oldtree->SetBranchAddress("sv_mu_tracks_pt" , &sv_mu_tracks_pt);
-  oldtree->SetBranchAddress("sv_mu_tracks_dxySig" , &sv_mu_tracks_dxySig);
-  oldtree->SetBranchAddress("sv_mu_tracks_dxy" , &sv_mu_tracks_dxy);
-  oldtree->SetBranchAddress("sv_mu_tracks_dxyz" , &sv_mu_tracks_dxyz);
-  oldtree->SetBranchAddress("sv_mu_tracks_en" , &sv_mu_tracks_en);
-
-  /*
-  oldtree->SetBranchAddress("jet_btag_pt", &jet_btag_pt);
-  oldtree->SetBranchAddress("jet_btag_eta", &jet_btag_eta);
-  oldtree->SetBranchAddress("jet_btag_phi", &jet_btag_phi);
-  oldtree->SetBranchAddress("jet_btag_flavor", &jet_btag_flavor);
-  oldtree->SetBranchAddress("jet_btag_pfCSVv2IVF_discriminator", &jet_btag_pfCSVv2IVF_discriminator);
-  */
   oldtree->SetBranchAddress("pfMet_et", &pfMet_et);
   oldtree->SetBranchAddress("pfMet_pt", &pfMet_pt);
   oldtree->SetBranchAddress("pfMet_phi", &pfMet_phi);
@@ -468,6 +411,9 @@ int main(int argc, char** argv){
   oldtree->SetBranchAddress("pfMet_sumEt", &pfMet_sumEt);
   oldtree->SetBranchAddress("caloMet_pt", &caloMet_pt);
   oldtree->SetBranchAddress("caloMet_phi", &caloMet_phi);
+  oldtree->SetBranchAddress("pfMet_px" , &pfMet_px);
+  oldtree->SetBranchAddress("pfMet_py" , &pfMet_py);
+  oldtree->SetBranchAddress("pfMet_pz" , &pfMet_pz);
 
   oldtree->SetBranchAddress("jet_charge", &jet_charge);
   oldtree->SetBranchAddress("jet_et", &jet_et);
@@ -494,6 +440,10 @@ int main(int argc, char** argv){
   oldtree->SetBranchAddress("jet_chargedHadronEnergyFraction" , &jet_chargedHadronEnergyFraction);
   oldtree->SetBranchAddress("jet_chargedEmEnergyFraction" ,&jet_chargedEmEnergyFraction);
 
+  oldtree->SetBranchAddress("jetSmearedPt", &jetSmearedPt);
+
+  oldtree->SetBranchAddress("jet_ptuncorrected", &jet_ptuncorrected);
+
   oldtree->SetBranchAddress("jet_CsvV2" ,&jet_CsvV2);
   oldtree->SetBranchAddress("jet_DeepCsv_udsg" ,&jet_DeepCsv_udsg);
   oldtree->SetBranchAddress("jet_DeepCsv_b" ,&jet_DeepCsv_b);
@@ -503,25 +453,12 @@ int main(int argc, char** argv){
 
   //Throw away some branches -- thos are all the  one I don't want to keep in the ntuples
   //IMPORTANT: we cannot throw away the branches with the variable we are using in the loop!
-  //oldtree->SetBranchStatus("ele_*",    0);
-  //oldtree->SetBranchStatus("mu_ST*", 0);
-//================================ trigger info ============================================//   
-  Int_t trig_IsoMu24All,trig_IsoMu27All,trig_Mu17,trig_Mu17_Mu8_SameSign,trig_Mu20,trig_Mu17_Mu8,trig_Mu27_TkMu8;
+  oldtree->SetBranchStatus("ele_*",    0);
+  //oldtree->SetBranchStatus("mu*", 0);
 
-  TBranch* branch_trig_IsoMu24All          = newtree->Branch("trig_IsoMu24All", &trig_IsoMu24All, "trig_IsoMu24All/I");
-  TBranch* branch_trig_IsoMu27All          = newtree->Branch("trig_IsoMu27All", &trig_IsoMu27All, "trig_IsoMu27All/I");
-  TBranch* branch_trig_Mu17                = newtree->Branch("trig_Mu17", &trig_Mu17, "trig_Mu17/I");
-  TBranch* branch_trig_Mu17_Mu8_SameSign   = newtree->Branch("trig_Mu17_Mu8_SameSign", &trig_Mu17_Mu8_SameSign, "trig_Mu17_Mu8_SameSign/I");
-  TBranch* branch_trig_Mu20                = newtree->Branch("trig_Mu20", &trig_Mu20, "trig_Mu20/I");
-  TBranch* branch_trig_Mu17_Mu8            = newtree->Branch("trig_Mu17_Mu8", &trig_Mu17_Mu8, "trig_Mu17_Mu8/I");
-  TBranch* branch_trig_Mu27_TkMu8          = newtree->Branch("trig_Mu27_TkMu8", &trig_Mu27_TkMu8, "trig_Mu27_TkMu8/I");
-
-
-//================================ pv info ============================================//
-  Float_t pvX_ ,pvY_ , pvZ_ , pvXErr_ , pvYErr_,
-         pvZErr_ , pvLxy_  , pvLxyz_ , pvLxySig_  ,
-         pvLxyzSig_ , pvChi2_,  pvSumPtSq_ ;
-  Int_t   pvNTrack_, numberPV_ ;
+  //================================ pv info ============================================//                                                                                                                   
+  Float_t pvX_ ,pvY_ , pvZ_ , pvXErr_ , pvYErr_, pvZErr_ , pvLxy_  , pvLxyz_ , pvLxySig_  , pvLxyzSig_ , pvChi2_,  pvSumPtSq_ ;
+  //Int_t   pvNTrack_, numberPV_ ;
 
   TBranch* branch_pvX_        = newtree->Branch("pvX_", &pvX_, "pvX_/F");
   TBranch* branch_pvY_        = newtree->Branch("pvY_", &pvY_, "pvY_/F");
@@ -534,17 +471,15 @@ int main(int argc, char** argv){
   TBranch* branch_pvLxySig_   = newtree->Branch("pvLxySig_", &pvLxySig_, "pvLxySig_/F");
   TBranch* branch_pvLxyzSig_  = newtree->Branch("pvLxyzSig_", &pvLxyzSig_, "pvLxyzSig_/F");
   TBranch* branch_pvChi2_     = newtree->Branch("pvChi2_", &pvChi2_, "pvChi2_/F");
-  TBranch* branch_pvNTrack_   = newtree->Branch("pvNTrack_", &pvNTrack_, "pvNTrack/I");
+  //TBranch* branch_pvNTrack_   = newtree->Branch("pvNTrack_", &pvNTrack_, "pvNTrack/i");
   TBranch* branch_pvSumPtSq_  = newtree->Branch("pvSumPtSq_", &pvSumPtSq_, "pvSumPtSq_/F");
-  TBranch* branch_numberPV_   = newtree->Branch("numberPV_", &numberPV_, "numberPV/I");
+  //TBranch* branch_numberPV_   = newtree->Branch("numberPV_", &numberPV_, "numberPV/i");
 
-//================================ PU Weight ============================================// 
-  Float_t pu_weight, pu_weightUp, pu_weightDown,TrueNumInteractions;
+  //================================ PU Weight ============================================//                                                                                                                 
+  Float_t TrueNumInteractions;
 
-  TBranch* branch_pu_weight               = newtree->Branch("pu_weight",&pu_weight,"pu_weight/F");
-  TBranch* branch_pu_weightUp             = newtree->Branch("pu_weightUp",&pu_weightUp,"pu_weightUp/F");
-  TBranch* branch_pu_weightDown           = newtree->Branch("pu_weightDown",&pu_weightDown,"pu_weightDown/F");
   TBranch* branch_TrueNumInteractions     = newtree->Branch("TrueNumInteractions",&TrueNumInteractions,"TrueNumInteractions/F");
+
 
 //======================= First Muon Variables ==========================================//   
 Float_t mu_promptPt,mu_promptEta, mu_promptPhi, mu_promptCharge, mu_promptEt, mu_promptE;
@@ -559,7 +494,7 @@ Float_t mu_promptRhoIso,        mu_promptTrackiso,       mu_promptPfSumChHadPt,
         mu_promptTimeAtIpOutIn, mu_promptTimeAtIpOutInErr,  mu_promptPfSumNHadEt, mu_promptGlobalMuon;
 
 Float_t mu_promptInnerTrackFraction, mu_promptSegmentCompatibility,
-        mu_promptTrkKink,    mu_promptChi2LocalPosition;
+        mu_promptTrkKink,    mu_promptChi2LocalPosition ,RelIso_prompt;
 
  Int_t   mu_promptValidMuonHits, mu_promptMatchedStations, mu_promptValidPixelHits, 
          mu_promptTrackQuality,  mu_promptInrTrackQuality, mu_promptGenMatch,
@@ -567,7 +502,7 @@ Float_t mu_promptInnerTrackFraction, mu_promptSegmentCompatibility,
 
 Float_t mu_promptRPCTofDirection,        mu_promptRPCTofNDof,          mu_promptRPCTofTimeAtIpInOut ,
         mu_promptRPCTofTimeAtIpInOutErr, mu_promptRPCTofTimeAtIpOutIn, mu_promptRPCTofTimeAtIpOutInErr;
-
+ Int_t mu_promptsize;
 
 TBranch* branch_mu_promptPt = newtree->Branch("mu_promptPt",&mu_promptPt,"mu_promptPt/F");
 TBranch* branch_mu_promptEta = newtree->Branch("mu_promptEta",&mu_promptEta,"mu_promptEta/F");
@@ -623,6 +558,9 @@ TBranch* branch_mu_promptGlobalMuon = newtree->Branch("mu_promptGlobalMuon", &mu
  TBranch* branch_mu_promptRPCTofTimeAtIpOutIn    = newtree->Branch("mu_promptRPCTofTimeAtIpOutIn", &mu_promptRPCTofTimeAtIpOutIn , "mu_promptRPCTofTimeAtIpOutIn/F");
  TBranch* branch_mu_promptRPCTofTimeAtIpOutInErr = newtree->Branch("mu_promptRPCTofTimeAtIpOutInErr", &mu_promptRPCTofTimeAtIpOutInErr , "mu_promptRPCTofTimeAtIpOutInErr/F");
 
+ TBranch* branch_mu_promptsize = newtree->Branch("mu_promptsize", &mu_promptsize ,"mu_promptsize/I"); 
+
+ TBranch* branch_RelIso_prompt  = newtree->Branch("RelIso_prompt", &RelIso_prompt ,"RelIso_prompt/F");
 //======================= Second Muon Variables ==========================================//
 Float_t mu_secondPt,mu_secondEta, mu_secondPhi, mu_secondCharge, mu_secondEt, mu_secondE;
 
@@ -636,14 +574,14 @@ Float_t mu_secondRhoIso,        mu_secondTrackiso,  mu_secondPfSumChHadPt,
         mu_secondTimeAtIpOutIn, mu_secondTimeAtIpOutInErr,  mu_secondPfSumNHadEt, mu_secondGlobalMuon;
 
 Float_t mu_secondInnerTrackFraction, mu_secondSegmentCompatibility,
-        mu_secondTrkKink,            mu_secondChi2LocalPosition;
+        mu_secondTrkKink,            mu_secondChi2LocalPosition, RelIso_second;
 
 
- Float_t mu_DeltaBetaR3, mu_DiMuMass, mu_Size, mu_DeltaR, mu_mT, vtxmu_mass;
+ Float_t mu_DeltaBetaR3, mu_DiMuMass, mu_DeltaR, mu_mT, vtxmu_mass,mu_DeltaPhi,mu_DeltaR_vec;
 
  Int_t   mu_secondValidMuonHits, mu_secondMatchedStations, mu_secondValidPixelHits, 
          mu_secondTrackQuality,  mu_secondInrTrackQuality, mu_secondGenMatch,
-         mu_secondPixelLayers ,  mu_secondTrackerLayers, mu_secondIsTight , mu_nbLoose;
+   mu_secondPixelLayers ,  mu_secondTrackerLayers, mu_secondIsTight , mu_nbLoose,mu_Size;
 
  Float_t mu_secondRPCTofDirection,        mu_secondRPCTofNDof,          mu_secondRPCTofTimeAtIpInOut ,
          mu_secondRPCTofTimeAtIpInOutErr, mu_secondRPCTofTimeAtIpOutIn, mu_secondRPCTofTimeAtIpOutInErr;
@@ -703,398 +641,415 @@ TBranch* branch_mu_secondRPCTofTimeAtIpOutInErr = newtree->Branch("mu_secondRPCT
 TBranch* branch_mu_DeltaBetaR3 = newtree->Branch("mu_DeltaBetaR3", &mu_DeltaBetaR3, "mu_DeltaBetaR3/F");
 TBranch* branch_mu_DiMuMass    = newtree->Branch("mu_DiMuMass", &mu_DiMuMass, "mu_DiMuMass/F");
 TBranch* branch_mu_DeltaR      = newtree->Branch("mu_DeltaR", &mu_DeltaR, "mu_DeltaR/F");
-TBranch* branch_mu_Size        = newtree->Branch("mu_Size", &mu_Size, "mu_Size/F");
-TBranch* branch_mu_nbLoose     = newtree->Branch("mu_nbLoose", &mu_nbLoose, "mu_nbLoose/F");
+TBranch* branch_mu_DeltaR_vec  = newtree->Branch("mu_DeltaR_vec", &mu_DeltaR_vec, "mu_DeltaR_vec/F");
+TBranch* branch_mu_DeltaPhi    = newtree->Branch("mu_DeltaPhi", &mu_DeltaPhi, "mu_DeltaPhi/F");
+TBranch* branch_mu_Size        = newtree->Branch("mu_Size", &mu_Size, "mu_Size/I");
+TBranch* branch_mu_nbLoose     = newtree->Branch("mu_nbLoose", &mu_nbLoose, "mu_nbLoose/I");
 TBranch* branch_mu_mT          = newtree->Branch("mu_mT", &mu_mT, "mu_mT/F");
-TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtxmu_mass/F");
+TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtxmu_mass/F");   
 
-//======================= prompt Jet Variables ==========================================// 
- Float_t promptJet_charge_, promptJet_et_,    promptJet_pt_, promptJet_eta_, promptJet_NEmEnFraction_,
-         promptJet_phi_,    promptJet_theta_, promptJet_en_, promptJet_chEmEn_, promptJet_NHadEnFraction_,
-         promptJet_chMuEn_,         promptJet_chMuEnFraction_, promptJet_numberOfDaughters_, 
-         promptJet_muonEnergyFraction_, promptJet_muonMultiplicity_, 
-         promptJet_neutralEmEnergy_,  promptJet_neutralHadronEnergy_, promptJet_NHadMultiplicity_, 
-         promptJet_NMultiplicity_, promptJet_chHadEn_, promptJet_muonEnergy_, promptJet_chargedMultiplicity_ , 
-         promptJet_chargedEmEnergyFraction, promptJet_chargedHadronEnergyFraction;
+ TBranch* branch_RelIso_second  = newtree->Branch("RelIso_second", &RelIso_second ,"RelIso_second/F");
 
- Float_t promptJet_CsvV2, promptJet_DeepCsv_udsg, promptJet_DeepCsv_b, promptJet_DeepCsv_c, promptJet_DeepCsv_bb, promptJet_HadronFlavor;
+//======================= Tracks in Second Vertex Variables ==========================================//
 
- TBranch* branch_promptJet_charge_  = newtree->Branch("promptJet_charge_", &promptJet_charge_, "promptJet_charge_/F");
- TBranch* branch_promptJet_et_      = newtree->Branch("promptJet_et_", &promptJet_et_, "promptJet_et_/F");
- TBranch* branch_promptJet_pt_      = newtree->Branch("promptJet_pt_", &promptJet_pt_, "promptJet_pt_/F");
- TBranch* branch_promptJet_eta_     = newtree->Branch("promptJet_eta_", &promptJet_eta_, "promptJet_eta_/F");
- TBranch* branch_promptJet_phi_     = newtree->Branch("promptJet_phi_", &promptJet_phi_, "promptJet_phi_/F");
- TBranch* branch_promptJet_theta_   = newtree->Branch("promptJet_theta_", &promptJet_theta_, "promptJet_theta_/F");
- TBranch* branch_promptJet_en_      = newtree->Branch("promptJet_en_", &promptJet_en_, "promptJet_en_/F");
- TBranch* branch_promptJet_chargedEmEnergy_  = newtree->Branch("promptJet_chEmEn_", &promptJet_chEmEn_, "promptJet_chEmEn_/F");
- TBranch* branch_promptJet_NEmEnFraction_    = newtree->Branch("promptJet_NEmEnFraction_", &promptJet_NEmEnFraction_, "promptJet_NEmEnFraction_/F");
- TBranch* branch_promptJet_chHadEn_          = newtree->Branch("promptJet_chHadEn_", &promptJet_chHadEn_, "promptJet_chHadEn_/F");
- TBranch* branch_promptJet_NHadEnFraction_   = newtree->Branch("promptJet_NHadEnFraction_", &promptJet_NHadEnFraction_, "promptJet_NHadEnFraction_/F");
- TBranch* branch_promptJet_chMuEn_          = newtree->Branch("promptJet_chMuEn_", &promptJet_chMuEn_, "promptJet_chMuEn_/F");
- TBranch* branch_promptJet_chMuEnFraction_  = newtree->Branch("promptJet_chMuEnFraction_", &promptJet_chMuEnFraction_, "promptJet_chMuEnFraction_/F");
- TBranch* branch_promptJet_numberOfDaughters_  = newtree->Branch("promptJet_numberOfDaughters_", &promptJet_numberOfDaughters_, "promptJet_numberOfDaughters_/F");
- TBranch* branch_promptJet_muonEnergy_           = newtree->Branch("promptJet_muonEnergy_", &promptJet_muonEnergy_, "promptJet_muonEnergy_/F");
- TBranch* branch_promptJet_muonEnergyFraction_   = newtree->Branch("promptJet_muonEnergyFraction_", &promptJet_muonEnergyFraction_, "promptJet_muonEnergyFraction_/F");
- TBranch* branch_promptJet_muonMultiplicity_     = newtree->Branch("promptJet_muonMultiplicity_", &promptJet_muonMultiplicity_, "promptJet_muonMultiplicity_/F");
- TBranch* branch_promptJet_neutralEmEnergy_      = newtree->Branch("promptJet_neutralEmEnergy_", &promptJet_neutralEmEnergy_, "promptJet_neutralEmEnergy_/F");
- TBranch* branch_promptJet_neutralHadronEnergy_  = newtree->Branch("promptJet_neutralHadronEnergy_", &promptJet_neutralHadronEnergy_, "promptJet_neutralHadronEnergy_/F");
- TBranch* branch_promptJet_NHadMultiplicity_  = newtree->Branch("promptJet_NHadMultiplicity_", &promptJet_NHadMultiplicity_, "promptJet_NHadMultiplicity_/F");
- TBranch* branch_promptJet_NMultiplicity_     = newtree->Branch("promptJet_NMultiplicity_", &promptJet_NMultiplicity_, "promptJet_NMultiplicity_/F");
- TBranch* branch_promptJet_chargedMultiplicity_    = newtree->Branch("promptJet_chargedMultiplicity_", &promptJet_chargedMultiplicity_, "promptJet_chargedMultiplicity_/F");
- TBranch* branch_promptJet_chargedEmEnergyFraction =  newtree->Branch("promptJet_chargedEmEnergyFraction", &promptJet_chargedEmEnergyFraction, "promptJet_chargedEmEnergyFraction/F");
- TBranch* branch_promptJet_chargedHadronEnergyFraction = newtree->Branch("promptJet_chargedHadronEnergyFraction", &promptJet_chargedHadronEnergyFraction, "promptJet_chargedHadronEnergyFraction/F");
+ vector<float> sv_mass_n , sv_eta_n, sv_phi_n , sv_pt_n , sv_p_n , sv_px_n , sv_py_n , 
+               sv_pz_n , sv_energy_n , sv_Beta_n , sv_Gamma_n , sv_CTau0_n , sv_NDof_n , 
+               sv_Chi2_n , sv_Angle3D_n , sv_Angle2D_n;
 
- TBranch* branch_promptJet_CsvV2        =  newtree->Branch("promptJet_CsvV2", &promptJet_CsvV2, "promptJet_CsvV2/F");
- TBranch* branch_promptJet_DeepCsv_udsg =  newtree->Branch("promptJet_DeepCsv_udsg", &promptJet_DeepCsv_udsg, "promptJet_DeepCsv_udsg/F");
- TBranch* branch_promptJet_DeepCsv_b    =  newtree->Branch("promptJet_DeepCsv_b", &promptJet_DeepCsv_b, "promptJet_DeepCsv_b/F");
- TBranch* branch_promptJet_DeepCsv_c    =  newtree->Branch("promptJet_DeepCsv_c", &promptJet_DeepCsv_c,"promptJet_DeepCsv_c/F");
- TBranch* branch_promptJet_DeepCsv_bb   =  newtree->Branch("promptJet_DeepCsv_bb", &promptJet_DeepCsv_bb,"promptJet_DeepCsv_bb/F");
- TBranch* branch_promptJet_HadronFlavor =  newtree->Branch("promptJet_HadronFlavor", &promptJet_HadronFlavor,"promptJet_HadronFlavor/F");
+ vector<float> sv_tracks_eta_n , sv_tracks_phi_n , sv_tracks_pt_n , sv_tracks_p_n , 
+               sv_tracks_dxySig_n , sv_tracks_dxy_n , sv_tracks_dxyz_n;
 
- //======================= non prompt Jet Variables ==========================================// 
- Float_t non_promptJet_charge_, non_promptJet_et_,    non_promptJet_pt_, non_promptJet_eta_, non_promptJet_NEmEnFraction_,
-         non_promptJet_phi_,    non_promptJet_theta_, non_promptJet_en_, non_promptJet_chEmEn_, non_promptJet_NHadEnFraction_,
-         non_promptJet_chMuEn_,         non_promptJet_chMuEnFraction_, non_promptJet_numberOfDaughters_, 
-         non_promptJet_muonEnergyFraction_, non_promptJet_muonMultiplicity_, 
-         non_promptJet_neutralEmEnergy_,  non_promptJet_neutralHadronEnergy_, non_promptJet_NHadMultiplicity_, 
-         non_promptJet_NMultiplicity_, non_promptJet_chHadEn_, non_promptJet_muonEnergy_, non_promptJet_chargedMultiplicity_ , 
-         non_promptJet_chargedEmEnergyFraction, non_promptJet_chargedHadronEnergyFraction;
+ vector<int>   sv_tracks_charge_n;
 
- Float_t non_promptJet_CsvV2,     non_promptJet_DeepCsv_udsg, non_promptJet_DeepCsv_b, 
-         non_promptJet_DeepCsv_c, non_promptJet_DeepCsv_bb,   non_promptJet_HadronFlavor;
+TBranch* branch_sv_mass_n   =   newtree->Branch("sv_mass_n", &sv_mass_n);
+TBranch* branch_sv_eta_n    =   newtree->Branch("sv_eta_n", &sv_eta_n);
+TBranch* branch_sv_phi_n    =   newtree->Branch("sv_phi_n", &sv_phi_n);
+TBranch* branch_sv_pt_n     =   newtree->Branch("sv_pt_n", &sv_pt_n);
+TBranch* branch_sv_p_n      =   newtree->Branch("sv_p_n", &sv_p_n);
+TBranch* branch_sv_px_n     =   newtree->Branch("sv_px_n", &sv_px_n);
+TBranch* branch_sv_py_n     =   newtree->Branch("sv_py_n", &sv_py_n);
+TBranch* branch_sv_pz_n     =   newtree->Branch("sv_pz_n", &sv_pz_n);
+TBranch* branch_sv_energy_n =   newtree->Branch("sv_energy_n", &sv_energy_n);
+TBranch* branch_sv_Beta_n   =   newtree->Branch("sv_Beta_n", &sv_Beta_n);
+TBranch* branch_sv_Gamma_n  =   newtree->Branch("sv_Gamma_n", &sv_Gamma_n);
+TBranch* branch_sv_CTau0_n  =   newtree->Branch("sv_CTau0_n", &sv_CTau0_n);
+TBranch* branch_sv_NDof_n   =   newtree->Branch("sv_NDof_n", &sv_NDof_n);
+TBranch* branch_sv_Chi2_n    =   newtree->Branch("sv_Chi2_n", &sv_Chi2_n);
+TBranch* branch_sv_Angle3D_n =   newtree->Branch("sv_Angle3D_n", &sv_Angle3D_n);
+TBranch* branch_sv_Angle2D_n =   newtree->Branch("sv_Angle2D_n", &sv_Angle2D_n);
+TBranch* branch_sv_tracks_charge_n =   newtree->Branch("sv_tracks_charge_n", &sv_tracks_charge_n);
+TBranch* branch_sv_tracks_eta_n    =   newtree->Branch("sv_tracks_eta_n", &sv_tracks_eta_n);
+TBranch* branch_sv_tracks_phi_n    =   newtree->Branch("sv_tracks_phi_n", &sv_tracks_phi_n);
+TBranch* branch_sv_tracks_pt_n     =   newtree->Branch("sv_tracks_pt_n", &sv_tracks_pt_n);
+TBranch* branch_sv_tracks_p_n      =   newtree->Branch("sv_tracks_p_n", &sv_tracks_p_n);
+TBranch* branch_sv_tracks_dxySig_n =   newtree->Branch("sv_tracks_dxySig_n", &sv_tracks_dxySig_n);
+TBranch* branch_sv_tracks_dxy_n    =   newtree->Branch("sv_tracks_dxy_n", &sv_tracks_dxy_n);
+TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_tracks_dxyz_n);
 
+ //======================= Second Vertex Variables ==========================================//  
+ Float_t  sv_LXYSig_,  sv_LXYZSig_, sv_LXY_,  sv_LXYZ_,  sv_mass_,
+   sv_eta_,     sv_phi_,     sv_pt_,   sv_p_,     sv_Beta_,
+   sv_Gamma_,   sv_CTau0_,   sv_NDof_, sv_Chi2_,  sv_Angle3D_,
+   sv_Angle2D_, sv_tracks_Sumpt_,     sv_match_, sv_energy_,
+   sv_px_,      sv_py_,      sv_pz_,   sv_dir_x_, sv_dir_y_, sv_dir_z_;
 
- Float_t  DiJet_Mass, MuJet_Mass;
+ Float_t sv_Xpos_,  sv_Ypos_,  sv_Zpos_,  sv_xError_,   sv_yError_,   sv_zError_, sv_lx_, sv_ly_, sv_lz_;
+ Float_t sv_track_sumdxySig_;
+ Int_t sv_hasMuon_;
+ Int_t sv_TrackSize_ , sv_tracks_Sumcharge_ ;
+ unsigned sv_inside_;
 
- TBranch* branch_non_promptJet_charge_  = newtree->Branch("non_promptJet_charge_", &non_promptJet_charge_, "non_promptJet_charge_/F");
- TBranch* branch_non_promptJet_et_      = newtree->Branch("non_promptJet_et_", &non_promptJet_et_, "non_promptJet_et_/F");
- TBranch* branch_non_promptJet_pt_      = newtree->Branch("non_promptJet_pt_", &non_promptJet_pt_, "non_promptJet_pt_/F");
- TBranch* branch_non_promptJet_eta_     = newtree->Branch("non_promptJet_eta_", &non_promptJet_eta_, "non_promptJet_eta_/F");
- TBranch* branch_non_promptJet_phi_     = newtree->Branch("non_promptJet_phi_", &non_promptJet_phi_, "non_promptJet_phi_/F");
- TBranch* branch_non_promptJet_theta_   = newtree->Branch("non_promptJet_theta_", &non_promptJet_theta_, "non_promptJet_theta_/F");
- TBranch* branch_non_promptJet_en_      = newtree->Branch("non_promptJet_en_", &non_promptJet_en_, "non_promptJet_en_/F");
- TBranch* branch_non_promptJet_chargedEmEnergy_  = newtree->Branch("non_promptJet_chEmEn_", &non_promptJet_chEmEn_, "non_promptJet_chEmEn_/F");
- TBranch* branch_non_promptJet_NEmEnFraction_    = newtree->Branch("non_promptJet_NEmEnFraction_", &non_promptJet_NEmEnFraction_, "non_promptJet_NEmEnFraction_/F");
- TBranch* branch_non_promptJet_chHadEn_         = newtree->Branch("non_promptJet_chHadEn_", &non_promptJet_chHadEn_, "non_promptJet_chHadEn_/F");
- TBranch* branch_non_promptJet_NHadEnFraction_  = newtree->Branch("non_promptJet_NHadEnFraction_", &non_promptJet_NHadEnFraction_, "non_promptJet_NHadEnFraction_/F");
- TBranch* branch_non_promptJet_chMuEn_          = newtree->Branch("non_promptJet_chMuEn_", &non_promptJet_chMuEn_, "non_promptJet_chMuEn_/F");
- TBranch* branch_non_promptJet_chMuEnFraction_  = newtree->Branch("non_promptJet_chMuEnFraction_", &non_promptJet_chMuEnFraction_, "non_promptJet_chMuEnFraction_/F");
- TBranch* branch_non_promptJet_numberOfDaughters_    = newtree->Branch("non_promptJet_numberOfDaughters_", &non_promptJet_numberOfDaughters_, "non_promptJet_numberOfDaughters_/F");
- TBranch* branch_non_promptJet_muonEnergy_           = newtree->Branch("non_promptJet_muonEnergy_", &non_promptJet_muonEnergy_, "non_promptJet_muonEnergy_/F");
- TBranch* branch_non_promptJet_muonEnergyFraction_   = newtree->Branch("non_promptJet_muonEnergyFraction_", &non_promptJet_muonEnergyFraction_, "non_promptJet_muonEnergyFraction_/F");
- TBranch* branch_non_promptJet_muonMultiplicity_     = newtree->Branch("non_promptJet_muonMultiplicity_", &non_promptJet_muonMultiplicity_, "non_promptJet_muonMultiplicity_/F");
- TBranch* branch_non_promptJet_neutralEmEnergy_      = newtree->Branch("non_promptJet_neutralEmEnergy_", &non_promptJet_neutralEmEnergy_, "non_promptJet_neutralEmEnergy_/F");
- TBranch* branch_non_promptJet_neutralHadronEnergy_  = newtree->Branch("non_promptJet_neutralHadronEnergy_", &non_promptJet_neutralHadronEnergy_, "non_promptJet_neutralHadronEnergy_/F");
- TBranch* branch_non_promptJet_NHadMultiplicity_  = newtree->Branch("non_promptJet_NHadMultiplicity_", &non_promptJet_NHadMultiplicity_, "non_promptJet_NHadMultiplicity_/F");
- TBranch* branch_non_promptJet_NMultiplicity_     = newtree->Branch("non_promptJet_NMultiplicity_", &non_promptJet_NMultiplicity_, "non_promptJet_NMultiplicity_/F");
- TBranch* branch_non_promptJet_chargedMultiplicity_    = newtree->Branch("non_promptJet_chargedMultiplicity_", &non_promptJet_chargedMultiplicity_, "non_promptJet_chargedMultiplicity_/F");
- TBranch* branch_non_promptJet_chargedEmEnergyFraction =  newtree->Branch("non_promptJet_chargedEmEnergyFraction", &non_promptJet_chargedEmEnergyFraction, "non_promptJet_chargedEmEnergyFraction/F");
- TBranch* branch_non_promptJet_chargedHadronEnergyFraction = newtree->Branch("non_promptJet_chargedHadronEnergyFraction", &non_promptJet_chargedHadronEnergyFraction, "non_promptJet_chargedHadronEnergyFraction/F");
+ TBranch* branch_sv_inside     = newtree->Branch("sv_inside", &sv_inside_, "sv_inside/I");
+ TBranch* branch_sv_TrackSize  = newtree->Branch("sv_TrackSize", &sv_TrackSize_, "sv_TrackSize/I");
+ TBranch* branch_sv_LXYSig     = newtree->Branch("sv_LXYSig", &sv_LXYSig_, "sv_LXYSig/F");
+ TBranch* branch_sv_LXYZSig    = newtree->Branch("sv_LXYZSig", &sv_LXYZSig_, "sv_LXYZSig/F");
+ TBranch* branch_sv_LXY        = newtree->Branch("sv_LXY", &sv_LXY_, "sv_LXY/F");
+ TBranch* branch_sv_LXYZ       = newtree->Branch("sv_LXYZ", &sv_LXYZ_, "sv_LXYZ/F");
+ TBranch* branch_sv_dir_x      = newtree->Branch("sv_dir_x", &sv_dir_x_, "sv_dir_x/F");
+ TBranch* branch_sv_dir_y      = newtree->Branch("sv_dir_y", &sv_dir_y_, "sv_dir_y/F");
+ TBranch* branch_sv_dir_z      = newtree->Branch("sv_dir_z", &sv_dir_z_, "sv_dir_z/F");
+ TBranch* branch_sv_mass       = newtree->Branch("sv_mass", &sv_mass_, "sv_mass/F");
+ TBranch* branch_sv_eta        = newtree->Branch("sv_eta", &sv_eta_, "sv_eta/F");
+ TBranch* branch_sv_phi        = newtree->Branch("sv_phi", &sv_phi_, "sv_phi/F");
+ TBranch* branch_sv_pt         = newtree->Branch("sv_pt", &sv_pt_, "sv_pt/F");
+ TBranch* branch_sv_p          = newtree->Branch("sv_p", &sv_p_, "sv_p/F");
+ TBranch* branch_sv_px         = newtree->Branch("sv_px", &sv_px_, "sv_px/F");
+ TBranch* branch_sv_py         = newtree->Branch("sv_py", &sv_py_, "sv_py/F");
+ TBranch* branch_sv_pz         = newtree->Branch("sv_pz", &sv_pz_, "sv_pz/F");
+ TBranch* branch_sv_energy     = newtree->Branch("sv_energy", &sv_energy_, "sv_energy/F");
+ TBranch* branch_sv_Beta       = newtree->Branch("sv_Beta", &sv_Beta_, "sv_Beta/F");
+ TBranch* branch_sv_Gamma      = newtree->Branch("sv_Gamma", &sv_Gamma_, "sv_Gamma/F");
+ TBranch* branch_sv_CTau0      = newtree->Branch("sv_CTau0", &sv_CTau0_, "sv_CTau0/F");
+ TBranch* branch_sv_NDof       = newtree->Branch("sv_NDof", &sv_NDof_, "sv_NDof/F");
+ TBranch* branch_sv_Chi2       = newtree->Branch("sv_Chi2", &sv_Chi2_, "sv_Chi2/F");
+ TBranch* branch_sv_Angle3D    = newtree->Branch("sv_Angle3D", &sv_Angle3D_, "sv_Angle3D/F");
+ TBranch* branch_sv_Angle2D    = newtree->Branch("sv_Angle2D", &sv_Angle2D_, "sv_Angle2D/F");
+ TBranch* branch_sv_tracks_Sumcharge = newtree->Branch("sv_tracks_Sumcharge", &sv_tracks_Sumcharge_, "sv_tracks_Sumcharge/I");
+ TBranch* branch_sv_tracks_Sumpt     = newtree->Branch("sv_tracks_Sumpt", &sv_tracks_Sumpt_, "sv_tracks_Sumpt/F");
+ TBranch* branch_sv_match            = newtree->Branch("sv_match", &sv_match_, "sv_match/F");
 
- TBranch* branch_non_promptJet_CsvV2        =  newtree->Branch("non_promptJet_CsvV2", &non_promptJet_CsvV2, "non_promptJet_CsvV2/F");
- TBranch* branch_non_promptJet_DeepCsv_udsg =  newtree->Branch("non_promptJet_DeepCsv_udsg", &non_promptJet_DeepCsv_udsg, "non_promptJet_DeepCsv_udsg/F");
- TBranch* branch_non_promptJet_DeepCsv_b    =  newtree->Branch("non_promptJet_DeepCsv_b", &non_promptJet_DeepCsv_b, "non_promptJet_DeepCsv_b/F");
- TBranch* branch_non_promptJet_DeepCsv_c    =  newtree->Branch("non_promptJet_DeepCsv_c", &non_promptJet_DeepCsv_c,"non_promptJet_DeepCsv_c/F");
- TBranch* branch_non_promptJet_DeepCsv_bb   =  newtree->Branch("non_promptJet_DeepCsv_bb", &non_promptJet_DeepCsv_bb,"non_promptJet_DeepCsv_bb/F");
- TBranch* branch_non_promptJet_HadronFlavor =  newtree->Branch("non_promptJet_HadronFlavor", &non_promptJet_HadronFlavor,"non_promptJet_HadronFlavor/F");
+ TBranch* branch_sv_Xpos     = newtree->Branch("sv_Xpos" , &sv_Xpos_,"sv_Xpos/F");
+ TBranch* branch_sv_Ypos     = newtree->Branch("sv_Ypos" , &sv_Ypos_,"sv_Ypos/F");
+ TBranch* branch_sv_Zpos     = newtree->Branch("sv_Zpos" , &sv_Zpos_,"sv_Zpos/F");
+ TBranch* branch_sv_xError   = newtree->Branch("sv_xError" , &sv_xError_,"sv_xError/F");
+ TBranch* branch_sv_yError   = newtree->Branch("sv_yError" , &sv_yError_,"sv_yError/F");
+ TBranch* branch_sv_zError   = newtree->Branch("sv_zError" , &sv_zError_,"sv_zError/F");
+ TBranch* branch_sv_lx       = newtree->Branch("sv_lx" , &sv_lx_,"sv_lx/F");
+ TBranch* branch_sv_ly       = newtree->Branch("sv_ly" , &sv_ly_,"sv_ly/F");
+ TBranch* branch_sv_lz       = newtree->Branch("sv_lz" , &sv_lz_,"sv_lz/F");
+ TBranch* branch_sv_hasMuon  = newtree->Branch("sv_hasMuon", &sv_hasMuon_, "sv_hasMuon/I");
 
- TBranch* branch_DiJet_Mass = newtree->Branch("DiJet_Mass", &DiJet_Mass ,"DiJet_Mass/F");
- TBranch* branch_MuJet_Mass = newtree->Branch("MuJet_Mass", &MuJet_Mass ,"MuJet_Mass/F");
+ TBranch* branch_sv_track_sumdxySig = newtree->Branch("sv_track_sumdxySig" , &sv_track_sumdxySig_, "sv_track_sumdxySig/F");
 
+ //================================= First Track in sv  ================================================//                                                                                                  
+ Float_t  firstTrack_eta , firstTrack_phi , firstTrack_pt , firstTrack_dxySig , firstTrack_dxy , firstTrack_dxyz , firstTrack_en;
+ Int_t    firstTrack_charge;
 
-//======================= Second Vertex Variables ==========================================//
- Float_t  sv_LXYSig,  sv_LXYZSig, sv_LXY,  sv_LXYZ,  sv_mass, 
-          sv_eta,     sv_phi,     sv_pt,   sv_p,     sv_Beta, 
-          sv_Gamma,   sv_CTau0,   sv_NDof, sv_Chi2,  sv_Angle3D, 
-          sv_Angle2D, sv_tracks_Sumpt,     sv_match, sv_energy,
-          sv_px,      sv_py,      sv_pz,   sv_dir_x, sv_dir_y, sv_dir_z;
+ TBranch* branch_firstTrack_eta    = newtree->Branch("firstTrack_eta" , &firstTrack_eta,"firstTrack_eta/F");
+ TBranch* branch_firstTrack_phi    = newtree->Branch("firstTrack_phi" , &firstTrack_phi,"firstTrack_phi/F");
+ TBranch* branch_firstTrack_pt     = newtree->Branch("firstTrack_pt" , &firstTrack_pt,"firstTrack_pt/F");
+ TBranch* branch_firstTrack_dxySig = newtree->Branch("firstTrack_dxySig" , &firstTrack_dxySig,"firstTrack_dxySig/F");
+ TBranch* branch_firstTrack_dxy    = newtree->Branch("firstTrack_dxy" , &firstTrack_dxy,"firstTrack_dxy/F");
+ TBranch* branch_firstTrack_dxyz   = newtree->Branch("firstTrack_dxyz" , &firstTrack_dxyz,"firstTrack_dxyz/F");
+ TBranch* branch_firstTrack_charge = newtree->Branch("firstTrack_charge" , &firstTrack_charge,"firstTrack_charge/I");
+ TBranch* branch_firstTrack_en     = newtree->Branch("firstTrack_en" , &firstTrack_en,"firstTrack_en/F");
+ //================================= Second Track in sv ================================================//                                                                                                  
+ Float_t  secondTrack_eta , secondTrack_phi , secondTrack_pt , secondTrack_dxySig , secondTrack_dxy , secondTrack_dxyz ,  secondTrack_en;
+ Int_t    secondTrack_charge;
 
- Float_t sv_Xpos,  sv_Ypos,  sv_Zpos,  sv_xError,   sv_yError,   sv_zError,
-         sv_pvX,   sv_pvY,   sv_pvZ,   sv_pvXError, sv_pvYError, sv_pvZError;
- Float_t sv_track_sumdxySig;
+ TBranch* branch_secondTrack_eta    = newtree->Branch("secondTrack_eta" , &secondTrack_eta,"secondTrack_eta/F");
+ TBranch* branch_secondTrack_phi    = newtree->Branch("secondTrack_phi" , &secondTrack_phi,"secondTrack_phi/F");
+ TBranch* branch_secondTrack_pt     = newtree->Branch("secondTrack_pt" , &secondTrack_pt,"secondTrack_pt/F");
+ TBranch* branch_secondTrack_dxySig = newtree->Branch("secondTrack_dxySig" , &secondTrack_dxySig,"secondTrack_dxySig/F");
+ TBranch* branch_secondTrack_dxy    = newtree->Branch("secondTrack_dxy" , &secondTrack_dxy,"secondTrack_dxy/F");
+ TBranch* branch_secondTrack_dxyz   = newtree->Branch("secondTrack_dxyz" , &secondTrack_dxyz,"secondTrack_dxyz/F");
+ TBranch* branch_secondTrack_charge = newtree->Branch("secondTrack_charge" , &secondTrack_charge,"secondTrack_charge/I");
+ TBranch* branch_secondTrack_en     = newtree->Branch("secondTrack_en" , &secondTrack_en,"secondTrack_en/F");
 
- Int_t sv_TrackSize , sv_tracks_Sumcharge ;  
- unsigned sv_inside;
+ //================================= Jets Variables ==============================================//
+ Float_t alljet_charge_,         alljet_et_,    alljet_pt_, alljet_eta_, alljet_NEmEnFraction_,
+         alljet_phi_,            alljet_theta_, alljet_en_, alljet_chEmEn_, alljet_NHadEnFraction_,
+         alljet_chMuEn_,         alljet_chMuEnFraction_,    alljet_numberOfDaughters_,
+         alljet_muonEnergyFraction_, alljet_muonMultiplicity_,
+         alljet_neutralEmEnergy_,    alljet_neutralHadronEnergy_, alljet_NHadMultiplicity_,
+         alljet_NMultiplicity_,      alljet_chHadEn_,       alljet_muonEnergy_, alljet_chargedMultiplicity_ ,
+   alljet_chargedEmEnergyFraction, alljet_chargedHadronEnergyFraction,alljet_notSmeard_pt,alljet_raw_pt,HT_alljet;
 
- TBranch* branch_sv_inside     = newtree->Branch("sv_inside", &sv_inside, "sv_inside/I");
- TBranch* branch_sv_TrackSize  = newtree->Branch("sv_TrackSize", &sv_TrackSize, "sv_TrackSize/I");
- TBranch* branch_sv_LXYSig     = newtree->Branch("sv_LXYSig", &sv_LXYSig, "sv_LXYSig/F");
- TBranch* branch_sv_LXYZSig    = newtree->Branch("sv_LXYZSig", &sv_LXYZSig, "sv_LXYZSig/F");
- TBranch* branch_sv_LXY        = newtree->Branch("sv_LXY", &sv_LXY, "sv_LXY/F");
- TBranch* branch_sv_LXYZ       = newtree->Branch("sv_LXYZ", &sv_LXYZ, "sv_LXYZ/F");
- TBranch* branch_sv_dir_x      = newtree->Branch("sv_dir_x", &sv_dir_x, "sv_dir_x/F");
- TBranch* branch_sv_dir_y      = newtree->Branch("sv_dir_y", &sv_dir_y, "sv_dir_y/F");
- TBranch* branch_sv_dir_z      = newtree->Branch("sv_dir_z", &sv_dir_z, "sv_dir_z/F");
- TBranch* branch_sv_mass       = newtree->Branch("sv_mass", &sv_mass, "sv_mass/F");
- TBranch* branch_sv_eta        = newtree->Branch("sv_eta", &sv_eta, "sv_eta/F");
- TBranch* branch_sv_phi        = newtree->Branch("sv_phi", &sv_phi, "sv_phi/F");
- TBranch* branch_sv_pt         = newtree->Branch("sv_pt", &sv_pt, "sv_pt/F");
- TBranch* branch_sv_p          = newtree->Branch("sv_p", &sv_p, "sv_p/F");
- TBranch* branch_sv_px         = newtree->Branch("sv_px", &sv_px, "sv_px/F");
- TBranch* branch_sv_py         = newtree->Branch("sv_py", &sv_py, "sv_py/F");
- TBranch* branch_sv_pz         = newtree->Branch("sv_pz", &sv_pz, "sv_pz/F");
- TBranch* branch_sv_energy     = newtree->Branch("sv_energy", &sv_energy, "sv_energy/F");
- TBranch* branch_sv_Beta       = newtree->Branch("sv_Beta", &sv_Beta, "sv_Beta/F");
- TBranch* branch_sv_Gamma      = newtree->Branch("sv_Gamma", &sv_Gamma, "sv_Gamma/F");
- TBranch* branch_sv_CTau0      = newtree->Branch("sv_CTau0", &sv_CTau0, "sv_CTau0/F");
- TBranch* branch_sv_NDof       = newtree->Branch("sv_NDof", &sv_NDof, "sv_NDof/F");
- TBranch* branch_sv_Chi2       = newtree->Branch("sv_Chi2", &sv_Chi2, "sv_Chi2/F");
- TBranch* branch_sv_Angle3D    = newtree->Branch("sv_Angle3D", &sv_Angle3D, "sv_Angle3D/F");
- TBranch* branch_sv_Angle2D    = newtree->Branch("sv_Angle2D", &sv_Angle2D, "sv_Angle2D/F");
- TBranch* branch_sv_tracks_Sumcharge = newtree->Branch("sv_tracks_Sumcharge", &sv_tracks_Sumcharge, "sv_tracks_Sumcharge/I");
- TBranch* branch_sv_tracks_Sumpt     = newtree->Branch("sv_tracks_Sumpt", &sv_tracks_Sumpt, "sv_tracks_Sumpt/F");
- TBranch* branch_sv_match            = newtree->Branch("sv_match", &sv_match, "sv_match/F");
+ Float_t alljet_CsvV2, alljet_DeepCsv_udsg, alljet_DeepCsv_b, alljet_DeepCsv_c, alljet_DeepCsv_bb, alljet_HadronFlavor;
+ Int_t   alljets_size, alljet_bjet_L,alljet_bjet_M,alljet_bjet_T;
 
- TBranch* branch_sv_Xpos     = newtree->Branch("sv_Xpos" , &sv_Xpos,"sv_Xpos/F");
- TBranch* branch_sv_Ypos     = newtree->Branch("sv_Ypos" , &sv_Ypos,"sv_Ypos/F");
- TBranch* branch_sv_Zpos     = newtree->Branch("sv_Zpos" , &sv_Zpos,"sv_Zpos/F");
- TBranch* branch_sv_xError   = newtree->Branch("sv_xError" , &sv_xError,"sv_xError/F");
- TBranch* branch_sv_yError   = newtree->Branch("sv_yError" , &sv_yError,"sv_yError/F");
- TBranch* branch_sv_zError   = newtree->Branch("sv_zError" , &sv_zError,"sv_zError/F");
- TBranch* branch_sv_pvX      = newtree->Branch("sv_pvX" , &sv_pvX,"sv_pvX/F");
- TBranch* branch_sv_pvY      = newtree->Branch("sv_pvY" , &sv_pvY,"sv_pvY/F");
- TBranch* branch_sv_pvZ      = newtree->Branch("sv_pvZ" , &sv_pvZ,"sv_pvZ/F");
- TBranch* branch_sv_pvXError = newtree->Branch("sv_pvXError" , &sv_pvXError,"sv_pvXError/F");
- TBranch* branch_sv_pvYError = newtree->Branch("sv_pvYError" , &sv_pvYError,"sv_pvYError/F");
- TBranch* branch_sv_pvZError = newtree->Branch("sv_pvZError" , &sv_pvZError,"sv_pvZError/F");
+ TBranch* branch_alljet_charge_ = newtree->Branch("alljet_charge", &alljet_charge_, "alljet_charge/F");
+ TBranch* branch_alljet_et_     = newtree->Branch("alljet_et", &alljet_et_, "alljet_et/F");
+ TBranch* branch_alljet_pt_     = newtree->Branch("alljet_pt", &alljet_pt_, "alljet_pt/F");
+ TBranch* branch_alljet_eta_    = newtree->Branch("alljet_eta", &alljet_eta_, "alljet_eta/F");
+ TBranch* branch_alljet_phi_    = newtree->Branch("alljet_phi", &alljet_phi_, "alljet_phi/F");
+ TBranch* branch_alljet_theta_  = newtree->Branch("alljet_theta", &alljet_theta_, "alljet_theta/F");
+ TBranch* branch_alljet_en_     = newtree->Branch("alljet_en", &alljet_en_, "alljet_en/F");
+ TBranch* branch_alljet_chEmEn_                     = newtree->Branch("alljet_chEmEn", &alljet_chEmEn_, "alljet_chEmEn/F");
+ TBranch* branch_alljet_NEmEnFraction_              = newtree->Branch("alljet_NEmEnFraction", &alljet_NEmEnFraction_, "alljet_NEmEnFraction/F");
+ TBranch* branch_alljet_chHadEn_                    = newtree->Branch("alljet_chHadEn", &alljet_chHadEn_, "alljet_chHadEn/F");
+ TBranch* branch_alljet_NHadEnFraction_             = newtree->Branch("alljet_NHadEnFraction", &alljet_NHadEnFraction_, "alljet_NHadEnFraction/F");
+ TBranch* branch_alljet_chMuEn_                     = newtree->Branch("alljet_chMuEn", &alljet_chMuEn_, "alljet_chMuEn/F");
+ TBranch* branch_alljet_chMuEnFraction_             = newtree->Branch("alljet_chMuEnFraction", &alljet_chMuEnFraction_, "alljet_chMuEnFraction/F");
+ TBranch* branch_alljet_numberOfDaughters_          = newtree->Branch("alljet_numberOfDaughters", &alljet_numberOfDaughters_, "alljet_numberOfDaughters/F");
+ TBranch* branch_alljet_muonEnergy_                 = newtree->Branch("alljet_muonEnergy", &alljet_muonEnergy_, "alljet_muonEnergy/F");
+ TBranch* branch_alljet_muonEnergyFraction_         = newtree->Branch("alljet_muonEnergyFraction", &alljet_muonEnergyFraction_, "alljet_muonEnergyFraction/F");
+ TBranch* branch_alljet_muonMultiplicity_           = newtree->Branch("alljet_muonMultiplicity", &alljet_muonMultiplicity_, "alljet_muonMultiplicity/F");
+ TBranch* branch_alljet_neutralEmEnergy_            = newtree->Branch("alljet_neutralEmEnergy", &alljet_neutralEmEnergy_, "alljet_neutralEmEnergy/F");
+ TBranch* branch_alljet_neutralHadronEnergy_        = newtree->Branch("alljet_neutralHadronEnergy", &alljet_neutralHadronEnergy_, "alljet_neutralHadronEnergy/F");
+ TBranch* branch_alljet_NHadMultiplicity_           = newtree->Branch("alljet_NHadMultiplicity", &alljet_NHadMultiplicity_, "alljet_NHadMultiplicity/F");
+ TBranch* branch_alljet_NMultiplicity_              = newtree->Branch("alljet_NMultiplicity", &alljet_NMultiplicity_, "alljet_NMultiplicity/F");
+ TBranch* branch_alljet_chargedMultiplicity_        = newtree->Branch("alljet_chargedMultiplicity", &alljet_chargedMultiplicity_, "alljet_chargedMultiplicity/F");
+ TBranch* branch_alljet_chargedEmEnergyFraction     = newtree->Branch("alljet_chargedEmEnergyFraction", &alljet_chargedEmEnergyFraction, "alljet_chargedEmEnergyFraction/F");
+ TBranch* branch_alljet_chargedHadronEnergyFraction = newtree->Branch("alljet_chargedHadronEnergyFraction", &alljet_chargedHadronEnergyFraction, "alljet_chargedHadronEnergyFraction/F");
 
- TBranch* branch_sv_track_sumdxySig = newtree->Branch("sv_track_sumdxySig" , &sv_track_sumdxySig, "sv_track_sumdxySig/F");
- //================================= First Track in sv  ================================================// 
-  Float_t  firstTrack_eta , firstTrack_phi , firstTrack_pt , firstTrack_dxySig , firstTrack_dxy , firstTrack_dxyz , firstTrack_en; 
-  Int_t    firstTrack_charge;
+ TBranch* branch_alljets_size =  newtree->Branch("alljets_size", &alljets_size, "alljets_size/I");
 
-  TBranch* branch_firstTrack_eta    = newtree->Branch("firstTrack_eta" , &firstTrack_eta,"firstTrack_eta/F");
-  TBranch* branch_firstTrack_phi    = newtree->Branch("firstTrack_phi" , &firstTrack_phi,"firstTrack_phi/F");
-  TBranch* branch_firstTrack_pt     = newtree->Branch("firstTrack_pt" , &firstTrack_pt,"firstTrack_pt/F");
-  TBranch* branch_firstTrack_dxySig = newtree->Branch("firstTrack_dxySig" , &firstTrack_dxySig,"firstTrack_dxySig/F");
-  TBranch* branch_firstTrack_dxy    = newtree->Branch("firstTrack_dxy" , &firstTrack_dxy,"firstTrack_dxy/F");
-  TBranch* branch_firstTrack_dxyz   = newtree->Branch("firstTrack_dxyz" , &firstTrack_dxyz,"firstTrack_dxyz/F");
-  TBranch* branch_firstTrack_charge = newtree->Branch("firstTrack_charge" , &firstTrack_charge,"firstTrack_charge/I");
-  TBranch* branch_firstTrack_en     = newtree->Branch("firstTrack_en" , &firstTrack_en,"firstTrack_en/F");
- //================================= Second Track in sv ================================================// 
-  Float_t  secondTrack_eta , secondTrack_phi , secondTrack_pt , secondTrack_dxySig , secondTrack_dxy , secondTrack_dxyz ,  secondTrack_en;
-  Int_t    secondTrack_charge;
+ TBranch* branch_alljet_bjet_L =  newtree->Branch("alljet_bjet_L", &alljet_bjet_L, "alljet_bjet_L/I");
+ TBranch* branch_alljet_bjet_M =  newtree->Branch("alljet_bjet_M", &alljet_bjet_M, "alljet_bjet_M/I");
+ TBranch* branch_alljet_bjet_T =  newtree->Branch("alljet_bjet_T", &alljet_bjet_T, "alljet_bjet_T/I");
 
-  TBranch* branch_secondTrack_eta    = newtree->Branch("secondTrack_eta" , &secondTrack_eta,"secondTrack_eta/F");
-  TBranch* branch_secondTrack_phi    = newtree->Branch("secondTrack_phi" , &secondTrack_phi,"secondTrack_phi/F");
-  TBranch* branch_secondTrack_pt     = newtree->Branch("secondTrack_pt" , &secondTrack_pt,"secondTrack_pt/F");
-  TBranch* branch_secondTrack_dxySig = newtree->Branch("secondTrack_dxySig" , &secondTrack_dxySig,"secondTrack_dxySig/F");
-  TBranch* branch_secondTrack_dxy    = newtree->Branch("secondTrack_dxy" , &secondTrack_dxy,"secondTrack_dxy/F");
-  TBranch* branch_secondTrack_dxyz   = newtree->Branch("secondTrack_dxyz" , &secondTrack_dxyz,"secondTrack_dxyz/F");
-  TBranch* branch_secondTrack_charge = newtree->Branch("secondTrack_charge" , &secondTrack_charge,"secondTrack_charge/I");
-  TBranch* branch_secondTrack_en     = newtree->Branch("secondTrack_en" , &secondTrack_en,"secondTrack_en/F");
- //================================= First Jet Variables ==============================================//
- Float_t FirstJet_charge_, FirstJet_et_,    FirstJet_pt_, FirstJet_eta_, FirstJet_NEmEnFraction_,
-         FirstJet_phi_,    FirstJet_theta_, FirstJet_en_, FirstJet_chEmEn_, FirstJet_NHadEnFraction_,
-         FirstJet_chMuEn_,         FirstJet_chMuEnFraction_, FirstJet_numberOfDaughters_, 
-         FirstJet_muonEnergyFraction_, FirstJet_muonMultiplicity_, 
-         FirstJet_neutralEmEnergy_,  FirstJet_neutralHadronEnergy_, FirstJet_NHadMultiplicity_, 
-         FirstJet_NMultiplicity_, FirstJet_chHadEn_, FirstJet_muonEnergy_, FirstJet_chargedMultiplicity_ , 
-         FirstJet_chargedEmEnergyFraction, FirstJet_chargedHadronEnergyFraction;
+ TBranch* branchalltjet_notSmeard_pt                = newtree->Branch("alljet_notSmeard_pt" ,&alljet_notSmeard_pt,"alljet_notSmeard_pt/F");
+ TBranch* branch_alljet_raw_pt                      = newtree->Branch("alljet_raw_pt",&alljet_notSmeard_pt,"alljet_notSmeard_pt/F");
 
- Float_t FirstJet_CsvV2, FirstJet_DeepCsv_udsg, FirstJet_DeepCsv_b, FirstJet_DeepCsv_c, FirstJet_DeepCsv_bb, FirstJet_HadronFlavor;
+ TBranch* branch_alljet_CsvV2        =  newtree->Branch("alljet_CsvV2", &alljet_CsvV2, "alljet_CsvV2/F");
+ TBranch* branch_alljet_DeepCsv_udsg =  newtree->Branch("alljet_DeepCsv_udsg", &alljet_DeepCsv_udsg, "alljet_DeepCsv_udsg/F");
+ TBranch* branch_alljet_DeepCsv_b    =  newtree->Branch("alljet_DeepCsv_b", &alljet_DeepCsv_b, "alljet_DeepCsv_b/F");
+ TBranch* branch_alljet_DeepCsv_c    =  newtree->Branch("alljet_DeepCsv_c", &alljet_DeepCsv_c,"alljet_DeepCsv_c/F");
+ TBranch* branch_alljet_DeepCsv_bb   =  newtree->Branch("alljet_DeepCsv_bb", &alljet_DeepCsv_bb,"alljet_DeepCsv_bb/F");
+ TBranch* branch_alljet_HadronFlavor =  newtree->Branch("alljet_HadronFlavor", &alljet_HadronFlavor,"alljet_HadronFlavor/F");
+ TBranch* branch_HT_alljet           =  newtree->Branch("HT_alljet" ,&HT_alljet,"HT_alljet/F");
 
+ //================================= Second Jet Variables ==============================================//                                                                                                 
+ Float_t firstjet_charge_,          firstjet_et_,    firstjet_pt_, firstjet_eta_, firstjet_NEmEnFraction_,
+         firstjet_phi_,             firstjet_theta_, firstjet_en_, firstjet_chEmEn_, firstjet_NHadEnFraction_,
+         firstjet_chMuEn_,          firstjet_chMuEnFraction_,      firstjet_numberOfDaughters_,
+         firstjet_muonEnergyFraction_, firstjet_muonMultiplicity_,
+         firstjet_neutralEmEnergy_,    firstjet_neutralHadronEnergy_,           firstjet_NHadMultiplicity_,
+         firstjet_NMultiplicity_,      firstjet_chHadEn_,          firstjet_muonEnergy_, firstjet_chargedMultiplicity_ ,
+   firstjet_chargedEmEnergyFraction, firstjet_chargedHadronEnergyFraction, firstjet_notSmeard_pt, firstjet_raw_pt;
 
- Int_t   jets_size, bjet1_size, bjet2_size, bjet3_size, bjet4_size, bjet5_size, bjet6_size, bjet7_size, bjet8_size, bjet9_size, bjet_L,bjet_M,bjet_T;
+ Float_t firstjet_CsvV2, firstjet_DeepCsv_udsg, firstjet_DeepCsv_b, firstjet_DeepCsv_c, firstjet_DeepCsv_bb, firstjet_HadronFlavor;
+ Int_t   firstjet_bjet_L,firstjet_bjet_M,firstjet_bjet_T,firstjets_size;
 
- TBranch* branch_FirstJet_charge_  = newtree->Branch("FirstJet_charge_", &FirstJet_charge_, "FirstJet_charge_/F");
- TBranch* branch_FirstJet_et_  = newtree->Branch("FirstJet_et_", &FirstJet_et_, "FirstJet_et_/F");
- TBranch* branch_FirstJet_pt_  = newtree->Branch("FirstJet_pt_", &FirstJet_pt_, "FirstJet_pt_/F");
- TBranch* branch_FirstJet_eta_  = newtree->Branch("FirstJet_eta_", &FirstJet_eta_, "FirstJet_eta_/F");
- TBranch* branch_FirstJet_phi_  = newtree->Branch("FirstJet_phi_", &FirstJet_phi_, "FirstJet_phi_/F");
- TBranch* branch_FirstJet_theta_  = newtree->Branch("FirstJet_theta_", &FirstJet_theta_, "FirstJet_theta_/F");
- TBranch* branch_FirstJet_en_  = newtree->Branch("FirstJet_en_", &FirstJet_en_, "FirstJet_en_/F");
- TBranch* branch_FirstJet_chargedEmEnergy_  = newtree->Branch("FirstJet_chEmEn_", &FirstJet_chEmEn_, "FirstJet_chEmEn_/F");
- TBranch* branch_FirstJet_NEmEnFraction_  = newtree->Branch("FirstJet_NEmEnFraction_", &FirstJet_NEmEnFraction_, "FirstJet_NEmEnFraction_/F");
- TBranch* branch_FirstJet_chHadEn_  = newtree->Branch("FirstJet_chHadEn_", &FirstJet_chHadEn_, "FirstJet_chHadEn_/F");
- TBranch* branch_FirstJet_NHadEnFraction_  = newtree->Branch("FirstJet_NHadEnFraction_", &FirstJet_NHadEnFraction_, "FirstJet_NHadEnFraction_/F");
- TBranch* branch_FirstJet_chMuEn_  = newtree->Branch("FirstJet_chMuEn_", &FirstJet_chMuEn_, "FirstJet_chMuEn_/F");
- TBranch* branch_FirstJet_chMuEnFraction_  = newtree->Branch("FirstJet_chMuEnFraction_", &FirstJet_chMuEnFraction_, "FirstJet_chMuEnFraction_/F");
- TBranch* branch_FirstJet_numberOfDaughters_  = newtree->Branch("FirstJet_numberOfDaughters_", &FirstJet_numberOfDaughters_, "FirstJet_numberOfDaughters_/F");
- TBranch* branch_FirstJet_muonEnergy_  = newtree->Branch("FirstJet_muonEnergy_", &FirstJet_muonEnergy_, "FirstJet_muonEnergy_/F");
- TBranch* branch_FirstJet_muonEnergyFraction_  = newtree->Branch("FirstJet_muonEnergyFraction_", &FirstJet_muonEnergyFraction_, "FirstJet_muonEnergyFraction_/F");
- TBranch* branch_FirstJet_muonMultiplicity_  = newtree->Branch("FirstJet_muonMultiplicity_", &FirstJet_muonMultiplicity_, "FirstJet_muonMultiplicity_/F");
- TBranch* branch_FirstJet_neutralEmEnergy_  = newtree->Branch("FirstJet_neutralEmEnergy_", &FirstJet_neutralEmEnergy_, "FirstJet_neutralEmEnergy_/F");
- TBranch* branch_FirstJet_neutralHadronEnergy_  = newtree->Branch("FirstJet_neutralHadronEnergy_", &FirstJet_neutralHadronEnergy_, "FirstJet_neutralHadronEnergy_/F");
- TBranch* branch_FirstJet_NHadMultiplicity_  = newtree->Branch("FirstJet_NHadMultiplicity_", &FirstJet_NHadMultiplicity_, "FirstJet_NHadMultiplicity_/F");
- TBranch* branch_FirstJet_NMultiplicity_  = newtree->Branch("FirstJet_NMultiplicity_", &FirstJet_NMultiplicity_, "FirstJet_NMultiplicity_/F");
- TBranch* branch_FirstJet_chargedMultiplicity_   = newtree->Branch("FirstJet_chargedMultiplicity_", &FirstJet_chargedMultiplicity_, "FirstJet_chargedMultiplicity_/F");
- TBranch* branch_FirstJet_chargedEmEnergyFraction =  newtree->Branch("FirstJet_chargedEmEnergyFraction", &FirstJet_chargedEmEnergyFraction, "FirstJet_chargedEmEnergyFraction/F");
- TBranch* branch_FirstJet_chargedHadronEnergyFraction = newtree->Branch("FirstJet_chargedHadronEnergyFraction", &FirstJet_chargedHadronEnergyFraction, "FirstJet_chargedHadronEnergyFraction/F");
+ TBranch* branch_firstjet_charge_   = newtree->Branch("firstjet_charge", &firstjet_charge_, "firstjet_charge/F");
+ TBranch* branch_firstjet_et_       = newtree->Branch("firstjet_et", &firstjet_et_, "firstjet_et/F");
+ TBranch* branch_firstjet_pt_       = newtree->Branch("firstjet_pt", &firstjet_pt_, "firstjet_pt/F");
+ TBranch* branch_firstjet_eta_      = newtree->Branch("firstjet_eta", &firstjet_eta_, "firstjet_eta/F");
+ TBranch* branch_firstjet_phi_      = newtree->Branch("firstjet_phi", &firstjet_phi_, "firstjet_phi/F");
+ TBranch* branch_firstjet_theta_    = newtree->Branch("firstjet_theta", &firstjet_theta_, "firstjet_theta/F");
+ TBranch* branch_firstjet_en_       = newtree->Branch("firstjet_en", &firstjet_en_, "firstjet_en/F");
+ TBranch* branch_firstjet_chEmEn_                     = newtree->Branch("firstjet_chEmEn", &firstjet_chEmEn_, "firstjet_chEmEn/F");
+ TBranch* branch_firstjet_NEmEnFraction_              = newtree->Branch("firstjet_NEmEnFraction", &firstjet_NEmEnFraction_, "firstjet_NEmEnFraction/F");
+ TBranch* branch_firstjet_chHadEn_                    = newtree->Branch("firstjet_chHadEn", &firstjet_chHadEn_, "firstjet_chHadEn/F");
+ TBranch* branch_firstjet_NHadEnFraction_             = newtree->Branch("firstjet_NHadEnFraction", &firstjet_NHadEnFraction_, "firstjet_NHadEnFraction/F");
+ TBranch* branch_firstjet_chMuEn_                     = newtree->Branch("firstjet_chMuEn", &firstjet_chMuEn_, "firstjet_chMuEn/F");
+ TBranch* branch_firstjet_chMuEnFraction_             = newtree->Branch("firstjet_chMuEnFraction", &firstjet_chMuEnFraction_, "firstjet_chMuEnFraction/F");
+ TBranch* branch_firstjet_numberOfDaughters_          = newtree->Branch("firstjet_numberOfDaughters", &firstjet_numberOfDaughters_, "firstjet_numberOfDaughters/F");
+ TBranch* branch_firstjet_muonEnergy_                 = newtree->Branch("firstjet_muonEnergy", &firstjet_muonEnergy_, "firstjet_muonEnergy/F");
+ TBranch* branch_firstjet_muonEnergyFraction_         = newtree->Branch("firstjet_muonEnergyFraction", &firstjet_muonEnergyFraction_, "firstjet_muonEnergyFraction/F");
+ TBranch* branch_firstjet_muonMultiplicity_           = newtree->Branch("firstjet_muonMultiplicity", &firstjet_muonMultiplicity_, "firstjet_muonMultiplicity/F");
+ TBranch* branch_firstjet_neutralEmEnergy_            = newtree->Branch("firstjet_neutralEmEnergy", &firstjet_neutralEmEnergy_, "firstjet_neutralEmEnergy/F");
+ TBranch* branch_firstjet_neutralHadronEnergy_        = newtree->Branch("firstjet_neutralHadronEnergy", &firstjet_neutralHadronEnergy_, "firstjet_neutralHadronEnergy/F");
+ TBranch* branch_firstjet_NHadMultiplicity_           = newtree->Branch("firstjet_NHadMultiplicity", &firstjet_NHadMultiplicity_, "firstjet_NHadMultiplicity/F");
+ TBranch* branch_firstjet_NMultiplicity_              = newtree->Branch("firstjet_NMultiplicity", &firstjet_NMultiplicity_, "firstjet_NMultiplicity/F");
+ TBranch* branch_firstjet_chargedMultiplicity_        = newtree->Branch("firstjet_chargedMultiplicity", &firstjet_chargedMultiplicity_, "firstjet_chargedMultiplicity/F");
+ TBranch* branch_firstjet_chargedEmEnergyFraction     = newtree->Branch("firstjet_chargedEmEnergyFraction", &firstjet_chargedEmEnergyFraction, "firstjet_chargedEmEnergyFraction/F");
+ TBranch* branch_firstjet_chargedHadronEnergyFraction = newtree->Branch("firstjet_chargedHadronEnergyFraction", &firstjet_chargedHadronEnergyFraction,"firstjet_chargedHadronEnergyFraction/F");
 
- TBranch* branch_jets_size =  newtree->Branch("jets_size", &jets_size, "jets_size/I");
- TBranch* branch_bjet1_size =  newtree->Branch("bjet1_size", &bjet1_size, "bjet1_size/I");
- TBranch* branch_bjet2_size =  newtree->Branch("bjet2_size", &bjet2_size, "bjet2_size/I");
- TBranch* branch_bjet3_size =  newtree->Branch("bjet3_size", &bjet3_size, "bjet3_size/I");
- TBranch* branch_bjet4_size =  newtree->Branch("bjet4_size", &bjet4_size, "bjet4_size/I");
- TBranch* branch_bjet5_size =  newtree->Branch("bjet5_size", &bjet5_size, "bjet5_size/I");
- TBranch* branch_bjet6_size =  newtree->Branch("bjet6_size", &bjet6_size, "bjet6_size/I");
- TBranch* branch_bjet7_size =  newtree->Branch("bjet7_size", &bjet7_size, "bjet7_size/I");
- TBranch* branch_bjet8_size =  newtree->Branch("bjet8_size", &bjet8_size, "bjet8_size/I");
- TBranch* branch_bjet9_size =  newtree->Branch("bjet9_size", &bjet9_size, "bjet9_size/I");
- TBranch* branch_bjet_L =  newtree->Branch("bjet_L", &bjet_L, "bjet_L/I");
- TBranch* branch_bjet_M =  newtree->Branch("bjet_M", &bjet_M, "bjet_M/I");
- TBranch* branch_bjet_T =  newtree->Branch("bjet_T", &bjet_T, "bjet_T/I");
+ TBranch* branch_firstjets_size  =  newtree->Branch("firstjets_size",  &firstjets_size,  "firstjets_size/I");
+ TBranch* branch_firstjet_bjet_L =  newtree->Branch("firstjet_bjet_L", &firstjet_bjet_L, "firstjet_bjet_L/I");
+ TBranch* branch_firstjet_bjet_M =  newtree->Branch("firstjet_bjet_M", &firstjet_bjet_M, "firstjet_bjet_M/I");
+ TBranch* branch_firstjet_bjet_T =  newtree->Branch("firstjet_bjet_T", &firstjet_bjet_T, "firstjet_bjet_T/I");
 
- TBranch* branch_FirstJet_CsvV2        =  newtree->Branch("FirstJet_CsvV2", &FirstJet_CsvV2, "FirstJet_CsvV2/F");
- TBranch* branch_FirstJet_DeepCsv_udsg =  newtree->Branch("FirstJet_DeepCsv_udsg", &FirstJet_DeepCsv_udsg, "FirstJet_DeepCsv_udsg/F");
- TBranch* branch_FirstJet_DeepCsv_b    =  newtree->Branch("FirstJet_DeepCsv_b", &FirstJet_DeepCsv_b, "FirstJet_DeepCsv_b/F");
- TBranch* branch_FirstJet_DeepCsv_c    =  newtree->Branch("FirstJet_DeepCsv_c", &FirstJet_DeepCsv_c,"FirstJet_DeepCsv_c/F");
- TBranch* branch_FirstJet_DeepCsv_bb   =  newtree->Branch("FirstJet_DeepCsv_bb", &FirstJet_DeepCsv_bb,"FirstJet_DeepCsv_bb/F");
- TBranch* branch_FirstJet_HadronFlavor =  newtree->Branch("FirstJet_HadronFlavor", &FirstJet_HadronFlavor,"FirstJet_HadronFlavor/F");
-
- //================================= Second Jet Variables ==============================================//
- Float_t SecondJet_charge_, SecondJet_et_,    SecondJet_pt_, SecondJet_eta_, SecondJet_NEmEnFraction_,
-         SecondJet_phi_,    SecondJet_theta_, SecondJet_en_, SecondJet_chEmEn_, SecondJet_NHadEnFraction_,
-         SecondJet_chMuEn_,         SecondJet_chMuEnFraction_, SecondJet_numberOfDaughters_, 
-         SecondJet_muonEnergyFraction_, SecondJet_muonMultiplicity_, 
-         SecondJet_neutralEmEnergy_,  SecondJet_neutralHadronEnergy_, SecondJet_NHadMultiplicity_, 
-         SecondJet_NMultiplicity_, SecondJet_chHadEn_, SecondJet_muonEnergy_, SecondJet_chargedMultiplicity_ ,
-         SecondJet_chargedEmEnergyFraction, SecondJet_chargedHadronEnergyFraction;
-
- Float_t SecondJet_CsvV2, SecondJet_DeepCsv_udsg, SecondJet_DeepCsv_b, SecondJet_DeepCsv_c, SecondJet_DeepCsv_bb, SecondJet_HadronFlavor;
-
- Float_t FSjet_DR, FjetFmu_DR, FjetSmu_DR, SjetFmu_DR, SjetSmu_DR, FSjet_M, FjetFmu_M, FjetSmu_M, SjetFmu_M, SjetSmu_M, FSjetFmu_M, FSjetSmu_M, FSjetFSmu_M;
+ TBranch* branch_firstjet_notSmeard_pt                = newtree->Branch("firstjet_notSmeard_pt" ,&firstjet_notSmeard_pt,"firstjet_notSmeard_pt/F");
+ TBranch* branch_firstjet_raw_pt                      = newtree->Branch("firstjet_raw_pt",&firstjet_notSmeard_pt,"firstjet_notSmeard_pt/F");
 
 
- TBranch* branch_SecondJet_charge_  = newtree->Branch("SecondJet_charge_", &SecondJet_charge_, "SecondJet_charge_/F");
- TBranch* branch_SecondJet_et_  = newtree->Branch("SecondJet_et_", &SecondJet_et_, "SecondJet_et_/F");
- TBranch* branch_SecondJet_pt_  = newtree->Branch("SecondJet_pt_", &SecondJet_pt_, "SecondJet_pt_/F");
- TBranch* branch_SecondJet_eta_  = newtree->Branch("SecondJet_eta_", &SecondJet_eta_, "SecondJet_eta_/F");
- TBranch* branch_SecondJet_phi_  = newtree->Branch("SecondJet_phi_", &SecondJet_phi_, "SecondJet_phi_/F");
- TBranch* branch_SecondJet_theta_  = newtree->Branch("SecondJet_theta_", &SecondJet_theta_, "SecondJet_theta_/F");
- TBranch* branch_SecondJet_en_  = newtree->Branch("SecondJet_en_", &SecondJet_en_, "SecondJet_en_/F");
- TBranch* branch_SecondJet_chargedEmEnergy_  = newtree->Branch("SecondJet_chEmEn_", &SecondJet_chEmEn_, "SecondJet_chEmEn_/F");
- TBranch* branch_SecondJet_NEmEnFraction_  = newtree->Branch("SecondJet_NEmEnFraction_", &SecondJet_NEmEnFraction_, "SecondJet_NEmEnFraction_/F");
- TBranch* branch_SecondJet_chHadEn_  = newtree->Branch("SecondJet_chHadEn_", &SecondJet_chHadEn_, "SecondJet_chHadEn_/F");
- TBranch* branch_SecondJet_NHadEnFraction_  = newtree->Branch("SecondJet_NHadEnFraction_", &SecondJet_NHadEnFraction_, "SecondJet_NHadEnFraction_/F");
- TBranch* branch_SecondJet_chMuEn_  = newtree->Branch("SecondJet_chMuEn_", &SecondJet_chMuEn_, "SecondJet_chMuEn_/F");
- TBranch* branch_SecondJet_chMuEnFraction_  = newtree->Branch("SecondJet_chMuEnFraction_", &SecondJet_chMuEnFraction_, "SecondJet_chMuEnFraction_/F");
- TBranch* branch_SecondJet_numberOfDaughters_  = newtree->Branch("SecondJet_numberOfDaughters_", &SecondJet_numberOfDaughters_, "SecondJet_numberOfDaughters_/F");
- TBranch* branch_SecondJet_muonEnergy_  = newtree->Branch("SecondJet_muonEnergy_", &SecondJet_muonEnergy_, "SecondJet_muonEnergy_/F");
- TBranch* branch_SecondJet_muonEnergyFraction_  = newtree->Branch("SecondJet_muonEnergyFraction_", &SecondJet_muonEnergyFraction_, "SecondJet_muonEnergyFraction_/F");
- TBranch* branch_SecondJet_muonMultiplicity_  = newtree->Branch("SecondJet_muonMultiplicity_", &SecondJet_muonMultiplicity_, "SecondJet_muonMultiplicity_/F");
- TBranch* branch_SecondJet_neutralEmEnergy_  = newtree->Branch("SecondJet_neutralEmEnergy_", &SecondJet_neutralEmEnergy_, "SecondJet_neutralEmEnergy_/F");
- TBranch* branch_SecondJet_neutralHadronEnergy_  = newtree->Branch("SecondJet_neutralHadronEnergy_", &SecondJet_neutralHadronEnergy_, "SecondJet_neutralHadronEnergy_/F");
- TBranch* branch_SecondJet_NHadMultiplicity_  = newtree->Branch("SecondJet_NHadMultiplicity_", &SecondJet_NHadMultiplicity_, "SecondJet_NHadMultiplicity_/F");
- TBranch* branch_SecondJet_NMultiplicity_  = newtree->Branch("SecondJet_NMultiplicity_", &SecondJet_NMultiplicity_, "SecondJet_NMultiplicity_/F");
-
- TBranch* branch_SecondJet_chargedMultiplicity_   = newtree->Branch("SecondJet_chargedMultiplicity_", &SecondJet_chargedMultiplicity_, "SecondJet_chargedMultiplicity_/F");
- TBranch* branch_SecondJet_chargedEmEnergyFraction =  newtree->Branch("SecondJet_chargedEmEnergyFraction", &SecondJet_chargedEmEnergyFraction, "SecondJet_chargedEmEnergyFraction/F");
- TBranch* branch_SecondJet_chargedHadronEnergyFraction = newtree->Branch("SecondJet_chargedHadronEnergyFraction", &SecondJet_chargedHadronEnergyFraction,"SecondJet_chargedHadronEnergyFraction/F");
-
- TBranch* branch_SecondJet_CsvV2        =  newtree->Branch("SecondJet_CsvV2", &SecondJet_CsvV2, "SecondJet_CsvV2/F");
- TBranch* branch_SecondJet_DeepCsv_udsg =  newtree->Branch("SecondJet_DeepCsv_udsg", &SecondJet_DeepCsv_udsg, "SecondJet_DeepCsv_udsg/F");
- TBranch* branch_SecondJet_DeepCsv_b    =  newtree->Branch("SecondJet_DeepCsv_b", &SecondJet_DeepCsv_b, "SecondJet_DeepCsv_b/F");
- TBranch* branch_SecondJet_DeepCsv_c    =  newtree->Branch("SecondJet_DeepCsv_c", &SecondJet_DeepCsv_c,"SecondJet_DeepCsv_c/F");
- TBranch* branch_SecondJet_DeepCsv_bb   =  newtree->Branch("SecondJet_DeepCsv_bb", &SecondJet_DeepCsv_bb,"SecondJet_DeepCsv_bb/F");
- TBranch* branch_SecondJet_HadronFlavor =  newtree->Branch("SecondJet_HadronFlavor", &SecondJet_HadronFlavor,"SecondJet_HadronFlavor/F");
+ TBranch* branch_firstjet_CsvV2        =  newtree->Branch("firstjet_CsvV2", &firstjet_CsvV2, "firstjet_CsvV2/F");
+ TBranch* branch_firstjet_DeepCsv_udsg =  newtree->Branch("firstjet_DeepCsv_udsg", &firstjet_DeepCsv_udsg, "firstjet_DeepCsv_udsg/F");
+ TBranch* branch_firstjet_DeepCsv_b    =  newtree->Branch("firstjet_DeepCsv_b", &firstjet_DeepCsv_b, "firstjet_DeepCsv_b/F");
+ TBranch* branch_firstjet_DeepCsv_c    =  newtree->Branch("firstjet_DeepCsv_c", &firstjet_DeepCsv_c,"firstjet_DeepCsv_c/F");
+ TBranch* branch_firstjet_DeepCsv_bb   =  newtree->Branch("firstjet_DeepCsv_bb", &firstjet_DeepCsv_bb,"firstjet_DeepCsv_bb/F");
+ TBranch* branch_firstjet_HadronFlavor =  newtree->Branch("firstjet_HadronFlavor", &firstjet_HadronFlavor,"firstjet_HadronFlavor/F");
 
 
- TBranch* branch_FSjet_DR =  newtree->Branch("FSjet_DR", &FSjet_DR ,"FSjet_DR/F");
- TBranch* branch_FjetFmu_DR =  newtree->Branch("FjetFmu_DR", &FjetFmu_DR ,"FjetFmu_DR/F");
- TBranch* branch_FjetSmu_DR =  newtree->Branch("FjetSmu_DR", &FjetSmu_DR ,"FjetSmu_DR/F");
- TBranch* branch_SjetFmu_DR =  newtree->Branch("SjetFmu_DR", &SjetFmu_DR ,"SjetFmu_DR/F");
- TBranch* branch_SjetSmu_DR =  newtree->Branch("SjetSmu_DR", &SjetSmu_DR ,"SjetSmu_DR/F");   
- TBranch* branch_FSjet_M=  newtree->Branch("FSjet_M", &FSjet_M,"FSjet_M/F");   
- TBranch* branch_FjetFmu_M=  newtree->Branch("FjetFmu_M", &FjetFmu_M,"FjetFmu_M/F");
- TBranch* branch_FjetSmu_M=  newtree->Branch("FjetSmu_M", &FjetSmu_M,"FjetSmu_M/F");
- TBranch* branch_SjetFmu_M=  newtree->Branch("SjetFmu_M", &SjetFmu_M,"SjetFmu_M/F");
- TBranch* branch_SjetSmu_M=  newtree->Branch("SjetSmu_M", &SjetSmu_M,"SjetSmu_M/F"); 
- TBranch* branch_FSjetFmu_M=  newtree->Branch("FSjetFmu_M", &FSjetFmu_M,"FSjetFmu_M/F");
- TBranch* branch_FSjetSmu_M=  newtree->Branch("FSjetSmu_M", &FSjetSmu_M,"FSjetSmu_M/F");   
- TBranch* branch_FSjetFSmu_M=  newtree->Branch("FSjetFSmu_M", &FSjetFSmu_M,"FSjetFSmu_M/F");
+ //================================= Thrid Jet Variables ==============================================//                                                                                                   
+ Float_t mujet_charge_,             mujet_et_,             mujet_pt_, mujet_eta_,    mujet_NEmEnFraction_,
+         mujet_phi_,                mujet_theta_,          mujet_en_, mujet_chEmEn_, mujet_NHadEnFraction_,
+         mujet_chMuEn_,             mujet_chMuEnFraction_, mujet_numberOfDaughters_,
+         mujet_muonEnergyFraction_, mujet_muonMultiplicity_,
+         mujet_neutralEmEnergy_,    mujet_neutralHadronEnergy_, mujet_NHadMultiplicity_,
+         mujet_NMultiplicity_,      mujet_chHadEn_,         mujet_muonEnergy_, mujet_chargedMultiplicity_ ,
+   mujet_chargedEmEnergyFraction, mujet_chargedHadronEnergyFraction, mujet_notSmeard_pt, mujet_raw_pt;
+
+ Float_t mujet_CsvV2, mujet_DeepCsv_udsg, mujet_DeepCsv_b, mujet_DeepCsv_c, mujet_DeepCsv_bb, mujet_HadronFlavor, mujet_RSecMu, mujet_M,hnl_mass;
+
+ TBranch* branch_mujet_charge_                     = newtree->Branch("mujet_charge", &mujet_charge_, "mujet_charge/F");
+ TBranch* branch_mujet_et_                         = newtree->Branch("mujet_et",     &mujet_et_, "mujet_et/F");
+ TBranch* branch_mujet_pt_                         = newtree->Branch("mujet_pt",     &mujet_pt_, "mujet_pt/F");
+ TBranch* branch_mujet_eta_                        = newtree->Branch("mujet_eta",    &mujet_eta_, "mujet_eta/F");
+ TBranch* branch_mujet_phi_                        = newtree->Branch("mujet_phi",    &mujet_phi_, "mujet_phi/F");
+ TBranch* branch_mujet_theta_                      = newtree->Branch("mujet_theta",  &mujet_theta_, "mujet_theta/F");
+ TBranch* branch_mujet_en_                         = newtree->Branch("mujet_en",     &mujet_en_, "mujet_en/F");
+ TBranch* branch_mujet_chEmEn_                     = newtree->Branch("mujet_chEmEn", &mujet_chEmEn_, "mujet_chEmEn/F");
+ TBranch* branch_mujet_NEmEnFraction_              = newtree->Branch("mujet_NEmEnFraction", &mujet_NEmEnFraction_, "mujet_NEmEnFraction/F");
+ TBranch* branch_mujet_chHadEn_                    = newtree->Branch("mujet_chHadEn",       &mujet_chHadEn_, "mujet_chHadEn/F");
+ TBranch* branch_mujet_NHadEnFraction_             = newtree->Branch("mujet_NHadEnFraction",&mujet_NHadEnFraction_, "mujet_NHadEnFraction/F");
+ TBranch* branch_mujet_chMuEn_                     = newtree->Branch("mujet_chMuEn",        &mujet_chMuEn_, "mujet_chMuEn/F");
+ TBranch* branch_mujet_chMuEnFraction_             = newtree->Branch("mujet_chMuEnFraction",&mujet_chMuEnFraction_, "mujet_chMuEnFraction/F");
+ TBranch* branch_mujet_numberOfDaughters_          = newtree->Branch("mujet_numberOfDaughters", &mujet_numberOfDaughters_, "mujet_numberOfDaughters/F");
+ TBranch* branch_mujet_muonEnergy_                 = newtree->Branch("mujet_muonEnergy",        &mujet_muonEnergy_, "mujet_muonEnergy/F");
+ TBranch* branch_mujet_muonEnergyFraction_         = newtree->Branch("mujet_muonEnergyFraction",&mujet_muonEnergyFraction_, "mujet_muonEnergyFraction/F");
+ TBranch* branch_mujet_muonMultiplicity_           = newtree->Branch("mujet_muonMultiplicity",  &mujet_muonMultiplicity_, "mujet_muonMultiplicity/F");
+ TBranch* branch_mujet_neutralEmEnergy_            = newtree->Branch("mujet_neutralEmEnergy",   &mujet_neutralEmEnergy_, "mujet_neutralEmEnergy/F");
+ TBranch* branch_mujet_neutralHadronEnergy_        = newtree->Branch("mujet_neutralHadronEnergy",&mujet_neutralHadronEnergy_, "mujet_neutralHadronEnergy/F");
+ TBranch* branch_mujet_NHadMultiplicity_           = newtree->Branch("mujet_NHadMultiplicity",   &mujet_NHadMultiplicity_, "mujet_NHadMultiplicity/F");
+ TBranch* branch_mujet_NMultiplicity_              = newtree->Branch("mujet_NMultiplicity",      &mujet_NMultiplicity_, "mujet_NMultiplicity/F");
+ TBranch* branch_mujet_chargedMultiplicity_        = newtree->Branch("mujet_chargedMultiplicity",         &mujet_chargedMultiplicity_, "mujet_chargedMultiplicity/F");
+ TBranch* branch_mujet_chargedEmEnergyFraction     = newtree->Branch("mujet_chargedEmEnergyFraction",     &mujet_chargedEmEnergyFraction, "mujet_chargedEmEnergyFraction/F");
+ TBranch* branch_mujet_chargedHadronEnergyFraction = newtree->Branch("mujet_chargedHadronEnergyFraction", &mujet_chargedHadronEnergyFraction,"mujet_chargedHadronEnergyFraction/F");
+
+ TBranch* branch_mujet_notSmeard_pt                = newtree->Branch("mujet_notSmeard_pt" ,&mujet_notSmeard_pt,"mujet_notSmeard_pt/F");
+ TBranch* branch_mujet_raw_pt                      = newtree->Branch("mujet_raw_pt",&mujet_notSmeard_pt,"mujet_notSmeard_pt/F");
+
+
+ TBranch* branch_mujet_CsvV2        =  newtree->Branch("mujet_CsvV2", &mujet_CsvV2, "mujet_CsvV2/F");
+ TBranch* branch_mujet_DeepCsv_udsg =  newtree->Branch("mujet_DeepCsv_udsg", &mujet_DeepCsv_udsg, "mujet_DeepCsv_udsg/F");
+ TBranch* branch_mujet_DeepCsv_b    =  newtree->Branch("mujet_DeepCsv_b", &mujet_DeepCsv_b, "mujet_DeepCsv_b/F");
+ TBranch* branch_mujet_DeepCsv_c    =  newtree->Branch("mujet_DeepCsv_c", &mujet_DeepCsv_c,"mujet_DeepCsv_c/F");
+ TBranch* branch_mujet_DeepCsv_bb   =  newtree->Branch("mujet_DeepCsv_bb", &mujet_DeepCsv_bb,"mujet_DeepCsv_bb/F");
+ TBranch* branch_mujet_HadronFlavor =  newtree->Branch("mujet_HadronFlavor", &mujet_HadronFlavor,"mujet_HadronFlavor/F");
+ TBranch* branch_mujet_RSecMu       =  newtree->Branch("mujet_RSecMu", &mujet_RSecMu,"mujet_RSecMu/F");
+
+ TBranch* branch_mujet_M  = newtree->Branch("mujet_M", &mujet_M,"mujet_M/F");
+ TBranch* branch_hnl_mass = newtree->Branch("hnl_mass", &hnl_mass, "hnl_mass/F");
+
+ //================================= Prompt Jet Variables ==============================================//  
+ Float_t prompt_mujet_charge_,             prompt_mujet_et_,             prompt_mujet_pt_, prompt_mujet_eta_,    prompt_mujet_NEmEnFraction_,
+   prompt_mujet_phi_,                prompt_mujet_theta_,          prompt_mujet_en_, prompt_mujet_chEmEn_, prompt_mujet_NHadEnFraction_,
+   prompt_mujet_chMuEn_,             prompt_mujet_chMuEnFraction_, prompt_mujet_numberOfDaughters_,
+   prompt_mujet_muonEnergyFraction_, prompt_mujet_muonMultiplicity_,
+   prompt_mujet_neutralEmEnergy_,    prompt_mujet_neutralHadronEnergy_, prompt_mujet_NHadMultiplicity_,
+   prompt_mujet_NMultiplicity_,      prompt_mujet_chHadEn_,         prompt_mujet_muonEnergy_, prompt_mujet_chargedMultiplicity_ ,
+   prompt_mujet_chargedEmEnergyFraction, prompt_mujet_chargedHadronEnergyFraction, prompt_mujet_notSmeard_pt, prompt_mujet_raw_pt;
+
+ Float_t prompt_mujet_CsvV2, prompt_mujet_DeepCsv_udsg, prompt_mujet_DeepCsv_b, prompt_mujet_DeepCsv_c, prompt_mujet_DeepCsv_bb, prompt_mujet_HadronFlavor, prompt_mujet_RSecMu, prompt_mujet_M;
+
+ TBranch* branch_prompt_mujet_charge_                     = newtree->Branch("prompt_mujet_charge", &prompt_mujet_charge_, "prompt_mujet_charge/F");
+ TBranch* branch_prompt_mujet_et_                         = newtree->Branch("prompt_mujet_et",     &prompt_mujet_et_, "prompt_mujet_et/F");
+ TBranch* branch_prompt_mujet_pt_                         = newtree->Branch("prompt_mujet_pt",     &prompt_mujet_pt_, "prompt_mujet_pt/F");
+ TBranch* branch_prompt_mujet_eta_                        = newtree->Branch("prompt_mujet_eta",    &prompt_mujet_eta_, "prompt_mujet_eta/F");
+ TBranch* branch_prompt_mujet_phi_                        = newtree->Branch("prompt_mujet_phi",    &prompt_mujet_phi_, "prompt_mujet_phi/F");
+ TBranch* branch_prompt_mujet_theta_                      = newtree->Branch("prompt_mujet_theta",  &prompt_mujet_theta_, "prompt_mujet_theta/F");
+ TBranch* branch_prompt_mujet_en_                         = newtree->Branch("prompt_mujet_en",     &prompt_mujet_en_, "prompt_mujet_en/F");
+ TBranch* branch_prompt_mujet_chEmEn_                     = newtree->Branch("prompt_mujet_chEmEn", &prompt_mujet_chEmEn_, "prompt_mujet_chEmEn/F");
+ TBranch* branch_prompt_mujet_NEmEnFraction_              = newtree->Branch("prompt_mujet_NEmEnFraction", &prompt_mujet_NEmEnFraction_, "prompt_mujet_NEmEnFraction/F");
+ TBranch* branch_prompt_mujet_chHadEn_                    = newtree->Branch("prompt_mujet_chHadEn",       &prompt_mujet_chHadEn_, "prompt_mujet_chHadEn/F");
+ TBranch* branch_prompt_mujet_NHadEnFraction_             = newtree->Branch("prompt_mujet_NHadEnFraction",&prompt_mujet_NHadEnFraction_, "prompt_mujet_NHadEnFraction/F");
+ TBranch* branch_prompt_mujet_chMuEn_                     = newtree->Branch("prompt_mujet_chMuEn",        &prompt_mujet_chMuEn_, "prompt_mujet_chMuEn/F");
+ TBranch* branch_prompt_mujet_chMuEnFraction_             = newtree->Branch("prompt_mujet_chMuEnFraction",&prompt_mujet_chMuEnFraction_, "prompt_mujet_chMuEnFraction/F");
+ TBranch* branch_prompt_mujet_numberOfDaughters_          = newtree->Branch("prompt_mujet_numberOfDaughters", &prompt_mujet_numberOfDaughters_, "prompt_mujet_numberOfDaughters/F");
+ TBranch* branch_prompt_mujet_muonEnergy_                 = newtree->Branch("prompt_mujet_muonEnergy",        &prompt_mujet_muonEnergy_, "prompt_mujet_muonEnergy/F");
+ TBranch* branch_prompt_mujet_muonEnergyFraction_         = newtree->Branch("prompt_mujet_muonEnergyFraction",&prompt_mujet_muonEnergyFraction_, "prompt_mujet_muonEnergyFraction/F");
+ TBranch* branch_prompt_mujet_muonMultiplicity_           = newtree->Branch("prompt_mujet_muonMultiplicity",  &prompt_mujet_muonMultiplicity_, "prompt_mujet_muonMultiplicity/F");
+ TBranch* branch_prompt_mujet_neutralEmEnergy_            = newtree->Branch("prompt_mujet_neutralEmEnergy",   &prompt_mujet_neutralEmEnergy_, "prompt_mujet_neutralEmEnergy/F");
+ TBranch* branch_prompt_mujet_neutralHadronEnergy_        = newtree->Branch("prompt_mujet_neutralHadronEnergy",&prompt_mujet_neutralHadronEnergy_, "prompt_mujet_neutralHadronEnergy/F");
+ TBranch* branch_prompt_mujet_NHadMultiplicity_           = newtree->Branch("prompt_mujet_NHadMultiplicity",   &prompt_mujet_NHadMultiplicity_, "prompt_mujet_NHadMultiplicity/F");
+ TBranch* branch_prompt_mujet_NMultiplicity_              = newtree->Branch("prompt_mujet_NMultiplicity",      &prompt_mujet_NMultiplicity_, "prompt_mujet_NMultiplicity/F");
+ TBranch* branch_prompt_mujet_chargedMultiplicity_        = newtree->Branch("prompt_mujet_chargedMultiplicity",         &prompt_mujet_chargedMultiplicity_, "prompt_mujet_chargedMultiplicity/F");
+ TBranch* branch_prompt_mujet_chargedEmEnergyFraction     = newtree->Branch("prompt_mujet_chargedEmEnergyFraction",     &prompt_mujet_chargedEmEnergyFraction, "prompt_mujet_chargedEmEnergyFraction/F");
+ TBranch* branch_prompt_mujet_chargedHadronEnergyFraction = newtree->Branch("prompt_mujet_chargedHadronEnergyFraction", &prompt_mujet_chargedHadronEnergyFraction,"prompt_mujet_chargedHadronEnergyFraction/F");
+
+ TBranch* branch_prompt_mujet_notSmeard_pt                = newtree->Branch("prompt_mujet_notSmeard_pt" ,&prompt_mujet_notSmeard_pt,"prompt_mujet_notSmeard_pt/F");
+
+ TBranch* branch_prompt_mujet_raw_pt                      = newtree->Branch("prompt_mujet_raw_pt",&prompt_mujet_notSmeard_pt,"prompt_mujet_notSmeard_pt/F");
+
+
+ TBranch* branch_prompt_mujet_CsvV2        =  newtree->Branch("prompt_mujet_CsvV2", &prompt_mujet_CsvV2, "prompt_mujet_CsvV2/F");
+ TBranch* branch_prompt_mujet_DeepCsv_udsg =  newtree->Branch("prompt_mujet_DeepCsv_udsg", &prompt_mujet_DeepCsv_udsg, "prompt_mujet_DeepCsv_udsg/F");
+ TBranch* branch_prompt_mujet_DeepCsv_b    =  newtree->Branch("prompt_mujet_DeepCsv_b", &prompt_mujet_DeepCsv_b, "prompt_mujet_DeepCsv_b/F");
+ TBranch* branch_prompt_mujet_DeepCsv_c    =  newtree->Branch("prompt_mujet_DeepCsv_c", &prompt_mujet_DeepCsv_c,"prompt_mujet_DeepCsv_c/F");
+ TBranch* branch_prompt_mujet_DeepCsv_bb   =  newtree->Branch("prompt_mujet_DeepCsv_bb", &prompt_mujet_DeepCsv_bb,"prompt_mujet_DeepCsv_bb/F");
+ TBranch* branch_prompt_mujet_HadronFlavor =  newtree->Branch("prompt_mujet_HadronFlavor", &prompt_mujet_HadronFlavor,"prompt_mujet_HadronFlavor/F");
+ TBranch* branch_prompt_mujet_RSecMu       =  newtree->Branch("prompt_mujet_RSecMu", &prompt_mujet_RSecMu,"prompt_mujet_RSecMu/F");
+
+ TBranch* branch_prompt_mujet_M=  newtree->Branch("prompt_mujet_M", &prompt_mujet_M,"prompt_mujet_M/F");
+
+
+
+ //================================= second jet Variables ==============================================//    
+
+ Float_t secondjet_charge_,          secondjet_et_,    secondjet_pt_, secondjet_eta_, secondjet_NEmEnFraction_,
+         secondjet_phi_,             secondjet_theta_, secondjet_en_, secondjet_chEmEn_, secondjet_NHadEnFraction_,
+         secondjet_chMuEn_,          secondjet_chMuEnFraction_,      secondjet_numberOfDaughters_,
+         secondjet_muonEnergyFraction_, secondjet_muonMultiplicity_,
+         secondjet_neutralEmEnergy_,    secondjet_neutralHadronEnergy_,           secondjet_NHadMultiplicity_,
+         secondjet_NMultiplicity_,      secondjet_chHadEn_,          secondjet_muonEnergy_, secondjet_chargedMultiplicity_ ,
+   secondjet_chargedEmEnergyFraction, secondjet_chargedHadronEnergyFraction, secondjet_notSmeard_pt, secondjet_raw_pt;
+
+ Float_t secondjet_CsvV2, secondjet_DeepCsv_udsg, secondjet_DeepCsv_b, secondjet_DeepCsv_c, secondjet_DeepCsv_bb, secondjet_HadronFlavor;
+ Int_t   secondjet_bjet_L,secondjet_bjet_M,secondjet_bjet_T,secondjets_size;
+
+ TBranch* branch_secondjet_charge_   = newtree->Branch("secondjet_charge", &secondjet_charge_, "secondjet_charge/F");
+ TBranch* branch_secondjet_et_       = newtree->Branch("secondjet_et", &secondjet_et_, "secondjet_et/F");
+ TBranch* branch_secondjet_pt_       = newtree->Branch("secondjet_pt", &secondjet_pt_, "secondjet_pt/F");
+ TBranch* branch_secondjet_eta_      = newtree->Branch("secondjet_eta", &secondjet_eta_, "secondjet_eta/F");
+ TBranch* branch_secondjet_phi_      = newtree->Branch("secondjet_phi", &secondjet_phi_, "secondjet_phi/F");
+ TBranch* branch_secondjet_theta_    = newtree->Branch("secondjet_theta", &secondjet_theta_, "secondjet_theta/F");
+ TBranch* branch_secondjet_en_       = newtree->Branch("secondjet_en", &secondjet_en_, "secondjet_en/F");
+ TBranch* branch_secondjet_chEmEn_                     = newtree->Branch("secondjet_chEmEn", &secondjet_chEmEn_, "secondjet_chEmEn/F");
+ TBranch* branch_secondjet_NEmEnFraction_              = newtree->Branch("secondjet_NEmEnFraction", &secondjet_NEmEnFraction_, "secondjet_NEmEnFraction/F");
+ TBranch* branch_secondjet_chHadEn_                    = newtree->Branch("secondjet_chHadEn", &secondjet_chHadEn_, "secondjet_chHadEn/F");
+ TBranch* branch_secondjet_NHadEnFraction_             = newtree->Branch("secondjet_NHadEnFraction", &secondjet_NHadEnFraction_, "secondjet_NHadEnFraction/F");
+ TBranch* branch_secondjet_chMuEn_                     = newtree->Branch("secondjet_chMuEn", &secondjet_chMuEn_, "secondjet_chMuEn/F");
+ TBranch* branch_secondjet_chMuEnFraction_             = newtree->Branch("secondjet_chMuEnFraction", &secondjet_chMuEnFraction_, "secondjet_chMuEnFraction/F");
+ TBranch* branch_secondjet_numberOfDaughters_          = newtree->Branch("secondjet_numberOfDaughters", &secondjet_numberOfDaughters_, "secondjet_numberOfDaughters/F");
+ TBranch* branch_secondjet_muonEnergy_                 = newtree->Branch("secondjet_muonEnergy", &secondjet_muonEnergy_, "secondjet_muonEnergy/F");
+ TBranch* branch_secondjet_muonEnergyFraction_         = newtree->Branch("secondjet_muonEnergyFraction", &secondjet_muonEnergyFraction_, "secondjet_muonEnergyFraction/F");
+ TBranch* branch_secondjet_muonMultiplicity_           = newtree->Branch("secondjet_muonMultiplicity", &secondjet_muonMultiplicity_, "secondjet_muonMultiplicity/F");
+ TBranch* branch_secondjet_neutralEmEnergy_            = newtree->Branch("secondjet_neutralEmEnergy", &secondjet_neutralEmEnergy_, "secondjet_neutralEmEnergy/F");
+ TBranch* branch_secondjet_neutralHadronEnergy_        = newtree->Branch("secondjet_neutralHadronEnergy", &secondjet_neutralHadronEnergy_, "secondjet_neutralHadronEnergy/F");
+ TBranch* branch_secondjet_NHadMultiplicity_           = newtree->Branch("secondjet_NHadMultiplicity", &secondjet_NHadMultiplicity_, "secondjet_NHadMultiplicity/F");
+ TBranch* branch_secondjet_NMultiplicity_              = newtree->Branch("secondjet_NMultiplicity", &secondjet_NMultiplicity_, "secondjet_NMultiplicity/F");
+ TBranch* branch_secondjet_chargedMultiplicity_        = newtree->Branch("secondjet_chargedMultiplicity", &secondjet_chargedMultiplicity_, "secondjet_chargedMultiplicity/F");
+ TBranch* branch_secondjet_chargedEmEnergyFraction     = newtree->Branch("secondjet_chargedEmEnergyFraction", &secondjet_chargedEmEnergyFraction, "secondjet_chargedEmEnergyFraction/F");
+ TBranch* branch_secondjet_chargedHadronEnergyFraction = newtree->Branch("secondjet_chargedHadronEnergyFraction", &secondjet_chargedHadronEnergyFraction,"secondjet_chargedHadronEnergyFraction/F");
+
+ TBranch* branch_secondjets_size  =  newtree->Branch("secondjets_size",  &secondjets_size, "secondjets_size/I");
+ TBranch* branch_secondjet_bjet_L =  newtree->Branch("secondjet_bjet_L", &secondjet_bjet_L, "secondjet_bjet_L/I");
+ TBranch* branch_secondjet_bjet_M =  newtree->Branch("secondjet_bjet_M", &secondjet_bjet_M, "secondjet_bjet_M/I");
+ TBranch* branch_secondjet_bjet_T =  newtree->Branch("secondjet_bjet_T", &secondjet_bjet_T, "secondjet_bjet_T/I");
+
+ TBranch* branch_secondjet_notSmeard_pt                = newtree->Branch("secondjet_notSmeard_pt" ,&secondjet_notSmeard_pt,"secondjet_notSmeard_pt/F");
+ TBranch* branch_secondjet_raw_pt                      = newtree->Branch("secondjet_raw_pt",&secondjet_notSmeard_pt,"secondjet_notSmeard_pt/F");
+
+ TBranch* branch_secondjet_CsvV2        =  newtree->Branch("secondjet_CsvV2", &secondjet_CsvV2, "secondjet_CsvV2/F");
+ TBranch* branch_secondjet_DeepCsv_udsg =  newtree->Branch("secondjet_DeepCsv_udsg", &secondjet_DeepCsv_udsg, "secondjet_DeepCsv_udsg/F");
+ TBranch* branch_secondjet_DeepCsv_b    =  newtree->Branch("secondjet_DeepCsv_b", &secondjet_DeepCsv_b, "secondjet_DeepCsv_b/F");
+ TBranch* branch_secondjet_DeepCsv_c    =  newtree->Branch("secondjet_DeepCsv_c", &secondjet_DeepCsv_c,"secondjet_DeepCsv_c/F");
+ TBranch* branch_secondjet_DeepCsv_bb   =  newtree->Branch("secondjet_DeepCsv_bb", &secondjet_DeepCsv_bb,"secondjet_DeepCsv_bb/F");
+ TBranch* branch_secondjet_HadronFlavor =  newtree->Branch("secondjet_HadronFlavor", &secondjet_HadronFlavor,"secondjet_HadronFlavor/F");
+
   
- //================================= Thrid Jet Variables ==============================================//
- Float_t ThirdJet_charge_, ThirdJet_et_,    ThirdJet_pt_, ThirdJet_eta_, ThirdJet_NEmEnFraction_,
-         ThirdJet_phi_,    ThirdJet_theta_, ThirdJet_en_, ThirdJet_chEmEn_, ThirdJet_NHadEnFraction_,
-         ThirdJet_chMuEn_,         ThirdJet_chMuEnFraction_, ThirdJet_numberOfDaughters_, 
-         ThirdJet_muonEnergyFraction_, ThirdJet_muonMultiplicity_, 
-         ThirdJet_neutralEmEnergy_,  ThirdJet_neutralHadronEnergy_, ThirdJet_NHadMultiplicity_, 
-         ThirdJet_NMultiplicity_, ThirdJet_chHadEn_, ThirdJet_muonEnergy_, ThirdJet_chargedMultiplicity_ ,
-         ThirdJet_chargedEmEnergyFraction, ThirdJet_chargedHadronEnergyFraction;
-
- Float_t ThirdJet_CsvV2, ThirdJet_DeepCsv_udsg, ThirdJet_DeepCsv_b, ThirdJet_DeepCsv_c, ThirdJet_DeepCsv_bb, ThirdJet_HadronFlavor;
-
-
- TBranch* branch_ThirdJet_charge_  = newtree->Branch("ThirdJet_charge_", &ThirdJet_charge_, "ThirdJet_charge_/F");
- TBranch* branch_ThirdJet_et_  = newtree->Branch("ThirdJet_et_", &ThirdJet_et_, "ThirdJet_et_/F");
- TBranch* branch_ThirdJet_pt_  = newtree->Branch("ThirdJet_pt_", &ThirdJet_pt_, "ThirdJet_pt_/F");
- TBranch* branch_ThirdJet_eta_  = newtree->Branch("ThirdJet_eta_", &ThirdJet_eta_, "ThirdJet_eta_/F");
- TBranch* branch_ThirdJet_phi_  = newtree->Branch("ThirdJet_phi_", &ThirdJet_phi_, "ThirdJet_phi_/F");
- TBranch* branch_ThirdJet_theta_  = newtree->Branch("ThirdJet_theta_", &ThirdJet_theta_, "ThirdJet_theta_/F");
- TBranch* branch_ThirdJet_en_  = newtree->Branch("ThirdJet_en_", &ThirdJet_en_, "ThirdJet_en_/F");
- TBranch* branch_ThirdJet_chargedEmEnergy_  = newtree->Branch("ThirdJet_chEmEn_", &ThirdJet_chEmEn_, "ThirdJet_chEmEn_/F");
- TBranch* branch_ThirdJet_NEmEnFraction_  = newtree->Branch("ThirdJet_NEmEnFraction_", &ThirdJet_NEmEnFraction_, "ThirdJet_NEmEnFraction_/F");
- TBranch* branch_ThirdJet_chHadEn_  = newtree->Branch("ThirdJet_chHadEn_", &ThirdJet_chHadEn_, "ThirdJet_chHadEn_/F");
- TBranch* branch_ThirdJet_NHadEnFraction_  = newtree->Branch("ThirdJet_NHadEnFraction_", &ThirdJet_NHadEnFraction_, "ThirdJet_NHadEnFraction_/F");
- TBranch* branch_ThirdJet_chMuEn_  = newtree->Branch("ThirdJet_chMuEn_", &ThirdJet_chMuEn_, "ThirdJet_chMuEn_/F");
- TBranch* branch_ThirdJet_chMuEnFraction_  = newtree->Branch("ThirdJet_chMuEnFraction_", &ThirdJet_chMuEnFraction_, "ThirdJet_chMuEnFraction_/F");
- TBranch* branch_ThirdJet_numberOfDaughters_  = newtree->Branch("ThirdJet_numberOfDaughters_", &ThirdJet_numberOfDaughters_, "ThirdJet_numberOfDaughters_/F");
- TBranch* branch_ThirdJet_muonEnergy_  = newtree->Branch("ThirdJet_muonEnergy_", &ThirdJet_muonEnergy_, "ThirdJet_muonEnergy_/F");
- TBranch* branch_ThirdJet_muonEnergyFraction_  = newtree->Branch("ThirdJet_muonEnergyFraction_", &ThirdJet_muonEnergyFraction_, "ThirdJet_muonEnergyFraction_/F");
- TBranch* branch_ThirdJet_muonMultiplicity_  = newtree->Branch("ThirdJet_muonMultiplicity_", &ThirdJet_muonMultiplicity_, "ThirdJet_muonMultiplicity_/F");
- TBranch* branch_ThirdJet_neutralEmEnergy_  = newtree->Branch("ThirdJet_neutralEmEnergy_", &ThirdJet_neutralEmEnergy_, "ThirdJet_neutralEmEnergy_/F");
- TBranch* branch_ThirdJet_neutralHadronEnergy_  = newtree->Branch("ThirdJet_neutralHadronEnergy_", &ThirdJet_neutralHadronEnergy_, "ThirdJet_neutralHadronEnergy_/F");
- TBranch* branch_ThirdJet_NHadMultiplicity_  = newtree->Branch("ThirdJet_NHadMultiplicity_", &ThirdJet_NHadMultiplicity_, "ThirdJet_NHadMultiplicity_/F");
- TBranch* branch_ThirdJet_NMultiplicity_  = newtree->Branch("ThirdJet_NMultiplicity_", &ThirdJet_NMultiplicity_, "ThirdJet_NMultiplicity_/F");
- TBranch* branch_ThirdJet_chargedMultiplicity_   = newtree->Branch("ThirdJet_chargedMultiplicity_", &ThirdJet_chargedMultiplicity_, "ThirdJet_chargedMultiplicity_/F");
- TBranch* branch_ThirdJet_chargedEmEnergyFraction =  newtree->Branch("ThirdJet_chargedEmEnergyFraction", &ThirdJet_chargedEmEnergyFraction, "ThirdJet_chargedEmEnergyFraction/F");
- TBranch* branch_ThirdJet_chargedHadronEnergyFraction = newtree->Branch("ThirdJet_chargedHadronEnergyFraction", &ThirdJet_chargedHadronEnergyFraction,"ThirdJet_chargedHadronEnergyFraction/F");
- 
- TBranch* branch_ThirdJet_CsvV2        =  newtree->Branch("ThirdJet_CsvV2", &ThirdJet_CsvV2, "ThirdJet_CsvV2/F");
- TBranch* branch_ThirdJet_DeepCsv_udsg =  newtree->Branch("ThirdJet_DeepCsv_udsg", &ThirdJet_DeepCsv_udsg, "ThirdJet_DeepCsv_udsg/F");
- TBranch* branch_ThirdJet_DeepCsv_b    =  newtree->Branch("ThirdJet_DeepCsv_b", &ThirdJet_DeepCsv_b, "ThirdJet_DeepCsv_b/F");
- TBranch* branch_ThirdJet_DeepCsv_c    =  newtree->Branch("ThirdJet_DeepCsv_c", &ThirdJet_DeepCsv_c,"ThirdJet_DeepCsv_c/F");
- TBranch* branch_ThirdJet_DeepCsv_bb   =  newtree->Branch("ThirdJet_DeepCsv_bb", &ThirdJet_DeepCsv_bb,"ThirdJet_DeepCsv_bb/F");
- TBranch* branch_ThirdJet_HadronFlavor =  newtree->Branch("ThirdJet_HadronFlavor", &ThirdJet_HadronFlavor,"ThirdJet_HadronFlavor/F");
- 
 //============================ Missing Energy Variables =========================================//
- Float_t pfMet_et_, pfMet_pt_, pfMet_phi_, pfMet_en_, pfMet_sumEt_, caloMet_phi_,caloMet_pt_;
+ Float_t pfMet_et_, pfMet_pt_, pfMet_phi_, pfMet_en_, pfMet_sumEt_, caloMet_phi_,caloMet_pt_, Mass_METL,tmass_METL;
 
- TBranch* branch_pfMet_et_    = newtree->Branch("pfMet_et_", &pfMet_et_, "pfMet_et_/F");
- TBranch* branch_pfMet_pt_    = newtree->Branch("pfMet_pt_", &pfMet_pt_, "pfMet_pt_/F");
- TBranch* branch_pfMet_phi_   = newtree->Branch("pfMet_phi_", &pfMet_phi_, "pfMet_phi_/F");
- TBranch* branch_pfMet_en_    = newtree->Branch("pfMet_en_", &pfMet_en_, "pfMet_en_/F");
- TBranch* branch_pfMet_sumEt_ = newtree->Branch("pfMet_sumEt_", &pfMet_sumEt_, "pfMet_sumEt_/F");
- TBranch* branch_caloMet_pt_  = newtree->Branch("caloMet_pt_", &caloMet_pt_, "caloMet_pt_/F");
- TBranch* branch_caloMet_phi_ = newtree->Branch("caloMet_phi_", &caloMet_phi_, "caloMet_phi_/F");
+ TBranch* branch_pfMet_et_    = newtree->Branch("pfMet_et", &pfMet_et_, "pfMet_et/F");
+ TBranch* branch_pfMet_pt_    = newtree->Branch("pfMet_pt", &pfMet_pt_, "pfMet_pt/F");
+ TBranch* branch_pfMet_phi_   = newtree->Branch("pfMet_phi", &pfMet_phi_, "pfMet_phi/F");
+ TBranch* branch_pfMet_en_    = newtree->Branch("pfMet_en", &pfMet_en_, "pfMet_en/F");
+ TBranch* branch_pfMet_sumEt_ = newtree->Branch("pfMet_sumEt", &pfMet_sumEt_, "pfMet_sumEt/F");
+ TBranch* branch_caloMet_pt_  = newtree->Branch("caloMet_pt", &caloMet_pt_, "caloMet_pt/F");
+ TBranch* branch_caloMet_phi_ = newtree->Branch("caloMet_phi", &caloMet_phi_, "caloMet_phi/F");
+ TBranch* branch_Mass_METL    = newtree->Branch("Mass_METL", &Mass_METL, "Mass_METL/F"); 
 
- /*  
-//=============================== first b-tagging Variables ===========================================//
- Float_t FirstJet_btag_pt_, FirstJet_btag_eta_,  FirstJet_btag_phi_, FirstJet_btag_discriminator_;
- Int_t   FirstJet_btag_flavor_, bJet_size;
+ TBranch* branch_tmass_METL    = newtree->Branch("tmass_METL", &tmass_METL, "tmass_METL/F");
 
- TBranch* branch_FirstJet_btag_pt_  = newtree->Branch("FirstJet_btag_pt_", &FirstJet_btag_pt_, "FirstJet_btag_pt_/F");
- TBranch* branch_FirstJet_btag_eta_  = newtree->Branch("FirstJet_btag_eta_", &FirstJet_btag_eta_, "FirstJet_btag_eta_/F");
- TBranch* branch_FirstJet_btag_phi_  = newtree->Branch("FirstJet_btag_phi_", &FirstJet_btag_phi_, "FirstJet_btag_phi_/F");
- TBranch* branch_FirstJet_btag_flavor_  = newtree->Branch("FirstJet_btag_flavor_", &FirstJet_btag_flavor_, "FirstJet_btag_flavor_/F");
- TBranch* branch_FirstJet_btag_discriminator_  = newtree->Branch("FirstJet_btag_discriminator_", &FirstJet_btag_discriminator_, "FirstJet_btag_discriminator_/F");
-
- TBranch* branch_bJet_size  = newtree->Branch("bJet_size", &bJet_size, "bJet_size/F");
-
- //=============================== second b-tagging Variables ===========================================// 
- Float_t SecondJet_btag_pt_, SecondJet_btag_eta_,  SecondJet_btag_phi_, SecondJet_btag_discriminator_;
- Int_t   SecondJet_btag_flavor_;
-
- TBranch* branch_SecondJet_btag_pt_  = newtree->Branch("SecondJet_btag_pt_", &SecondJet_btag_pt_, "SecondJet_btag_pt_/F");
- TBranch* branch_SecondJet_btag_eta_  = newtree->Branch("SecondJet_btag_eta_", &SecondJet_btag_eta_, "SecondJet_btag_eta_/F");
- TBranch* branch_SecondJet_btag_phi_  = newtree->Branch("SecondJet_btag_phi_", &SecondJet_btag_phi_, "SecondJet_btag_phi_/F");
- TBranch* branch_SecondJet_btag_flavor_  = newtree->Branch("SecondJet_btag_flavor_", &SecondJet_btag_flavor_, "SecondJet_btag_flavor_/F");
- TBranch* branch_SecondJet_btag_discriminator_  = newtree->Branch("SecondJet_btag_discriminator_", &SecondJet_btag_discriminator_, "SecondJet_btag_discriminator_/F");
-
- //=============================== third b-tagging Variables ===========================================//
- Float_t ThirdJet_btag_pt_, ThirdJet_btag_eta_,  ThirdJet_btag_phi_, ThirdJet_btag_discriminator_;
- Int_t   ThirdJet_btag_flavor_;
-
- TBranch* branch_ThirdJet_btag_pt_  = newtree->Branch("ThirdJet_btag_pt_", &ThirdJet_btag_pt_, "ThirdJet_btag_pt_/F");
- TBranch* branch_ThirdJet_btag_eta_  = newtree->Branch("ThirdJet_btag_eta_", &ThirdJet_btag_eta_, "ThirdJet_btag_eta_/F");
- TBranch* branch_ThirdJet_btag_phi_  = newtree->Branch("ThirdJet_btag_phi_", &ThirdJet_btag_phi_, "ThirdJet_btag_phi_/F");
- TBranch* branch_ThirdJet_btag_flavor_  = newtree->Branch("ThirdJet_btag_flavor_", &ThirdJet_btag_flavor_, "ThirdJet_btag_flavor_/F");
- TBranch* branch_ThirdJet_btag_discriminator_  = newtree->Branch("ThirdJet_btag_discriminator_", &ThirdJet_btag_discriminator_, "ThirdJet_btag_discriminator_/F");
-*/
 //======================= Start the running over input branches ==========================================//
- for (int i=0;i<oldtree->GetEntriesFast(); i++) {
+ for (int i=0;i<oldtree->GetEntries(); i++) {
+
+ //for (int i=0;i<100000; i++) {
     if (i%10000==0) cout<<i<<endl;
     oldtree->GetEntry(i);
 
@@ -1105,29 +1060,23 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
       npt_ = i;
     }
 
-    if (passIsoMu24All==0 && passIsoMu27All == 0) continue;  // cut on the trigger!
-
-    unsigned pu = -1;
-    for(unsigned i=0; i<PU_Weight->size(); ++i){
-      pu = i;
-    }
-
-    unsigned pu_Up = -1;
-    for(unsigned i=0; i<PU_WeightUp->size(); ++i){
-      pu_Up = i;
-    }
-    unsigned pu_Down = -1;
-    for(unsigned i=0; i<PU_WeightDown->size(); ++i){
-      pu_Down = i;
-    }
+    //if (passIsoMu24All==0) continue;  // cut on the trigger!
+    if (passIsoMu24 == 0 && passIsoMuTk24 == 0) continue;
+    
+    //cout<<"========================== This the new event ==========================="<<endl;
 
     Float_t   minPt_prompt = -1000;
     unsigned  FirstMuon = -1;
-    for(unsigned i=0; i<mu_isTightMuon->size(); i++){
+    int count_prompt = 0;
+    for(unsigned i=0; i<mu_isLooseMuon->size(); i++){
+      if(mu_isLooseMuon->size() == 1) continue;
+      if(mu_isLooseMuon->at(i)  == 0 ) continue;
       if (mu_isTightMuon->at(i)==0.  || deltaBeta->at(i)>isoCut
-	  || mu_ptTunePMuonBestTrack->at(i) < 25 || 
-	  abs(mu_etaTunePMuonBestTrack->at(i)) > 2.4 ||
-	  mu_absdxyTunePMuonBestTrack->at(i) > 0.02 ) continue;  
+	  || mu_ptTunePMuonBestTrack->at(i) < 25 
+	  || abs(mu_etaTunePMuonBestTrack->at(i)) > 2.4 
+	  || mu_absdxyTunePMuonBestTrack->at(i) > 0.005 
+	  || mu_absdzTunePMuonBestTrack->at(i) > 0.1) continue;  
+      count_prompt++;
       if (mu_ptTunePMuonBestTrack->at(i) > minPt_prompt){
 	minPt_prompt=mu_ptTunePMuonBestTrack->at(i);
 	FirstMuon=i;	  
@@ -1139,10 +1088,13 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
     unsigned  SecondMuon = -1;
     int count = 0;
     int nb_loose = 0;
-    for(unsigned i=0; i<mu_isLoose->size(); i++){
+    sort(mu_ptTunePMuonBestTrack->begin(), mu_ptTunePMuonBestTrack->end() , greater<int>()); 
+
+    for(unsigned i=0; i<mu_ptTunePMuonBestTrack->size(); i++){
+      //if(i != 1) continue;
       if(i == FirstMuon || FirstMuon == -1) continue;
-      if(mu_isLoose->size() == 1) continue;
-      if(mu_isLoose->at(i)  == 0 ) continue;
+      if(mu_isLooseMuon->size() == 1) continue;
+      if(mu_isLooseMuon->at(i)  == 0 ) continue;
       nb_loose++;
       if(mu_ptTunePMuonBestTrack->at(i) < 5  
 	 || abs(mu_etaTunePMuonBestTrack->at(i)) > 2.4 
@@ -1163,168 +1115,250 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
     unsigned  SecondVertex = -1;
     Float_t   minPt_sv = -1000;
     if(SecondMuon != -1){
-      for(unsigned i=0; i<sv_mu_pt->size(); i++){
-	if( sv_mu_pt->at(i) < mu_ptTunePMuonBestTrack->at(SecondMuon)) continue;
-	if(sv_mu_pt->at(i) > minPt_sv){
-	  minPt_sv = sv_mu_pt->at(i);
+      for(unsigned i=0; i<sv_pt->size(); i++){
+	if(sv_hasMuon->at(i) == 0) continue;
+	if( sv_pt->at(i) < mu_ptTunePMuonBestTrack->at(SecondMuon)) continue;
+	if(sv_pt->at(i) > minPt_sv){
+	  minPt_sv = sv_pt->at(i);
 	  SecondVertex=i;
 	}
       }
     }
 
-    // this the correct but didn't implented yet 
+/*    
+    unsigned  SecondVertex = -1;
+    Float_t   min_diff = 1000;
+    Float_t minRvtx = 999;
+    if(SecondMuon != -1){
+      float mu_pT  = mu_ptTunePMuonBestTrack->at(SecondMuon);
+      float mu_eta = mu_etaTunePMuonBestTrack->at(SecondMuon);
+      float mu_phi = mu_phiTunePMuonBestTrack->at(SecondMuon);
+      sort(sv_pt->begin(), sv_pt->end() , greater<int>());
+      for(unsigned i=0; i<sv_pt->size(); i++){
+	if(sv_hasMuon->at(i) == 0) continue;
+	if( sv_pt->at(i) < mu_pT) continue;
+	for(unsigned j=0; j<sv_tracks_pt->at(i).size(); j++){
+	  float trk_pT = sv_tracks_pt->at(i).at(j) ;
+	  float trk_eta = sv_tracks_eta->at(i).at(j) ;
+          float trk_phi = sv_tracks_phi->at(i).at(j) ; 
+	  double DeltapT = abs(mu_pT-trk_pT);
+          //float R = sqrt(((mu_eta-trk_eta)*(mu_eta-trk_eta))+((mu_phi-trk_phi)*(mu_phi-trk_phi)));
+	  if(DeltapT < min_diff && DeltapT < 0.1 ){
+	  //if( R < minRvtx && R < 0.1) {
+	       min_diff = DeltapT;
+	      //minRvtx = R;
+	    SecondVertex=i;
+	  }
+	}
+      }      
+    }
+
+*/
+    //first track
     unsigned  sv_FirstTrack = -1;
     Float_t  firstTrack_minPt = -1000;
     Float_t sumdxySig = 0;
     if(SecondVertex != -1 ){
-      for(unsigned j=0; j<sv_mu_tracks_pt->at(SecondVertex).size(); j++){ 
-	sumdxySig = +abs(sv_mu_tracks_dxySig->at(SecondVertex).at(j));
-	if(sv_mu_tracks_pt->at(SecondVertex).at(j) > firstTrack_minPt){
-	  firstTrack_minPt =sv_mu_tracks_pt->at(SecondVertex).at(j);
-	  sv_FirstTrack = j;
-	}
+      for(unsigned j=0; j<sv_tracks_pt->at(SecondVertex).size(); j++){
+        sumdxySig = +abs(sv_tracks_dxySig->at(SecondVertex).at(j));
+        if(sv_tracks_pt->at(SecondVertex).at(j) > firstTrack_minPt){
+          firstTrack_minPt =sv_tracks_pt->at(SecondVertex).at(j);
+          sv_FirstTrack = j;
+        }
       }
     }
-
-
-    // this the correct but didn't implented yet
+    //second track
     unsigned  sv_SecondTrack = -1;
     Float_t  secondTrack_minPt = -1000;
     if(SecondVertex != -1 ){
-      for(unsigned j=0; j<sv_mu_tracks_pt->at(SecondVertex).size(); j++){
-	if(j == sv_FirstTrack) continue;
-	if(sv_mu_tracks_pt->at(SecondVertex).at(j) > secondTrack_minPt){
-          secondTrack_minPt =sv_mu_tracks_pt->at(SecondVertex).at(j);
+      for(unsigned j=0; j<sv_tracks_pt->at(SecondVertex).size(); j++){
+        if(j == sv_FirstTrack) continue;
+        if(sv_tracks_pt->at(SecondVertex).at(j) > secondTrack_minPt){
+          secondTrack_minPt =sv_tracks_pt->at(SecondVertex).at(j);
           sv_SecondTrack = j;
         }
       }
     }
-
-    // first jet info
-    unsigned  FirstJet = -1;    
+    //leading jet                                                                                                                                                                                          
+    unsigned  alljet = -1;
     Float_t pt_1stjet = -1000;
-    int jet_count = 0;
+    int alljet_count = 0;
     int bjet1= 0;
     int bjet2= 0;
     int bjet3= 0;
-    int bjet4= 0;
-    int bjet5= 0;
-    int bjet6= 0;
-    int bjet7= 0;
-    int bjet8= 0;
-    int bjet9= 0;
-    int bjet10= 0;
-    int bjet11= 0;
-    int bjet12= 0;
-
+    Float_t sum_HT = 0; 
     for(unsigned i=0; i<jet_pt->size(); i++){
-      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.99 
-	   && jet_neutralEmEnergyFraction->at(i) <= 0.99 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
-	  ||
-	  ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0 
-	    && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 ) 
-	  ||
+      if(jet_pt->at(i) > 20 && fabs(jet_eta->at(i)) <= 3.0) sum_HT += jetSmearedPt->at(i); 
+      if(SecondMuon == -1) continue;
+      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.90
+	   && jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
+          ||
+	  ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
+	    && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
+          ||
 	  ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
-	    && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2) 
-	  ||	  
+	    && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
+          ||
 	  (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {
-	jet_count++;
+	alljet_count++;
 	if(jet_pt->at(i) > pt_1stjet) {
 	  pt_1stjet = jet_pt->at(i);
-	  FirstJet = i;
+	  alljet = i;
 	}
-
-        if(jet_DeepCsv_b->at(i) > 0.1 ){ bjet1++; }
-        if(jet_DeepCsv_b->at(i) > 0.2 ){ bjet2++; }
-        if(jet_DeepCsv_b->at(i) > 0.3 ){ bjet3++; }
-        if(jet_DeepCsv_b->at(i) > 0.4 ){ bjet4++; }
-        if(jet_DeepCsv_b->at(i) > 0.5 ){ bjet5++; }
-	if(jet_DeepCsv_b->at(i) > 0.6 ){ bjet6++; }
-        if(jet_DeepCsv_b->at(i) > 0.7 ){ bjet7++; }
-        if(jet_DeepCsv_b->at(i) > 0.8 ){ bjet8++; }
-        if(jet_DeepCsv_b->at(i) > 0.9 ){ bjet9++; }
-        if(jet_DeepCsv_b->at(i) > 0.2219 ){ bjet10++;}
-        if(jet_DeepCsv_b->at(i) > 0.6324 ){ bjet11++;}
-        if(jet_DeepCsv_b->at(i) > 0.8958 ){ bjet12++;}
-
+	if(jet_DeepCsv_b->at(i) > 0.2219 ){ bjet1++;}
+	if(jet_DeepCsv_b->at(i) > 0.6324 ){ bjet2++;}
+	if(jet_DeepCsv_b->at(i) > 0.8958 ){ bjet3++;}
       }
     }
-   
-    //second jet info
-    unsigned  SecondJet = -1;
-    Float_t pt_2ndjet = -1000;
+      
+    unsigned  mujet = -1;
+    Float_t minR = 1000;
     for(unsigned i=0; i<jet_pt->size(); i++){
-      if(i == FirstJet) continue;
-      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.99
-           && jet_neutralEmEnergyFraction->at(i) <= 0.99 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
+      if(SecondMuon == -1) continue;
+      float mu_eta2 = mu_etaTunePMuonBestTrack->at(SecondMuon);
+      float mu_phi2 = mu_phiTunePMuonBestTrack->at(SecondMuon);
+      float mu_eta = mu_etaTunePMuonBestTrack->at(FirstMuon);
+      float mu_phi = mu_phiTunePMuonBestTrack->at(FirstMuon);
+      float R1 = sqrt(((mu_eta-jet_eta->at(i))*(mu_eta-jet_eta->at(i)))+((mu_phi-jet_phi->at(i))*(mu_phi-jet_phi->at(i))));
+      float R2 = sqrt(((mu_eta2-jet_eta->at(i))*(mu_eta2-jet_eta->at(i)))+((mu_phi2-jet_phi->at(i))*(mu_phi2-jet_phi->at(i))));
+      if(R1 < 0.4 || R2 > 0.7 || jet_pt->at(i) < 20) continue;
+      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.90
+           && jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
           ||
           ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
             && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
           ||
           ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
             && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
-	  ||
+          ||
           (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {
-	if(jet_pt->at(i) > pt_2ndjet) {
-	  pt_2ndjet = jet_pt->at(i);
-	  SecondJet = i;
-	}
+        if(R2 < minR) {
+          minR = R2;
+          mujet = i;
+        }
       }
     }
-    //third jet info
-    unsigned  ThirdJet = -1;
-    Float_t pt_3rdjet = -1000;
+    
+    unsigned  prompt_mujet = -1;
+    Float_t prompt_minR = 1000;
     for(unsigned i=0; i<jet_pt->size(); i++){
-      if(i == FirstJet || i == SecondJet) continue;
-      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.99
-           && jet_neutralEmEnergyFraction->at(i) <= 0.99 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
+      if(FirstMuon == -1) continue;
+      float mu_eta = mu_etaTunePMuonBestTrack->at(FirstMuon);
+      float mu_phi = mu_phiTunePMuonBestTrack->at(FirstMuon);
+      float R = sqrt(((mu_eta-jet_eta->at(i))*(mu_eta-jet_eta->at(i)))+((mu_phi-jet_phi->at(i))*(mu_phi-jet_phi->at(i))));
+      if(R > 0.4 || jet_pt->at(i) < 20) continue;
+      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.90
+           && jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
           ||
           ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
             && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
           ||
           ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
             && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
-	  ||
-          (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {	
-	if(jet_pt->at(i) > pt_3rdjet) {
-	  pt_3rdjet = jet_pt->at(i);
-	  ThirdJet = i;
-	}
+          ||
+          (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {
+        if(R < prompt_minR) {
+          prompt_minR = R;
+          prompt_mujet = i;
+        }
       }
     }
-    if(FirstMuon != -1 && SecondMuon != -1 && SecondVertex != -1){
 
-   trig_IsoMu24All = passIsoMu24All;
-   trig_IsoMu27All = passIsoMu27All;
-   trig_Mu17       = passMu17;
-   trig_Mu17_Mu8_SameSign = passMu17_Mu8_SameSign;
-   trig_Mu20       = passMu20;
-   trig_Mu17_Mu8   = passMu17_Mu8; 
-   trig_Mu27_TkMu8 = passMu27_TkMu8;
 
-    //pile up weight
-   pu_weight     = (isMC) ? PU_Weight->at(pu) : 0 ;
-   pu_weightUp   = (isMC) ? PU_WeightUp->at(pu_Up) : 0 ;
-   pu_weightDown = (isMC) ? PU_WeightDown->at(pu_Down) : 0 ;
+    //sub-leading jet
+    unsigned  firstjet = -1;
+    Float_t pt_firstjet = -1000;
+    int firstjet_count = 0;
+    int bjet11= 0;
+    int bjet22= 0;
+    int bjet33= 0;
+    for(unsigned i=0; i<jet_pt->size(); i++){
+      if(SecondMuon == -1) continue;
+      float mu_eta = mu_etaTunePMuonBestTrack->at(FirstMuon);
+      float mu_phi = mu_phiTunePMuonBestTrack->at(FirstMuon);
+      float R = sqrt(((mu_eta-jet_eta->at(i))*(mu_eta-jet_eta->at(i)))+((mu_phi-jet_phi->at(i))*(mu_phi-jet_phi->at(i))));
+      if(R < 0.4 || jet_pt->at(i) < 20) continue;
+      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.90
+           && jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
+          ||
+          ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
+            && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
+          ||
+          ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
+            && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
+          ||
+          (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {
+	firstjet_count++;
+        if(jet_pt->at(i) > pt_firstjet) {
+          pt_firstjet = jet_pt->at(i);
+          firstjet = i;
+        }
+	if(jet_DeepCsv_b->at(i) > 0.2219 ){ bjet11++;}
+        if(jet_DeepCsv_b->at(i) > 0.6324 ){ bjet22++;}
+        if(jet_DeepCsv_b->at(i) > 0.8958 ){ bjet33++;}
+      }
+    }
+    
+    unsigned  secondjet = -1;
+    Float_t pt_secondjet = -1000;
+    int secondjet_count = 0;
+    int bjet111= 0;
+    int bjet222= 0;
+    int bjet333= 0;
+    for(unsigned i=0; i<jet_pt->size(); i++){
+      if(SecondMuon == -1) continue;
+      float mu1_eta = mu_etaTunePMuonBestTrack->at(FirstMuon);
+      float mu1_phi = mu_phiTunePMuonBestTrack->at(FirstMuon);
+      float mu2_eta = mu_etaTunePMuonBestTrack->at(SecondMuon);
+      float mu2_phi = mu_phiTunePMuonBestTrack->at(SecondMuon);
+      float R1 = sqrt(((mu1_eta-jet_eta->at(i))*(mu1_eta-jet_eta->at(i)))+((mu1_phi-jet_phi->at(i))*(mu1_phi-jet_phi->at(i))));
+      float R2 = sqrt(((mu2_eta-jet_eta->at(i))*(mu2_eta-jet_eta->at(i)))+((mu2_phi-jet_phi->at(i))*(mu2_phi-jet_phi->at(i))));
+      if(R1 < 0.4 || R2 < 0.7 || jet_pt->at(i) < 20) continue;
+      if(i == mujet) continue;
+      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.90
+           && jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
+          ||
+          ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
+            && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
+          ||
+          ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
+            && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
+          ||
+          (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {
+	secondjet_count++;
+        if(jet_pt->at(i) > pt_secondjet) {
+          pt_secondjet = jet_pt->at(i);
+          secondjet = i;
+        }
+        if(jet_DeepCsv_b->at(i) > 0.2219 ){ bjet111++;}
+        if(jet_DeepCsv_b->at(i) > 0.6324 ){ bjet222++;}
+        if(jet_DeepCsv_b->at(i) > 0.8958 ){ bjet333++;}
+      }
+    }
 
-   TrueNumInteractions = (isMC) ? npT->at(npt_) : 0;
-
-   //pv info
-   pvX_        =  pvX ;
-   pvY_        =  pvY ;
-   pvZ_        =  pvZ ;
-   pvXErr_     =  pvXErr ;
-   pvYErr_     =  pvYErr ;
-   pvZErr_     =  pvZErr ;
-   pvLxy_      =  pvLxy  ;
-   pvLxyz_     =  pvLxyz ;
-   pvLxySig_   =  pvLxySig  ;
-   pvLxyzSig_  =  pvLxyzSig ;
-   pvChi2_     =  pvChi2 ;
-   pvSumPtSq_  =  pvSumPtSq ;
-   numberPV_   =  numberPV;
-   pvNTrack_   =  pvNTrack ;
    
+    if(FirstMuon != -1 && SecondMuon != -1 && SecondVertex != -1 && mujet != -1){
+    //if(FirstMuon != -1 && SecondMuon != -1 && SecondVertex != -1 ){
+      //pile up weight
+      TrueNumInteractions = (isMC) ? npT->at(npt_) : 0;
+
+      //pv info     
+      pvX_        =  pvX ;
+      pvY_        =  pvY ;
+      pvZ_        =  pvZ ;
+      pvXErr_     =  pvXErr ;
+      pvYErr_     =  pvYErr ;
+      pvZErr_     =  pvZErr ;
+      pvLxy_      =  pvLxy  ;
+      pvLxyz_     =  pvLxyz ;
+      pvLxySig_   =  pvLxySigma  ;
+      pvLxyzSig_  =  pvLxyzSigma ;
+      pvChi2_     =  pvChi2 ;
+      pvSumPtSq_  =  pvSumPtSq ;
+      //numberPV_   =  numberPV;
+      //pvNTrack_   =  pvNTrack ;
+
+  
     //prompt muon 
    mu_promptPt             = mu_ptTunePMuonBestTrack->at(FirstMuon);
    mu_promptEta            = mu_etaTunePMuonBestTrack->at(FirstMuon);
@@ -1346,8 +1380,8 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
    mu_promptAbsdxyError    = mu_absdxyErrorTunePMuonBestTrack->at(FirstMuon);
    mu_promptAbsdxySig      = mu_absdxySigTunePMuonBestTrack->at(FirstMuon); 
    mu_promptAbsdz          = mu_absdzTunePMuonBestTrack->at(FirstMuon);  
-   mu_promptAbsdz          = mu_absdzErrorTunePMuonBestTrack->at(FirstMuon);
-   mu_promptAbsdzSig       = mu_absdzSigTunePMuonBestTrack->at(FirstMuon);  
+   mu_promptAbsdzError     = mu_absdzErrorTunePMuonBestTrack->at(FirstMuon);
+   mu_promptAbsdzSig       = (mu_promptAbsdz/mu_promptAbsdzError) ;//mu_absdzSigTunePMuonBestTrack->at(FirstMuon);  
    mu_promptRecoDeltaBeta  = deltaBeta->at(FirstMuon);  
    mu_promptRecoiso        = mu_recoiso->at(FirstMuon);  
 
@@ -1379,6 +1413,23 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
    mu_promptRPCTofTimeAtIpInOutErr = mu_RPCTofTimeAtIpInOutErr->at(FirstMuon);
    mu_promptRPCTofTimeAtIpOutIn    = mu_RPCTofTimeAtIpOutIn->at(FirstMuon);
    mu_promptRPCTofTimeAtIpOutInErr = mu_RPCTofTimeAtIpOutInErr->at(FirstMuon);
+   mu_promptsize                   =  count_prompt;
+
+
+   double A_eff_prompt;
+
+   if     (abs(mu_promptEta)<=.8)                      { A_eff_prompt=0.0735; }
+   else if(abs(mu_promptEta)>0.8 && abs(mu_promptEta)<=1.3) { A_eff_prompt=0.0619; }
+   else if(abs(mu_promptEta)>1.3 && abs(mu_promptEta)<=2.0) { A_eff_prompt=0.0465; }
+   else if(abs(mu_promptEta)>2.0 && abs(mu_promptEta)<=2.2) { A_eff_prompt=0.0433; }
+   else if(abs(mu_promptEta)>2.2 && abs(mu_promptEta)<=2.4) { A_eff_prompt=0.0577; }
+   float charged_prompt =  mu_pfSumChargedHadronPt->at(FirstMuon);
+   float neutral_prompt =  mu_pfSumNeutralHadronEt->at(FirstMuon);
+   float sumPhotonEt_prompt = mu_PFSumPhotonEt->at(FirstMuon);
+   float pileup_prompt =  mu_pfSumPUPt->at(FirstMuon);
+
+   RelIso_prompt = (charged_prompt + std::max(0.0, neutral_prompt+sumPhotonEt_prompt-  mu_promptRhoIso*A_eff_prompt))/mu_promptPt;
+
 
     //non_prompt muon
     mu_secondIsTight        = mu_isTightMuon->at(SecondMuon);
@@ -1423,20 +1474,26 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
     mu_secondPixelLayers      = mu_numberOfpixelLayersWithMeasurement->at(SecondMuon);
     mu_secondTrackerLayers    = mu_numberOftrackerLayersWithMeasurement->at(SecondMuon);
 
-    mu_secondInnerTrackFraction   = mu_InnerTrackValidFraction->at(FirstMuon);
+    mu_secondInnerTrackFraction   = mu_InnerTrackValidFraction->at(SecondMuon);
     mu_secondSegmentCompatibility = mu_segmentCompatibilityMuonBestTrack->at(SecondMuon);
     mu_secondTrkKink              = mu_trkKinkMuonBestTrack->at(SecondMuon);
     mu_secondChi2LocalPosition    = mu_chi2LocalPositionMuonBestTrack->at(SecondMuon);
     mu_secondGlobalMuon           = mu_isGlobalMuon->at(SecondMuon);
 
-    mu_secondRPCTofDirection        = mu_RPCTofDirection->at(FirstMuon);
-    mu_secondRPCTofNDof             = mu_RPCTofNDof->at(FirstMuon);
-    mu_secondRPCTofTimeAtIpInOut    = mu_RPCTofTimeAtIpInOut->at(FirstMuon);
-    mu_secondRPCTofTimeAtIpInOutErr = mu_RPCTofTimeAtIpInOutErr->at(FirstMuon);
-    mu_secondRPCTofTimeAtIpOutIn    = mu_RPCTofTimeAtIpOutIn->at(FirstMuon);
-    mu_secondRPCTofTimeAtIpOutInErr = mu_RPCTofTimeAtIpOutInErr->at(FirstMuon);
+    mu_secondRPCTofDirection        = mu_RPCTofDirection->at(SecondMuon);
+    mu_secondRPCTofNDof             = mu_RPCTofNDof->at(SecondMuon);
+    mu_secondRPCTofTimeAtIpInOut    = mu_RPCTofTimeAtIpInOut->at(SecondMuon);
+    mu_secondRPCTofTimeAtIpInOutErr = mu_RPCTofTimeAtIpInOutErr->at(SecondMuon);
+    mu_secondRPCTofTimeAtIpOutIn    = mu_RPCTofTimeAtIpOutIn->at(SecondMuon);
+    mu_secondRPCTofTimeAtIpOutInErr = mu_RPCTofTimeAtIpOutInErr->at(SecondMuon);
 
+    double A_eff_second;
 
+    if     (abs(mu_secondEta)<=.8)                      { A_eff_second=0.0735; }
+    else if(abs(mu_secondEta)>0.8 && abs(mu_secondEta)<=1.3) { A_eff_second=0.0619; }
+    else if(abs(mu_secondEta)>1.3 && abs(mu_secondEta)<=2.0) { A_eff_second=0.0465; }
+    else if(abs(mu_secondEta)>2.0 && abs(mu_secondEta)<=2.2) { A_eff_second=0.0433; }
+    else if(abs(mu_secondEta)>2.2 && abs(mu_secondEta)<=2.4) { A_eff_second=0.0577; }
 
     float R = sqrt(((mu_secondEta-mu_promptEta)*(mu_secondEta-mu_promptEta))+((mu_secondPhi-mu_promptPhi)*(mu_secondPhi-mu_promptPhi)));
     float charged =  mu_pfSumChargedHadronPt->at(SecondMuon);
@@ -1445,412 +1502,405 @@ TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtx
     float pileup =  mu_pfSumPUPt->at(SecondMuon); 
 
     double deltaBetaR3 = (charged + std::max(0.0, neutral+sumPhotonEt-0.5*pileup))/mu_secondPt;
+    RelIso_second = (charged + std::max(0.0, neutral+sumPhotonEt- mu_secondRhoIso*A_eff_second))/mu_secondPt;
+
 
     TLorentzVector Mu1;
     TLorentzVector Mu2; 
-    TLorentzVector vtx;
     TLorentzVector Jet1;
     TLorentzVector Jet2;
-    Mu1.SetPtEtaPhiE(mu_promptPt,mu_promptEta,mu_promptPhi,mu_promptE);
-    Mu2.SetPtEtaPhiE(mu_secondPt,mu_secondEta,mu_secondPhi,mu_secondE);
-    float DiMuMass = (Mu1 + Mu2).M();
+    //Mu1.SetPtEtaPhiE(mu_promptPt,mu_promptEta,mu_promptPhi,mu_promptE);
+    //Mu2.SetPtEtaPhiE(mu_secondPt,mu_secondEta,mu_secondPhi,mu_secondE);
 
     float px1 = mu_pxTunePMuonBestTrack->at(FirstMuon);
     float px2 = mu_pxTunePMuonBestTrack->at(SecondMuon);
     float py1 = mu_pyTunePMuonBestTrack->at(FirstMuon);
     float py2 = mu_pyTunePMuonBestTrack->at(SecondMuon);
+    float pz1 = mu_pzTunePMuonBestTrack->at(FirstMuon);
+    float pz2 = mu_pzTunePMuonBestTrack->at(SecondMuon);
     float mT  = sqrt(pow(mu_promptPt + mu_secondPt, 2) - pow(px1 + px2, 2) - pow(py1 + py2, 2));
+
+    Mu1.SetPxPyPzE(px1,py1,pz1,mu_promptE);
+    Mu2.SetPxPyPzE(px2,py2,pz2,mu_secondE);
+
+    float DiMuMass = (Mu1 + Mu2).M();
+    float DeltaR = Mu1.DeltaR(Mu2);
+    float DeltaPhi = abs(Mu1.DeltaPhi(Mu2));
 
     mu_DeltaBetaR3 = deltaBetaR3;
     mu_DiMuMass    = DiMuMass;
     mu_Size        = count;
+    mu_DeltaPhi    = DeltaPhi ;
+    mu_DeltaR_vec  = DeltaR ;
     mu_DeltaR      = R ;
+
     mu_mT          = mT ;
     mu_nbLoose     = nb_loose;
 
-    unsigned  mu_promptJet = -1;
-    Float_t pt_j1 = -1000;
-    for(unsigned i=0; i<jet_pt->size(); i++){
-      float etaj1 = jet_eta->at(i);
-      float phij1 = jet_phi->at(i);
-      float R = sqrt(((mu_promptEta-etaj1)*(mu_promptEta-etaj1))+((mu_promptPhi-phij1)*(mu_promptPhi-phij1)));
-      if( (fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.99
-           && jet_neutralEmEnergyFraction->at(i) <= 0.99 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
-          ||
-          ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
-            && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
-          ||
-          ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
-            && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
-          ||
-          (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10)) {
-	if(R < 0.5 && jet_pt->at(i) > pt_j1){
-	  pt_j1 = jet_pt->at(i);
-	  mu_promptJet = i;
-	}
+   //secondary vertex info   
+
+      sv_TrackSize_  =  (SecondVertex != -1) ? sv_munTracks->at(SecondVertex) : -999;
+      sv_LXYSig_     =  (SecondVertex != -1) ? sv_LxySig->at(SecondVertex)    : -999;
+      sv_LXYZSig_    =  (SecondVertex != -1) ? sv_LxyzSig->at(SecondVertex)   : -999;
+      sv_LXY_        =  (SecondVertex != -1) ? sv_Lxy->at(SecondVertex)       : -999;
+      sv_LXYZ_       =  (SecondVertex != -1) ? sv_Lxyz->at(SecondVertex)      : -999;
+      sv_mass_       =  (SecondVertex != -1) ? sv_mass->at(SecondVertex)      : -999;
+      sv_eta_        =  (SecondVertex != -1) ? sv_eta->at(SecondVertex)       : -999;
+      sv_phi_        =  (SecondVertex != -1) ? sv_phi->at(SecondVertex)       : -999;
+      sv_pt_         =  (SecondVertex != -1) ? sv_pt->at(SecondVertex)        : -999;
+      sv_p_          =  (SecondVertex != -1) ? sv_p->at(SecondVertex)         : -999;
+      sv_px_         =  (SecondVertex != -1) ? sv_px->at(SecondVertex)        : -999;
+      sv_py_         =  (SecondVertex != -1) ? sv_py->at(SecondVertex)        : -999;
+      sv_pz_         =  (SecondVertex != -1) ? sv_pz->at(SecondVertex)        : -999;
+      sv_energy_     =  (SecondVertex != -1) ? sv_energy->at(SecondVertex)    : -999;
+      sv_Beta_       =  (SecondVertex != -1) ? sv_Beta->at(SecondVertex)      : -999;
+      sv_Gamma_      =  (SecondVertex != -1) ? sv_Gamma->at(SecondVertex)     : -999;
+      sv_CTau0_      =  (SecondVertex != -1) ? sv_CTau0->at(SecondVertex)     : -999;
+      sv_NDof_       =  (SecondVertex != -1) ? sv_NDof->at(SecondVertex)      : -999;
+      sv_Chi2_       =  (SecondVertex != -1) ? sv_Chi2->at(SecondVertex)      : -999;
+      sv_Angle3D_    =  (SecondVertex != -1) ?   sv_Angle3D->at(SecondVertex) : -999;
+      sv_Angle2D_    =  (SecondVertex != -1) ? sv_Angle2D->at(SecondVertex)   : -999;
+      sv_tracks_Sumcharge_ = (SecondVertex != -1) ? sv_tracks_Sumcharge->at(SecondVertex): -999;
+      sv_tracks_Sumpt_     = (SecondVertex != -1) ? sv_tracks_Sumpt->at(SecondVertex)    : -999;
+      sv_match_            = (SecondVertex != -1) ? sv_match_dxyz->at(SecondVertex)      : -999;
+      sv_track_sumdxySig_  = (SecondVertex != -1) ? sumdxySig                            : -999;
+      sv_hasMuon_          = (SecondVertex != -1) ? sv_hasMuon->at(SecondVertex)         : -999;
+
+      TLorentzVector vtx;
+
+      //vtx.SetPtEtaPhiE(sv_pt_,sv_eta_,sv_phi_,sv_energy_);
+      vtx.SetPxPyPzE(sv_px_, sv_py_, sv_pz_,sv_energy_);
+      //float vtxmumass =  (SecondVertex != -1) ? (ele1 + vtx).M() : -999 ;
+
+      float vtxmumass =  (Mu1 + vtx).M();
+
+      //ele_Size         = count;
+      vtxmu_mass       = vtxmumass;
+
+      sv_Xpos_     = (SecondVertex != -1) ? sv_X->at(SecondVertex)  : -999;
+      sv_Ypos_     = (SecondVertex != -1) ? sv_Y->at(SecondVertex)  : -999;
+      sv_Zpos_     = (SecondVertex != -1) ? sv_Z->at(SecondVertex)  : -999;
+      sv_xError_   = (SecondVertex != -1) ? sv_xErr->at(SecondVertex)  : -999;
+      sv_yError_   = (SecondVertex != -1) ? sv_yErr->at(SecondVertex)  : -999;
+      sv_zError_   = (SecondVertex != -1) ? sv_zErr->at(SecondVertex)  : -999;
+      sv_lx_ = (SecondVertex != -1) ? sv_lx->at(SecondVertex)  : -999;
+      sv_ly_ = (SecondVertex != -1) ? sv_ly->at(SecondVertex)  : -999;
+      sv_lx_ = (SecondVertex != -1) ? sv_lz->at(SecondVertex)  : -999;
+
+      //first track in sv info
+      firstTrack_eta    =  (SecondVertex != -1) ? sv_tracks_eta->at(SecondVertex).at(sv_FirstTrack)    : -999;
+      firstTrack_phi    =  (SecondVertex != -1) ? sv_tracks_phi->at(SecondVertex).at(sv_FirstTrack)    : -999;
+      firstTrack_pt     =  (SecondVertex != -1) ? sv_tracks_pt->at(SecondVertex).at(sv_FirstTrack)     : -999;
+      firstTrack_dxySig =  (SecondVertex != -1) ? sv_tracks_dxySig->at(SecondVertex).at(sv_FirstTrack) : -999;
+      firstTrack_dxy    =  (SecondVertex != -1) ? sv_tracks_dxy->at(SecondVertex).at(sv_FirstTrack)    : -999;
+      firstTrack_dxyz   =  (SecondVertex != -1) ? sv_tracks_dxyz->at(SecondVertex).at(sv_FirstTrack)   : -999;
+      firstTrack_charge =  (SecondVertex != -1) ? sv_tracks_charge->at(SecondVertex).at(sv_FirstTrack) : -999;
+      firstTrack_en     =  (SecondVertex != -1) ? sv_tracks_p->at(SecondVertex).at(sv_FirstTrack)      : -999;
+
+      //second track in sv info
+      secondTrack_eta    =  (SecondVertex != -1) ? sv_tracks_eta->at(SecondVertex).at(sv_SecondTrack)   : -999;
+      secondTrack_phi    =  (SecondVertex != -1) ? sv_tracks_phi->at(SecondVertex).at(sv_SecondTrack)   : -999;
+      secondTrack_pt     =  (SecondVertex != -1) ? sv_tracks_pt->at(SecondVertex).at(sv_SecondTrack)    : -999;
+      secondTrack_dxySig =  (SecondVertex != -1) ? sv_tracks_dxySig->at(SecondVertex).at(sv_SecondTrack): -999;
+      secondTrack_dxy    =  (SecondVertex != -1) ? sv_tracks_dxy->at(SecondVertex).at(sv_SecondTrack)   : -999;
+      secondTrack_dxyz   =  (SecondVertex != -1) ? sv_tracks_dxyz->at(SecondVertex).at(sv_SecondTrack)  : -999;
+      secondTrack_charge =  (SecondVertex != -1) ? sv_tracks_charge->at(SecondVertex).at(sv_SecondTrack): -999;
+      secondTrack_en     =  (SecondVertex != -1) ? sv_tracks_p->at(SecondVertex).at(sv_SecondTrack)     : -999;
+
+
+      sv_tracks_charge_n.clear();
+      sv_tracks_eta_n.clear();
+      sv_tracks_phi_n.clear();
+      sv_tracks_pt_n.clear();
+      sv_tracks_p_n.clear();
+      sv_tracks_dxySig_n.clear();
+      sv_tracks_dxy_n.clear();
+      sv_tracks_dxyz_n.clear();
+      sv_mass_n.clear(); 
+      sv_eta_n.clear();
+      sv_phi_n.clear(); 
+      sv_pt_n.clear(); 
+      sv_p_n.clear(); 
+      sv_px_n.clear(); 
+      sv_py_n.clear(); 
+      sv_pz_n.clear(); 
+      sv_energy_n.clear(); 
+      sv_Beta_n.clear(); 
+      sv_Gamma_n.clear(); 
+      sv_CTau0_n.clear(); 
+      sv_NDof_n.clear(); 
+      sv_Chi2_n.clear(); 
+      sv_Angle3D_n.clear(); 
+      sv_Angle2D_n.clear();
+
+      for(unsigned j=0; j<sv_tracks_pt->at(SecondVertex).size(); j++){
+	sv_mass_n   .push_back( sv_mass->at(SecondVertex)     );
+	sv_eta_n    .push_back( sv_eta->at(SecondVertex)      );
+	sv_phi_n    .push_back( sv_phi->at(SecondVertex)      );
+	sv_pt_n     .push_back( sv_pt->at(SecondVertex)       );
+	sv_p_n      .push_back( sv_p->at(SecondVertex)        );
+	sv_px_n     .push_back( sv_px->at(SecondVertex)       );
+	sv_py_n     .push_back( sv_py->at(SecondVertex)       );
+	sv_pz_n     .push_back( sv_pz->at(SecondVertex)       );
+	sv_energy_n .push_back( sv_energy->at(SecondVertex)   );
+	sv_Beta_n   .push_back( sv_Beta->at(SecondVertex)     );
+	sv_Gamma_n  .push_back( sv_Gamma->at(SecondVertex)    );
+	sv_CTau0_n  .push_back( sv_CTau0->at(SecondVertex)    );
+	sv_NDof_n   .push_back( sv_NDof->at(SecondVertex)     );
+	sv_Chi2_n   .push_back( sv_Chi2->at(SecondVertex)     );
+	sv_Angle3D_n.push_back( sv_Angle3D->at(SecondVertex)  );
+	sv_Angle2D_n.push_back( sv_Angle2D->at(SecondVertex)  );
+	sv_tracks_charge_n.push_back(sv_tracks_charge->at(SecondVertex).at(j));
+	sv_tracks_eta_n.push_back(sv_tracks_eta->at(SecondVertex).at(j));
+	sv_tracks_phi_n.push_back(sv_tracks_phi->at(SecondVertex).at(j));
+	sv_tracks_pt_n.push_back(sv_tracks_pt->at(SecondVertex).at(j));
+	sv_tracks_p_n.push_back(sv_tracks_p->at(SecondVertex).at(j));
+	sv_tracks_dxySig_n.push_back(sv_tracks_dxySig->at(SecondVertex).at(j));
+	sv_tracks_dxy_n.push_back( sv_tracks_dxy->at(SecondVertex).at(j));	
+        sv_tracks_dxyz_n.push_back( sv_tracks_dxyz->at(SecondVertex).at(j));
+
       }
-    }
-
-    promptJet_charge_ = (mu_promptJet != -1) ? jet_charge->at(mu_promptJet) : -999;
-    promptJet_et_     = (mu_promptJet != -1) ? jet_et->at(mu_promptJet)     : -999;
-    promptJet_pt_     = (mu_promptJet != -1) ? jet_pt->at(mu_promptJet)     : -999;
-    promptJet_eta_    = (mu_promptJet != -1) ? jet_eta->at(mu_promptJet)    : -999; 
-    promptJet_phi_    = (mu_promptJet != -1) ? jet_phi->at(mu_promptJet)    : -999;
-    promptJet_theta_  = (mu_promptJet != -1) ? jet_theta->at(mu_promptJet)  : -999;
-    promptJet_en_     = (mu_promptJet != -1) ? jet_en->at(mu_promptJet)     : -999;
-    promptJet_chEmEn_ = (mu_promptJet != -1) ? jet_chargedEmEnergy->at(mu_promptJet)                      : -999; 
-    promptJet_NEmEnFraction_  = (mu_promptJet != -1) ? jet_neutralEmEnergyFraction->at(mu_promptJet)      : -999;
-    promptJet_chHadEn_        = (mu_promptJet != -1) ? jet_chargedHadronEnergy->at(mu_promptJet)          : -999;
-    promptJet_NHadEnFraction_ = (mu_promptJet != -1) ? jet_neutralHadronEnergyFraction->at(mu_promptJet)  : -999;
-    promptJet_chMuEn_         = (mu_promptJet != -1) ? jet_chargedMuEnergy->at(mu_promptJet)              : -999;
-    promptJet_chMuEnFraction_      = (mu_promptJet != -1) ? jet_chargedMuEnergyFraction->at(mu_promptJet) : -999;
-    promptJet_numberOfDaughters_   = (mu_promptJet != -1) ? jet_numberOfDaughters->at(mu_promptJet)       : -999;
-    promptJet_muonEnergy_          = (mu_promptJet != -1) ? jet_muonEnergy->at(mu_promptJet)              : -999;
-    promptJet_muonEnergyFraction_  = (mu_promptJet != -1) ? jet_muonEnergyFraction->at(mu_promptJet)      : -999;
-    promptJet_muonMultiplicity_    = (mu_promptJet != -1) ? jet_muonMultiplicity->at(mu_promptJet)        : -999;
-    promptJet_neutralEmEnergy_     = (mu_promptJet != -1) ? jet_neutralEmEnergy->at(mu_promptJet)         : -999;
-    promptJet_neutralHadronEnergy_ = (mu_promptJet != -1) ? jet_neutralHadronEnergy->at(mu_promptJet)     : -999; 
-    promptJet_NHadMultiplicity_    = (mu_promptJet != -1) ? jet_neutralHadronMultiplicity->at(mu_promptJet)  : -999;
-    promptJet_NMultiplicity_       = (mu_promptJet != -1) ? jet_neutralMultiplicity->at(mu_promptJet)        : -999;
-    promptJet_chargedMultiplicity_        = (mu_promptJet != -1) ? jet_chargedMultiplicity->at(mu_promptJet) : -999;
-    promptJet_chargedEmEnergyFraction     = (mu_promptJet != -1) ? jet_chargedEmEnergyFraction->at(mu_promptJet)     : -999;
-    promptJet_chargedHadronEnergyFraction = (mu_promptJet != -1) ? jet_chargedHadronEnergyFraction->at(mu_promptJet) : -999;
-
-    promptJet_CsvV2          = (mu_promptJet != -1) ? jet_CsvV2->at(mu_promptJet)        : -999;
-    promptJet_DeepCsv_udsg   = (mu_promptJet != -1) ? jet_DeepCsv_udsg->at(mu_promptJet) : -999;
-    promptJet_DeepCsv_b      = (mu_promptJet != -1) ? jet_DeepCsv_b->at(mu_promptJet)    : -999;
-    promptJet_DeepCsv_c      = (mu_promptJet != -1) ? jet_DeepCsv_c->at(mu_promptJet)    : -999;
-    promptJet_DeepCsv_bb     = (mu_promptJet != -1) ? jet_DeepCsv_bb->at(mu_promptJet)   : -999;
-    promptJet_HadronFlavor   = (mu_promptJet != -1) ? jet_HadronFlavor->at(mu_promptJet) : -999;
-
-    unsigned  mu_secondJet = -1;
-    Float_t pt_j2 = -1000;
-    for(unsigned i=0; i<jet_pt->size(); i++){
-      float etaj2 = jet_eta->at(i);
-      float phij2 = jet_phi->at(i);
-      float R = sqrt(((mu_secondEta-etaj2)*(mu_secondEta-etaj2))+((mu_secondPhi-phij2)*(mu_secondPhi-phij2)));
-
-      if( ((fabs(jet_eta->at(i)) <= 2.7 && jet_neutralHadronEnergyFraction->at(i) <=  0.99
-	    && jet_neutralEmEnergyFraction->at(i) <= 0.99 && jet_chargedMultiplicity->at(i)+jet_neutralMultiplicity->at(i) >= 1 )
-	   ||
-	   ( fabs(jet_eta->at(i)) <= 2.4 && jet_chargedHadronEnergyFraction->at(i) >= 0
-	     && jet_chargedMultiplicity->at(i) >= 0 && jet_chargedEmEnergyFraction->at(i) <= 0.99 )
-	   ||
-	   ( fabs(jet_eta->at(i)) <= 3.0 && jet_neutralHadronEnergyFraction->at(i) <= 0.98
-	     && jet_neutralEmEnergyFraction->at(i) >= 0.01 && jet_neutralMultiplicity->at(i) >= 2)
-	   ||
-	   (jet_neutralEmEnergyFraction->at(i) <= 0.90 && jet_neutralMultiplicity->at(i) >= 10) ) && i != mu_promptJet) {
-	if(R < 0.8 && jet_pt->at(i) > pt_j2){
-	  pt_j2 = jet_pt->at(i);
-	  mu_secondJet = i;
-	}
-      }
-    }
-
-    non_promptJet_charge_ = (mu_secondJet != -1) ? jet_charge->at(mu_secondJet) : -999;
-    non_promptJet_et_     = (mu_secondJet != -1) ? jet_et->at(mu_secondJet)     : -999;
-    non_promptJet_pt_     = (mu_secondJet != -1) ? jet_pt->at(mu_secondJet)     : -999;
-    non_promptJet_eta_    = (mu_secondJet != -1) ? jet_eta->at(mu_secondJet)    : -999; 
-    non_promptJet_phi_    = (mu_secondJet != -1) ? jet_phi->at(mu_secondJet)    : -999;
-    non_promptJet_theta_  = (mu_secondJet != -1) ? jet_theta->at(mu_secondJet)  : -999;
-    non_promptJet_en_     = (mu_secondJet != -1) ? jet_en->at(mu_secondJet)     : -999;
-    non_promptJet_chEmEn_ = (mu_secondJet != -1) ? jet_chargedEmEnergy->at(mu_secondJet)                      : -999; 
-    non_promptJet_NEmEnFraction_  = (mu_secondJet != -1) ? jet_neutralEmEnergyFraction->at(mu_secondJet)      : -999;
-    non_promptJet_chHadEn_        = (mu_secondJet != -1) ? jet_chargedHadronEnergy->at(mu_secondJet)          : -999;
-    non_promptJet_NHadEnFraction_ = (mu_secondJet != -1) ? jet_neutralHadronEnergyFraction->at(mu_secondJet)  : -999;
-    non_promptJet_chMuEn_         = (mu_secondJet != -1) ? jet_chargedMuEnergy->at(mu_secondJet)              : -999;
-    non_promptJet_chMuEnFraction_      = (mu_secondJet != -1) ? jet_chargedMuEnergyFraction->at(mu_secondJet) : -999;
-    non_promptJet_numberOfDaughters_   = (mu_secondJet != -1) ? jet_numberOfDaughters->at(mu_secondJet)       : -999;
-    non_promptJet_muonEnergy_          = (mu_secondJet != -1) ? jet_muonEnergy->at(mu_secondJet)              : -999;
-    non_promptJet_muonEnergyFraction_  = (mu_secondJet != -1) ? jet_muonEnergyFraction->at(mu_secondJet)      : -999;
-    non_promptJet_muonMultiplicity_    = (mu_secondJet != -1) ? jet_muonMultiplicity->at(mu_secondJet)        : -999;
-    non_promptJet_neutralEmEnergy_     = (mu_secondJet != -1) ? jet_neutralEmEnergy->at(mu_secondJet)         : -999;
-    non_promptJet_neutralHadronEnergy_ = (mu_secondJet != -1) ? jet_neutralHadronEnergy->at(mu_secondJet)     : -999; 
-    non_promptJet_NHadMultiplicity_    = (mu_secondJet != -1) ? jet_neutralHadronMultiplicity->at(mu_secondJet)  : -999;
-    non_promptJet_NMultiplicity_       = (mu_secondJet != -1) ? jet_neutralMultiplicity->at(mu_secondJet)        : -999;
-    non_promptJet_chargedMultiplicity_        = (mu_secondJet != -1) ? jet_chargedMultiplicity->at(mu_secondJet) : -999;
-    non_promptJet_chargedEmEnergyFraction     = (mu_secondJet != -1) ? jet_chargedEmEnergyFraction->at(mu_secondJet)     : -999;
-    non_promptJet_chargedHadronEnergyFraction = (mu_secondJet != -1) ? jet_chargedHadronEnergyFraction->at(mu_secondJet) : -999;
-
-    non_promptJet_CsvV2          = (mu_secondJet != -1) ? jet_CsvV2->at(mu_secondJet)        : -999;
-    non_promptJet_DeepCsv_udsg   = (mu_secondJet != -1) ? jet_DeepCsv_udsg->at(mu_secondJet) : -999;
-    non_promptJet_DeepCsv_b      = (mu_secondJet != -1) ? jet_DeepCsv_b->at(mu_secondJet)    : -999;
-    non_promptJet_DeepCsv_c      = (mu_secondJet != -1) ? jet_DeepCsv_c->at(mu_secondJet)    : -999;
-    non_promptJet_DeepCsv_bb     = (mu_secondJet != -1) ? jet_DeepCsv_bb->at(mu_secondJet)   : -999;
-    non_promptJet_HadronFlavor   = (mu_secondJet != -1) ? jet_HadronFlavor->at(mu_secondJet) : -999;
 
 
-    Jet1.SetPtEtaPhiE(promptJet_pt_,promptJet_eta_,promptJet_phi_,promptJet_en_);
-    Jet2.SetPtEtaPhiE(non_promptJet_pt_,non_promptJet_eta_,non_promptJet_phi_,non_promptJet_en_);
+      //leading jet whatever info
+    
+      alljet_charge_                     = (alljet != -1) ? jet_charge->at(alljet)                      : -999;
+      alljet_et_                         = (alljet != -1) ? jet_et->at(alljet)                          : -999;
+      alljet_pt_                         = (alljet != -1) ? jetSmearedPt->at(alljet)                    : -999;
+      alljet_eta_                        = (alljet != -1) ? jet_eta->at(alljet)                         : -999;
+      alljet_phi_                        = (alljet != -1) ? jet_phi->at(alljet)                         : -999;
+      alljet_theta_                      = (alljet != -1) ? jet_theta->at(alljet)                       : -999;
+      alljet_en_                         = (alljet != -1) ? jet_en->at(alljet)                          : -999;
+      alljet_chEmEn_                     = (alljet != -1) ? jet_chargedEmEnergy->at(alljet)             : -999;
+      alljet_NEmEnFraction_              = (alljet != -1) ? jet_neutralEmEnergyFraction->at(alljet)     : -999;
+      alljet_chHadEn_                    = (alljet != -1) ? jet_chargedHadronEnergy->at(alljet)         : -999;
+      alljet_NHadEnFraction_             = (alljet != -1) ? jet_neutralHadronEnergyFraction->at(alljet) : -999;
+      alljet_chMuEn_                     = (alljet != -1) ? jet_chargedMuEnergy->at(alljet)             : -999;
+      alljet_chMuEnFraction_             = (alljet != -1) ? jet_chargedMuEnergyFraction->at(alljet)     : -999;
+      alljet_numberOfDaughters_          = (alljet != -1) ? jet_numberOfDaughters->at(alljet)           : -999;
+      alljet_muonEnergy_                 = (alljet != -1) ? jet_muonEnergy->at(alljet)                  : -999;
+      alljet_muonEnergyFraction_         = (alljet != -1) ? jet_muonEnergyFraction->at(alljet)          : -999;
+      alljet_muonMultiplicity_           = (alljet != -1) ? jet_muonMultiplicity->at(alljet)            : -999;
+      alljet_neutralEmEnergy_            = (alljet != -1) ? jet_neutralEmEnergy->at(alljet)             : -999;
+      alljet_neutralHadronEnergy_        = (alljet != -1) ? jet_neutralHadronEnergy->at(alljet)         : -999;
+      alljet_NHadMultiplicity_           = (alljet != -1) ? jet_neutralHadronMultiplicity->at(alljet)   : -999;
+      alljet_NMultiplicity_              = (alljet != -1) ? jet_neutralMultiplicity->at(alljet)         : -999;
+      alljet_chargedMultiplicity_        = (alljet != -1) ? jet_chargedMultiplicity->at(alljet)         : -999;
+      alljet_chargedEmEnergyFraction     = (alljet != -1) ? jet_chargedEmEnergyFraction->at(alljet)     : -999;
+      alljet_chargedHadronEnergyFraction = (alljet != -1) ? jet_chargedHadronEnergyFraction->at(alljet) : -999;
 
-    float DiJetMass = (mu_secondJet != -1 && mu_promptJet != -1) ? (Jet1 + Jet2).M()  : -999;
-    float MuJetMass = (mu_secondJet != -1) ? (Mu1 + Jet2).M() : -999 ;
+      alljet_notSmeard_pt                = (alljet != -1) ? jet_pt->at(alljet) : -999;
+      alljet_raw_pt                      = (alljet != -1) ? jet_ptuncorrected->at(alljet) : -999;
 
-    DiJet_Mass = DiJetMass;
-    MuJet_Mass = MuJetMass;
+      alljet_CsvV2          = (alljet != -1) ? jet_CsvV2->at(alljet)        : -999;
+      alljet_DeepCsv_udsg   = (alljet != -1) ? jet_DeepCsv_udsg->at(alljet) : -999;
+      alljet_DeepCsv_b      = (alljet != -1) ? jet_DeepCsv_b->at(alljet)    : -999;
+      alljet_DeepCsv_c      = (alljet != -1) ? jet_DeepCsv_c->at(alljet)    : -999;
+      alljet_DeepCsv_bb     = (alljet != -1) ? jet_DeepCsv_bb->at(alljet)   : -999;
+      alljet_HadronFlavor   = (alljet != -1) ? jet_HadronFlavor->at(alljet) : -999;
 
-    //secondary vertex info   
-    sv_inside     =  (SecondVertex != -1) ? SecondVertex                      : -999;
-    sv_TrackSize  =  (SecondVertex != -1) ? sv_mu_TrackSize->at(SecondVertex) : -999;
-    sv_LXYSig     =  (SecondVertex != -1) ? sv_mu_LXYSig->at(SecondVertex)    : -999;
-    sv_LXYZSig    =  (SecondVertex != -1) ? sv_mu_LXYZSig->at(SecondVertex)   : -999;
-    sv_LXY        =  (SecondVertex != -1) ? sv_mu_LXY->at(SecondVertex)       : -999;
-    sv_LXYZ       =  (SecondVertex != -1) ? sv_mu_LXYZ->at(SecondVertex)      : -999;
-    sv_dir_x      =  (SecondVertex != -1) ? sv_mu_dir_x->at(SecondVertex)     : -999;
-    sv_dir_y      =  (SecondVertex != -1) ? sv_mu_dir_y->at(SecondVertex)     : -999;
-    sv_dir_z      =  (SecondVertex != -1) ? sv_mu_dir_z->at(SecondVertex)     : -999;
-    sv_mass       =  (SecondVertex != -1) ? sv_mu_mass->at(SecondVertex)      : -999;
-    sv_eta        =  (SecondVertex != -1) ? sv_mu_eta->at(SecondVertex)       : -999;
-    sv_phi        =  (SecondVertex != -1) ? sv_mu_phi->at(SecondVertex)       : -999;
-    sv_pt         =  (SecondVertex != -1) ? sv_mu_pt->at(SecondVertex)        : -999;
-    sv_p          =  (SecondVertex != -1) ? sv_mu_p->at(SecondVertex)         : -999;
-    sv_px         =  (SecondVertex != -1) ? sv_mu_px->at(SecondVertex)        : -999;
-    sv_py         =  (SecondVertex != -1) ? sv_mu_py->at(SecondVertex)        : -999;
-    sv_pz         =  (SecondVertex != -1) ? sv_mu_pz->at(SecondVertex)        : -999;
-    sv_energy     =  (SecondVertex != -1) ? sv_mu_energy->at(SecondVertex)    : -999;
-    sv_Beta       =  (SecondVertex != -1) ? sv_mu_Beta->at(SecondVertex)      : -999;
-    sv_Gamma      =  (SecondVertex != -1) ? sv_mu_Gamma->at(SecondVertex)     : -999;
-    sv_CTau0      =  (SecondVertex != -1) ? sv_mu_CTau0->at(SecondVertex)     : -999;
-    sv_NDof       =  (SecondVertex != -1) ? sv_mu_NDof->at(SecondVertex)      : -999;
-    sv_Chi2       =  (SecondVertex != -1) ? sv_mu_Chi2->at(SecondVertex)      : -999;
-    sv_Angle3D    =  (SecondVertex != -1) ?   sv_mu_Angle3D->at(SecondVertex) : -999;
-    sv_Angle2D    =  (SecondVertex != -1) ? sv_mu_Angle2D->at(SecondVertex)   : -999;
-    sv_tracks_Sumcharge =   (SecondVertex != -1) ? sv_mu_tracks_Sumcharge->at(SecondVertex): -999;
-    sv_tracks_Sumpt     =   (SecondVertex != -1) ? sv_mu_tracks_Sumpt->at(SecondVertex)    : -999;
-    sv_match      =  (SecondVertex != -1) ? sv_mu_match->at(SecondVertex)     : -999;
-    sv_track_sumdxySig  = (SecondVertex != -1) ? sumdxySig  : -999;
+      alljets_size = alljet_count;
+      alljet_bjet_L = (alljet != -1) ? bjet1 : -999;
+      alljet_bjet_M = (alljet != -1) ? bjet2 : -999;
+      alljet_bjet_T = (alljet != -1) ? bjet3 : -999;
 
-    vtx.SetPtEtaPhiE(sv_pt,sv_eta,sv_phi,sv_energy);
+      HT_alljet =  sum_HT;
 
-    float vtxmumass =  (SecondVertex != -1) ? (Mu1 + vtx).M() : -999 ;
+      //leading jet whithout first jet info  
 
-    vtxmu_mass = vtxmumass;
+      firstjet_charge_                     = (firstjet != -1) ? jet_charge->at(firstjet)                      : -999;
+      firstjet_et_                         = (firstjet != -1) ? jet_et->at(firstjet)                          : -999;
+      firstjet_pt_                         = (firstjet != -1) ? jetSmearedPt->at(firstjet)                    : -999;
+      firstjet_eta_                        = (firstjet != -1) ? jet_eta->at(firstjet)                         : -999;
+      firstjet_phi_                        = (firstjet != -1) ? jet_phi->at(firstjet)                         : -999;
+      firstjet_theta_                      = (firstjet != -1) ? jet_theta->at(firstjet)                       : -999;
+      firstjet_en_                         = (firstjet != -1) ? jet_en->at(firstjet)                          : -999;
+      firstjet_chEmEn_                     = (firstjet != -1) ? jet_chargedEmEnergy->at(firstjet)             : -999;
+      firstjet_NEmEnFraction_              = (firstjet != -1) ? jet_neutralEmEnergyFraction->at(firstjet)     : -999;
+      firstjet_chHadEn_                    = (firstjet != -1) ? jet_chargedHadronEnergy->at(firstjet)         : -999;
+      firstjet_NHadEnFraction_             = (firstjet != -1) ? jet_neutralHadronEnergyFraction->at(firstjet) : -999;
+      firstjet_chMuEn_                     = (firstjet != -1) ? jet_chargedMuEnergy->at(firstjet)             : -999;
+      firstjet_chMuEnFraction_             = (firstjet != -1) ? jet_chargedMuEnergyFraction->at(firstjet)     : -999;
+      firstjet_numberOfDaughters_          = (firstjet != -1) ? jet_numberOfDaughters->at(firstjet)           : -999;
+      firstjet_muonEnergy_                 = (firstjet != -1) ? jet_muonEnergy->at(firstjet)                  : -999;
+      firstjet_muonEnergyFraction_         = (firstjet != -1) ? jet_muonEnergyFraction->at(firstjet)          : -999;
+      firstjet_muonMultiplicity_           = (firstjet != -1) ? jet_muonMultiplicity->at(firstjet)            : -999;
+      firstjet_neutralEmEnergy_            = (firstjet != -1) ? jet_neutralEmEnergy->at(firstjet)             : -999;
+      firstjet_neutralHadronEnergy_        = (firstjet != -1) ? jet_neutralHadronEnergy->at(firstjet)         : -999;
+      firstjet_NHadMultiplicity_           = (firstjet != -1) ? jet_neutralHadronMultiplicity->at(firstjet)   : -999;
+      firstjet_NMultiplicity_              = (firstjet != -1) ? jet_neutralMultiplicity->at(firstjet)         : -999;
+      firstjet_chargedMultiplicity_        = (firstjet != -1) ? jet_chargedMultiplicity->at(firstjet)         : -999;
+      firstjet_chargedEmEnergyFraction     = (firstjet != -1) ? jet_chargedEmEnergyFraction->at(firstjet)     : -999;
+      firstjet_chargedHadronEnergyFraction = (firstjet != -1) ? jet_chargedHadronEnergyFraction->at(firstjet) : -999;
 
-    sv_Xpos     = (SecondVertex != -1) ? sv_mu_Xpos->at(SecondVertex)  : -999;
-    sv_Ypos     = (SecondVertex != -1) ? sv_mu_Ypos->at(SecondVertex)  : -999;
-    sv_Zpos     = (SecondVertex != -1) ? sv_mu_Zpos->at(SecondVertex)  : -999;
-    sv_xError   = (SecondVertex != -1) ? sv_mu_xError->at(SecondVertex)  : -999;
-    sv_yError   = (SecondVertex != -1) ? sv_mu_yError->at(SecondVertex)  : -999;
-    sv_zError   = (SecondVertex != -1) ? sv_mu_zError->at(SecondVertex)  : -999;
-    sv_pvX      = (SecondVertex != -1) ? sv_mu_pvX->at(SecondVertex)  : -999;
-    sv_pvY      = (SecondVertex != -1) ? sv_mu_pvY->at(SecondVertex)  : -999;
-    sv_pvZ      = (SecondVertex != -1) ? sv_mu_pvZ->at(SecondVertex)  : -999;
-    sv_pvXError = (SecondVertex != -1) ? sv_mu_pvXError->at(SecondVertex)  : -999;
-    sv_pvYError = (SecondVertex != -1) ? sv_mu_pvYError->at(SecondVertex)  : -999;
-    sv_pvZError = (SecondVertex != -1) ? sv_mu_pvZError->at(SecondVertex)  : -999;
+      firstjet_CsvV2          = (firstjet != -1) ? jet_CsvV2->at(firstjet)        : -999;
+      firstjet_DeepCsv_udsg   = (firstjet != -1) ? jet_DeepCsv_udsg->at(firstjet) : -999;
+      firstjet_DeepCsv_b      = (firstjet != -1) ? jet_DeepCsv_b->at(firstjet)    : -999;
+      firstjet_DeepCsv_c      = (firstjet != -1) ? jet_DeepCsv_c->at(firstjet)    : -999;
+      firstjet_DeepCsv_bb     = (firstjet != -1) ? jet_DeepCsv_bb->at(firstjet)   : -999;
+      firstjet_HadronFlavor   = (firstjet != -1) ? jet_HadronFlavor->at(firstjet) : -999;
 
+      firstjet_notSmeard_pt                = (firstjet != -1) ? jet_pt->at(firstjet) : -999;
+      firstjet_raw_pt                      = (firstjet != -1) ? jet_ptuncorrected->at(firstjet) : -999;
 
-    //first track in sv info
-    firstTrack_eta    =  (SecondVertex != -1) ? sv_mu_tracks_eta->at(SecondVertex).at(sv_FirstTrack)    : -999; 
-    firstTrack_phi    =  (SecondVertex != -1) ? sv_mu_tracks_phi->at(SecondVertex).at(sv_FirstTrack)    : -999;
-    firstTrack_pt     =  (SecondVertex != -1) ? sv_mu_tracks_pt->at(SecondVertex).at(sv_FirstTrack)     : -999;
-    firstTrack_dxySig =  (SecondVertex != -1) ? sv_mu_tracks_dxySig->at(SecondVertex).at(sv_FirstTrack) : -999;
-    firstTrack_dxy    =  (SecondVertex != -1) ? sv_mu_tracks_dxy->at(SecondVertex).at(sv_FirstTrack)    : -999;
-    firstTrack_dxyz   =  (SecondVertex != -1) ? sv_mu_tracks_dxyz->at(SecondVertex).at(sv_FirstTrack)   : -999;
-    firstTrack_charge =  (SecondVertex != -1) ? sv_mu_tracks_charge->at(SecondVertex).at(sv_FirstTrack) : -999; 
-    firstTrack_en     =  (SecondVertex != -1) ? sv_mu_tracks_en->at(SecondVertex).at(sv_FirstTrack)     : -999;
+      firstjets_size  = (firstjet != -1) ? firstjet_count : -999;
+      firstjet_bjet_L = (firstjet != -1) ? bjet11         : -999;
+      firstjet_bjet_M = (firstjet != -1) ? bjet22         : -999;
+      firstjet_bjet_T = (firstjet != -1) ? bjet33         : -999;
 
-    //second track in sv info
-    secondTrack_eta    =  (SecondVertex != -1) ? sv_mu_tracks_eta->at(SecondVertex).at(sv_SecondTrack)   : -999;
-    secondTrack_phi    =  (SecondVertex != -1) ? sv_mu_tracks_phi->at(SecondVertex).at(sv_SecondTrack)   : -999;
-    secondTrack_pt     =  (SecondVertex != -1) ? sv_mu_tracks_pt->at(SecondVertex).at(sv_SecondTrack)    : -999;
-    secondTrack_dxySig =  (SecondVertex != -1) ? sv_mu_tracks_dxySig->at(SecondVertex).at(sv_SecondTrack): -999;
-    secondTrack_dxy    =  (SecondVertex != -1) ? sv_mu_tracks_dxy->at(SecondVertex).at(sv_SecondTrack)   : -999;
-    secondTrack_dxyz   =  (SecondVertex != -1) ? sv_mu_tracks_dxyz->at(SecondVertex).at(sv_SecondTrack)  : -999;
-    secondTrack_charge =  (SecondVertex != -1) ? sv_mu_tracks_charge->at(SecondVertex).at(sv_SecondTrack): -999;
-    secondTrack_en     =  (SecondVertex != -1) ? sv_mu_tracks_en->at(SecondVertex).at(sv_SecondTrack)    : -999;
+      //jet with in ele info
+      mujet_charge_                     = (mujet != -1) ? jet_charge->at(mujet)                      : -999;
+      mujet_et_                         = (mujet != -1) ? jet_et->at(mujet)                          : -999;
+      mujet_pt_                         = (mujet != -1) ? jetSmearedPt->at(mujet)                    : -999;
+      mujet_eta_                        = (mujet != -1) ? jet_eta->at(mujet)                         : -999;
+      mujet_phi_                        = (mujet != -1) ? jet_phi->at(mujet)                         : -999;
+      mujet_theta_                      = (mujet != -1) ? jet_theta->at(mujet)                       : -999;
+      mujet_en_                         = (mujet != -1) ? jet_en->at(mujet)                          : -999;
+      mujet_chEmEn_                     = (mujet != -1) ? jet_chargedEmEnergy->at(mujet)             : -999;
+      mujet_NEmEnFraction_              = (mujet != -1) ? jet_neutralEmEnergyFraction->at(mujet)     : -999;
+      mujet_chHadEn_                    = (mujet != -1) ? jet_chargedHadronEnergy->at(mujet)         : -999;
+      mujet_NHadEnFraction_             = (mujet != -1) ? jet_neutralHadronEnergyFraction->at(mujet) : -999;
+      mujet_chMuEn_                     = (mujet != -1) ? jet_chargedMuEnergy->at(mujet)             : -999;
+      mujet_chMuEnFraction_             = (mujet != -1) ? jet_chargedMuEnergyFraction->at(mujet)     : -999;
+      mujet_numberOfDaughters_          = (mujet != -1) ? jet_numberOfDaughters->at(mujet)           : -999;
+      mujet_muonEnergy_                 = (mujet != -1) ? jet_muonEnergy->at(mujet)                  : -999;
+      mujet_muonEnergyFraction_         = (mujet != -1) ? jet_muonEnergyFraction->at(mujet)          : -999;
+      mujet_muonMultiplicity_           = (mujet != -1) ? jet_muonMultiplicity->at(mujet)            : -999;
+      mujet_neutralEmEnergy_            = (mujet != -1) ? jet_neutralEmEnergy->at(mujet)             : -999;
+      mujet_neutralHadronEnergy_        = (mujet != -1) ? jet_neutralHadronEnergy->at(mujet)         : -999;
+      mujet_NHadMultiplicity_           = (mujet != -1) ? jet_neutralHadronMultiplicity->at(mujet)   : -999;
+      mujet_NMultiplicity_              = (mujet != -1) ? jet_neutralMultiplicity->at(mujet)         : -999;
+      mujet_chargedMultiplicity_        = (mujet != -1) ? jet_chargedMultiplicity->at(mujet)         : -999;
+      mujet_chargedEmEnergyFraction     = (mujet != -1) ? jet_chargedEmEnergyFraction->at(mujet)     : -999;
+      mujet_chargedHadronEnergyFraction = (mujet != -1) ? jet_chargedHadronEnergyFraction->at(mujet) : -999;
 
-    //leading jet info
-    FirstJet_charge_ = (FirstJet != -1) ? jet_charge->at(FirstJet) : -999;
-    FirstJet_et_     = (FirstJet != -1) ? jet_et->at(FirstJet)     : -999;
-    FirstJet_pt_     = (FirstJet != -1) ? jet_pt->at(FirstJet)     : -999;
-    FirstJet_eta_    = (FirstJet != -1) ? jet_eta->at(FirstJet)    : -999; 
-    FirstJet_phi_    = (FirstJet != -1) ? jet_phi->at(FirstJet)    : -999;
-    FirstJet_theta_  = (FirstJet != -1) ? jet_theta->at(FirstJet)  : -999;
-    FirstJet_en_     = (FirstJet != -1) ? jet_en->at(FirstJet)     : -999;
-    FirstJet_chEmEn_ = (FirstJet != -1) ? jet_chargedEmEnergy->at(FirstJet)                      : -999; 
-    FirstJet_NEmEnFraction_  = (FirstJet != -1) ? jet_neutralEmEnergyFraction->at(FirstJet)      : -999;
-    FirstJet_chHadEn_        = (FirstJet != -1) ? jet_chargedHadronEnergy->at(FirstJet)          : -999;
-    FirstJet_NHadEnFraction_ = (FirstJet != -1) ? jet_neutralHadronEnergyFraction->at(FirstJet)  : -999;
-    FirstJet_chMuEn_         = (FirstJet != -1) ? jet_chargedMuEnergy->at(FirstJet)              : -999;
-    FirstJet_chMuEnFraction_      = (FirstJet != -1) ? jet_chargedMuEnergyFraction->at(FirstJet) : -999;
-    FirstJet_numberOfDaughters_   = (FirstJet != -1) ? jet_numberOfDaughters->at(FirstJet)       : -999;
-    FirstJet_muonEnergy_          = (FirstJet != -1) ? jet_muonEnergy->at(FirstJet)              : -999;
-    FirstJet_muonEnergyFraction_  = (FirstJet != -1) ? jet_muonEnergyFraction->at(FirstJet)      : -999;
-    FirstJet_muonMultiplicity_    = (FirstJet != -1) ? jet_muonMultiplicity->at(FirstJet)        : -999;
-    FirstJet_neutralEmEnergy_     = (FirstJet != -1) ? jet_neutralEmEnergy->at(FirstJet)         : -999;
-    FirstJet_neutralHadronEnergy_ = (FirstJet != -1) ? jet_neutralHadronEnergy->at(FirstJet)     : -999; 
-    FirstJet_NHadMultiplicity_    = (FirstJet != -1) ? jet_neutralHadronMultiplicity->at(FirstJet)  : -999;
-    FirstJet_NMultiplicity_       = (FirstJet != -1) ? jet_neutralMultiplicity->at(FirstJet)        : -999;
-    FirstJet_chargedMultiplicity_        = (FirstJet != -1) ? jet_chargedMultiplicity->at(FirstJet) : -999;
-    FirstJet_chargedEmEnergyFraction     = (FirstJet != -1) ? jet_chargedEmEnergyFraction->at(FirstJet)     : -999;
-    FirstJet_chargedHadronEnergyFraction = (FirstJet != -1) ? jet_chargedHadronEnergyFraction->at(FirstJet) : -999;
+      mujet_notSmeard_pt                = (mujet != -1) ? jet_pt->at(mujet) : -999;
+      mujet_raw_pt                      = (mujet != -1) ? jet_ptuncorrected->at(mujet) : -999;
 
-    FirstJet_CsvV2          = (FirstJet != -1) ? jet_CsvV2->at(FirstJet)        : -999;
-    FirstJet_DeepCsv_udsg   = (FirstJet != -1) ? jet_DeepCsv_udsg->at(FirstJet) : -999;
-    FirstJet_DeepCsv_b      = (FirstJet != -1) ? jet_DeepCsv_b->at(FirstJet)    : -999;
-    FirstJet_DeepCsv_c      = (FirstJet != -1) ? jet_DeepCsv_c->at(FirstJet)    : -999;
-    FirstJet_DeepCsv_bb     = (FirstJet != -1) ? jet_DeepCsv_bb->at(FirstJet)   : -999;
-    FirstJet_HadronFlavor   = (FirstJet != -1) ? jet_HadronFlavor->at(FirstJet) : -999;
+      mujet_CsvV2          = (mujet != -1) ? jet_CsvV2->at(mujet)        : -999;
+      mujet_DeepCsv_udsg   = (mujet != -1) ? jet_DeepCsv_udsg->at(mujet) : -999;
+      mujet_DeepCsv_b      = (mujet != -1) ? jet_DeepCsv_b->at(mujet)    : -999;
+      mujet_DeepCsv_c      = (mujet != -1) ? jet_DeepCsv_c->at(mujet)    : -999;
+      mujet_DeepCsv_bb     = (mujet != -1) ? jet_DeepCsv_bb->at(mujet)   : -999;
+      mujet_HadronFlavor   = (mujet != -1) ? jet_HadronFlavor->at(mujet) : -999;
+      mujet_RSecMu        = (mujet != -1) ? minR : -999;
 
-    jets_size = jet_count;
-    bjet1_size = bjet1;
-    bjet2_size = bjet2;
-    bjet3_size = bjet3;
-    bjet4_size = bjet4;
-    bjet5_size = bjet5;
-    bjet6_size = bjet6;
-    bjet7_size = bjet7;
-    bjet8_size = bjet8;
-    bjet9_size = bjet9;
-    bjet_L = bjet10;
-    bjet_M = bjet11;
-    bjet_T = bjet12;
+      TLorentzVector mu_jet;
+      mu_jet.SetPtEtaPhiE(mujet_pt_,mujet_eta_,mujet_phi_,mujet_en_);
+      float mujetmass =  (mujet != -1) ? (Mu1 + mu_jet).M() : -999 ;
+      float hnl_m = (mujet != -1) ?  (mu_jet).M() : -999;
+      hnl_mass = hnl_m ;
+      mujet_M = mujetmass;
 
+      // jets closer to prompt mu 
+      prompt_mujet_charge_                     = (prompt_mujet != -1) ? jet_charge->at(prompt_mujet)                      : -999;
+      prompt_mujet_et_                         = (prompt_mujet != -1) ? jet_et->at(prompt_mujet)                          : -999;
+      prompt_mujet_pt_                         = (prompt_mujet != -1) ? jetSmearedPt->at(prompt_mujet)                    : -999;
+      prompt_mujet_eta_                        = (prompt_mujet != -1) ? jet_eta->at(prompt_mujet)                         : -999;
+      prompt_mujet_phi_                        = (prompt_mujet != -1) ? jet_phi->at(prompt_mujet)                         : -999;
+      prompt_mujet_theta_                      = (prompt_mujet != -1) ? jet_theta->at(prompt_mujet)                       : -999;
+      prompt_mujet_en_                         = (prompt_mujet != -1) ? jet_en->at(prompt_mujet)                          : -999;
+      prompt_mujet_chEmEn_                     = (prompt_mujet != -1) ? jet_chargedEmEnergy->at(prompt_mujet)             : -999;
+      prompt_mujet_NEmEnFraction_              = (prompt_mujet != -1) ? jet_neutralEmEnergyFraction->at(prompt_mujet)     : -999;
+      prompt_mujet_chHadEn_                    = (prompt_mujet != -1) ? jet_chargedHadronEnergy->at(prompt_mujet)         : -999;
+      prompt_mujet_NHadEnFraction_             = (prompt_mujet != -1) ? jet_neutralHadronEnergyFraction->at(prompt_mujet) : -999;
+      prompt_mujet_chMuEn_                     = (prompt_mujet != -1) ? jet_chargedMuEnergy->at(prompt_mujet)             : -999;
+      prompt_mujet_chMuEnFraction_             = (prompt_mujet != -1) ? jet_chargedMuEnergyFraction->at(prompt_mujet)     : -999;
+      prompt_mujet_numberOfDaughters_          = (prompt_mujet != -1) ? jet_numberOfDaughters->at(prompt_mujet)           : -999;
+      prompt_mujet_muonEnergy_                 = (prompt_mujet != -1) ? jet_muonEnergy->at(prompt_mujet)                  : -999;
+      prompt_mujet_muonEnergyFraction_         = (prompt_mujet != -1) ? jet_muonEnergyFraction->at(prompt_mujet)          : -999;
+      prompt_mujet_muonMultiplicity_           = (prompt_mujet != -1) ? jet_muonMultiplicity->at(prompt_mujet)            : -999;
+      prompt_mujet_neutralEmEnergy_            = (prompt_mujet != -1) ? jet_neutralEmEnergy->at(prompt_mujet)             : -999;
+      prompt_mujet_neutralHadronEnergy_        = (prompt_mujet != -1) ? jet_neutralHadronEnergy->at(prompt_mujet)         : -999;
+      prompt_mujet_NHadMultiplicity_           = (prompt_mujet != -1) ? jet_neutralHadronMultiplicity->at(prompt_mujet)   : -999;
+      prompt_mujet_NMultiplicity_              = (prompt_mujet != -1) ? jet_neutralMultiplicity->at(prompt_mujet)         : -999;
+      prompt_mujet_chargedMultiplicity_        = (prompt_mujet != -1) ? jet_chargedMultiplicity->at(prompt_mujet)         : -999;
+      prompt_mujet_chargedEmEnergyFraction     = (prompt_mujet != -1) ? jet_chargedEmEnergyFraction->at(prompt_mujet)     : -999;
+      prompt_mujet_chargedHadronEnergyFraction = (prompt_mujet != -1) ? jet_chargedHadronEnergyFraction->at(prompt_mujet) : -999;
+      prompt_mujet_notSmeard_pt                = (prompt_mujet != -1) ? jet_pt->at(prompt_mujet) : -999;
+      prompt_mujet_raw_pt                      = (prompt_mujet != -1) ? jet_ptuncorrected->at(prompt_mujet) : -999;
 
-    //second Jet info
-    SecondJet_charge_ = (SecondJet != -1) ? jet_charge->at(SecondJet) : -999;
-    SecondJet_et_     = (SecondJet != -1) ? jet_et->at(SecondJet) : -999;
-    SecondJet_pt_     = (SecondJet != -1) ? jet_pt->at(SecondJet) : -999;
-    SecondJet_eta_    = (SecondJet != -1) ? jet_eta->at(SecondJet) : -999; 
-    SecondJet_phi_    = (SecondJet != -1) ? jet_phi->at(SecondJet) : -999;
-    SecondJet_theta_  = (SecondJet != -1) ? jet_theta->at(SecondJet) : -999;
-    SecondJet_en_     = (SecondJet != -1) ? jet_en->at(SecondJet) : -999;
-    SecondJet_chEmEn_ = (SecondJet != -1) ? jet_chargedEmEnergy->at(SecondJet) : -999; 
-    SecondJet_NEmEnFraction_     = (SecondJet != -1) ? jet_neutralEmEnergyFraction->at(SecondJet) : -999;
-    SecondJet_chHadEn_           = (SecondJet != -1) ? jet_chargedHadronEnergy->at(SecondJet) : -999;
-    SecondJet_NHadEnFraction_    = (SecondJet != -1) ? jet_neutralHadronEnergyFraction->at(SecondJet) : -999;
-    SecondJet_chMuEn_            = (SecondJet != -1) ? jet_chargedMuEnergy->at(SecondJet) : -999;
-    SecondJet_chMuEnFraction_    = (SecondJet != -1) ? jet_chargedMuEnergyFraction->at(SecondJet) : -999;
-    SecondJet_numberOfDaughters_ = (SecondJet != -1) ? jet_numberOfDaughters->at(SecondJet) : -999;
-    SecondJet_muonEnergy_ = (SecondJet != -1) ? jet_muonEnergy->at(SecondJet) : -999;
-    SecondJet_muonEnergyFraction_  = (SecondJet != -1) ? jet_muonEnergyFraction->at(SecondJet) : -999;
-    SecondJet_muonMultiplicity_    = (SecondJet != -1) ? jet_muonMultiplicity->at(SecondJet) : -999;
-    SecondJet_neutralEmEnergy_     = (SecondJet != -1) ? jet_neutralEmEnergy->at(SecondJet) : -999;
-    SecondJet_neutralHadronEnergy_ = (SecondJet != -1) ? jet_neutralHadronEnergy->at(SecondJet) : -999; 
-    SecondJet_NHadMultiplicity_    = (SecondJet != -1) ? jet_neutralHadronMultiplicity->at(SecondJet) : -999;
-    SecondJet_NMultiplicity_       = (SecondJet != -1) ? jet_neutralMultiplicity->at(SecondJet) : -999;
-    SecondJet_chargedMultiplicity_ = (SecondJet != -1) ? jet_chargedMultiplicity->at(SecondJet) : -999;
-    SecondJet_chargedEmEnergyFraction     = (SecondJet != -1) ? jet_chargedEmEnergyFraction->at(SecondJet) : -999;
-    SecondJet_chargedHadronEnergyFraction =  (SecondJet != -1) ? jet_chargedHadronEnergyFraction->at(SecondJet) : -999;
+      prompt_mujet_CsvV2          = (prompt_mujet != -1) ? jet_CsvV2->at(prompt_mujet)        : -999;
+      prompt_mujet_DeepCsv_udsg   = (prompt_mujet != -1) ? jet_DeepCsv_udsg->at(prompt_mujet) : -999;
+      prompt_mujet_DeepCsv_b      = (prompt_mujet != -1) ? jet_DeepCsv_b->at(prompt_mujet)    : -999;
+      prompt_mujet_DeepCsv_c      = (prompt_mujet != -1) ? jet_DeepCsv_c->at(prompt_mujet)    : -999;
+      prompt_mujet_DeepCsv_bb     = (prompt_mujet != -1) ? jet_DeepCsv_bb->at(prompt_mujet)   : -999;
+      prompt_mujet_HadronFlavor   = (prompt_mujet != -1) ? jet_HadronFlavor->at(prompt_mujet) : -999;
+      prompt_mujet_RSecMu        = (prompt_mujet != -1) ? minR : -999;
 
-    SecondJet_CsvV2          = (SecondJet != -1) ? jet_CsvV2->at(SecondJet)        : -999;
-    SecondJet_DeepCsv_udsg   = (SecondJet != -1) ? jet_DeepCsv_udsg->at(SecondJet) : -999;
-    SecondJet_DeepCsv_b      = (SecondJet != -1) ? jet_DeepCsv_b->at(SecondJet)    : -999;
-    SecondJet_DeepCsv_c      = (SecondJet != -1) ? jet_DeepCsv_c->at(SecondJet)    : -999;
-    SecondJet_DeepCsv_bb     = (SecondJet != -1) ? jet_DeepCsv_bb->at(SecondJet)   : -999;
-    SecondJet_HadronFlavor   = (SecondJet != -1) ? jet_HadronFlavor->at(SecondJet) : -999;
+      //leading jet whithout first and second ele info 
 
-    TLorentzVector FJet;
-    TLorentzVector SJet;
+      secondjet_charge_                     = (secondjet != -1) ? jet_charge->at(secondjet)                      : -999;
+      secondjet_et_                         = (secondjet != -1) ? jet_et->at(secondjet)                          : -999;
+      secondjet_pt_                         = (secondjet != -1) ? jetSmearedPt->at(secondjet)                    : -999;
+      secondjet_eta_                        = (secondjet != -1) ? jet_eta->at(secondjet)                         : -999;
+      secondjet_phi_                        = (secondjet != -1) ? jet_phi->at(secondjet)                         : -999;
+      secondjet_theta_                      = (secondjet != -1) ? jet_theta->at(secondjet)                       : -999;
+      secondjet_en_                         = (secondjet != -1) ? jet_en->at(secondjet)                          : -999;
+      secondjet_chEmEn_                     = (secondjet != -1) ? jet_chargedEmEnergy->at(secondjet)             : -999;
+      secondjet_NEmEnFraction_              = (secondjet != -1) ? jet_neutralEmEnergyFraction->at(secondjet)     : -999;
+      secondjet_chHadEn_                    = (secondjet != -1) ? jet_chargedHadronEnergy->at(secondjet)         : -999;
+      secondjet_NHadEnFraction_             = (secondjet != -1) ? jet_neutralHadronEnergyFraction->at(secondjet) : -999;
+      secondjet_chMuEn_                     = (secondjet != -1) ? jet_chargedMuEnergy->at(secondjet)             : -999;
+      secondjet_chMuEnFraction_             = (secondjet != -1) ? jet_chargedMuEnergyFraction->at(secondjet)     : -999;
+      secondjet_numberOfDaughters_          = (secondjet != -1) ? jet_numberOfDaughters->at(secondjet)           : -999;
+      secondjet_muonEnergy_                 = (secondjet != -1) ? jet_muonEnergy->at(secondjet)                  : -999;
+      secondjet_muonEnergyFraction_         = (secondjet != -1) ? jet_muonEnergyFraction->at(secondjet)          : -999;
+      secondjet_muonMultiplicity_           = (secondjet != -1) ? jet_muonMultiplicity->at(secondjet)            : -999;
+      secondjet_neutralEmEnergy_            = (secondjet != -1) ? jet_neutralEmEnergy->at(secondjet)             : -999;
+      secondjet_neutralHadronEnergy_        = (secondjet != -1) ? jet_neutralHadronEnergy->at(secondjet)         : -999;
+      secondjet_NHadMultiplicity_           = (secondjet != -1) ? jet_neutralHadronMultiplicity->at(secondjet)   : -999;
+      secondjet_NMultiplicity_              = (secondjet != -1) ? jet_neutralMultiplicity->at(secondjet)         : -999;
+      secondjet_chargedMultiplicity_        = (secondjet != -1) ? jet_chargedMultiplicity->at(secondjet)         : -999;
+      secondjet_chargedEmEnergyFraction     = (secondjet != -1) ? jet_chargedEmEnergyFraction->at(secondjet)     : -999;
+      secondjet_chargedHadronEnergyFraction = (secondjet != -1) ? jet_chargedHadronEnergyFraction->at(secondjet) : -999;
 
-    FJet.SetPtEtaPhiE(FirstJet_pt_,FirstJet_eta_,FirstJet_phi_,FirstJet_en_);
-    SJet.SetPtEtaPhiE(SecondJet_pt_,SecondJet_eta_,SecondJet_phi_,SecondJet_en_);
+      secondjet_notSmeard_pt                = (secondjet != -1) ? jet_pt->at(secondjet) : -999;
+      secondjet_raw_pt                      = (secondjet != -1) ? jet_ptuncorrected->at(secondjet) : -999;
 
-    float R1 = sqrt(((FirstJet_eta_-SecondJet_eta_)*(FirstJet_eta_-SecondJet_eta_))+((FirstJet_phi_-SecondJet_phi_)*(FirstJet_phi_-SecondJet_phi_)));
-    float R2 = sqrt(((mu_promptEta-FirstJet_eta_)*(mu_promptEta-FirstJet_eta_))+((mu_promptPhi-FirstJet_phi_)*(mu_promptPhi-FirstJet_phi_)));
-    float R3 = sqrt(((mu_secondEta-FirstJet_eta_)*(mu_secondEta-FirstJet_eta_))+((mu_secondPhi-FirstJet_phi_)*(mu_secondPhi-FirstJet_phi_)));
-    float R4 = sqrt(((mu_promptEta-SecondJet_eta_)*(mu_promptEta-SecondJet_eta_))+((mu_promptPhi-SecondJet_phi_)*(mu_promptPhi-SecondJet_phi_)));
-    float R5 = sqrt(((mu_secondEta-SecondJet_eta_)*(mu_secondEta-SecondJet_eta_))+((mu_secondPhi-SecondJet_phi_)*(mu_secondPhi-SecondJet_phi_)));
+      //cout<<"jet not smearing pt = "<<secondjet_notSmeard_pt<<" jet raw pt = "<<secondjet_raw_pt<<" eta = "<<secondjet_eta_ <<" phi " << secondjet_phi_ <<" Rho = " <<ele_second_rhoIso<<endl; 
 
+      secondjet_CsvV2          = (secondjet != -1) ? jet_CsvV2->at(secondjet)        : -999;
+      secondjet_DeepCsv_udsg   = (secondjet != -1) ? jet_DeepCsv_udsg->at(secondjet) : -999;
+      secondjet_DeepCsv_b      = (secondjet != -1) ? jet_DeepCsv_b->at(secondjet)    : -999;
+      secondjet_DeepCsv_c      = (secondjet != -1) ? jet_DeepCsv_c->at(secondjet)    : -999;
+      secondjet_DeepCsv_bb     = (secondjet != -1) ? jet_DeepCsv_bb->at(secondjet)   : -999;
+      secondjet_HadronFlavor   = (secondjet != -1) ? jet_HadronFlavor->at(secondjet) : -999;
 
-    FSjet_DR   = (FirstJet != -1 && SecondJet != -1 ) ? R1 : -999;
-    FjetFmu_DR = (FirstJet != -1  ) ? R2 : -999;
-    FjetSmu_DR = (FirstJet != -1  ) ? R3 : -999;
-    SjetFmu_DR = (SecondJet != -1) ? R4 : -999;
-    SjetSmu_DR = (SecondJet != -1) ? R4 : -999;
-
-    FSjet_M = (SecondJet != -1 && FirstJet != -1) ? (SJet + FJet).M() : -999 ;
-
-    FjetFmu_M = (FirstJet != -1)  ? (Mu1 + FJet).M() : -999 ;
-    FjetSmu_M = (FirstJet != -1)  ? (Mu2 + FJet).M() : -999 ;
-    SjetFmu_M = (SecondJet != -1) ? (Mu1 + SJet).M() : -999 ;
-    SjetSmu_M = (SecondJet != -1) ? (Mu2 + SJet).M() : -999 ;
-
-    FSjetFmu_M = (SecondJet != -1 && FirstJet != -1) ? (SJet + FJet + Mu1).M() : -999 ;
-    FSjetSmu_M = (SecondJet != -1 && FirstJet != -1) ? (SJet + FJet + Mu2).M() : -999 ;
-
-    FSjetFSmu_M = (SecondJet != -1 && FirstJet != -1) ? (SJet + FJet + Mu1 + Mu2).M() : -999 ;
-
-
-    //third Jet info
-    ThirdJet_charge_ = (ThirdJet != -1) ? jet_charge->at(ThirdJet) : -999;
-    ThirdJet_et_ = (ThirdJet != -1) ? jet_et->at(ThirdJet) : -999;
-    ThirdJet_pt_ = (ThirdJet != -1) ? jet_pt->at(ThirdJet) : -999;
-    ThirdJet_eta_ = (ThirdJet != -1) ? jet_eta->at(ThirdJet) : -999; 
-    ThirdJet_phi_ = (ThirdJet != -1) ? jet_phi->at(ThirdJet) : -999;
-    ThirdJet_theta_ = (ThirdJet != -1) ? jet_theta->at(ThirdJet) : -999;
-    ThirdJet_en_ = (ThirdJet != -1) ? jet_en->at(ThirdJet) : -999;
-    ThirdJet_chEmEn_ = (ThirdJet != -1) ? jet_chargedEmEnergy->at(ThirdJet) : -999; 
-    ThirdJet_NEmEnFraction_ = (ThirdJet != -1) ? jet_neutralEmEnergyFraction->at(ThirdJet) : -999;
-    ThirdJet_chHadEn_ = (ThirdJet != -1) ? jet_chargedHadronEnergy->at(ThirdJet) : -999;
-    ThirdJet_NHadEnFraction_ = (ThirdJet != -1) ? jet_neutralHadronEnergyFraction->at(ThirdJet) : -999;
-    ThirdJet_chMuEn_ = (ThirdJet != -1) ? jet_chargedMuEnergy->at(ThirdJet) : -999;
-    ThirdJet_chMuEnFraction_ = (ThirdJet != -1) ? jet_chargedMuEnergyFraction->at(ThirdJet) : -999;
-    ThirdJet_numberOfDaughters_ = (ThirdJet != -1) ? jet_numberOfDaughters->at(ThirdJet) : -999;
-    ThirdJet_muonEnergy_ = (ThirdJet != -1) ? jet_muonEnergy->at(ThirdJet) : -999;
-    ThirdJet_muonEnergyFraction_ = (ThirdJet != -1) ? jet_muonEnergyFraction->at(ThirdJet) : -999;
-    ThirdJet_muonMultiplicity_ = (ThirdJet != -1) ? jet_muonMultiplicity->at(ThirdJet) : -999;
-    ThirdJet_neutralEmEnergy_ = (ThirdJet != -1) ? jet_neutralEmEnergy->at(ThirdJet) : -999;
-    ThirdJet_neutralHadronEnergy_ = (ThirdJet != -1) ? jet_neutralHadronEnergy->at(ThirdJet) : -999; 
-    ThirdJet_NHadMultiplicity_ = (ThirdJet != -1) ? jet_neutralHadronMultiplicity->at(ThirdJet) : -999;
-    ThirdJet_NMultiplicity_ = (ThirdJet != -1) ? jet_neutralMultiplicity->at(ThirdJet) : -999;
-    ThirdJet_chargedMultiplicity_ = (ThirdJet != -1) ? jet_chargedMultiplicity->at(ThirdJet) : -999;
-    ThirdJet_chargedEmEnergyFraction = (ThirdJet != -1) ? jet_chargedEmEnergyFraction->at(ThirdJet) : -999;
-    ThirdJet_chargedHadronEnergyFraction =  (ThirdJet != -1) ? jet_chargedHadronEnergyFraction->at(ThirdJet) : -999;
-
-    ThirdJet_CsvV2          = (ThirdJet != -1) ? jet_CsvV2->at(ThirdJet)        : -999;
-    ThirdJet_DeepCsv_udsg   = (ThirdJet != -1) ? jet_DeepCsv_udsg->at(ThirdJet) : -999;
-    ThirdJet_DeepCsv_b      = (ThirdJet != -1) ? jet_DeepCsv_b->at(ThirdJet)    : -999;
-    ThirdJet_DeepCsv_c      = (ThirdJet != -1) ? jet_DeepCsv_c->at(ThirdJet)    : -999;
-    ThirdJet_DeepCsv_bb     = (ThirdJet != -1) ? jet_DeepCsv_bb->at(ThirdJet)   : -999;
-    ThirdJet_HadronFlavor   = (ThirdJet != -1) ? jet_HadronFlavor->at(ThirdJet) : -999;
-
+      secondjets_size  = (secondjet != -1) ? secondjet_count : -999;
+      secondjet_bjet_L = bjet111;
+      secondjet_bjet_M = bjet222;
+      secondjet_bjet_T = bjet333;
     //missing energy Info
-    pfMet_et_    =  pfMet_et;
-    pfMet_pt_    =  pfMet_pt;
-    pfMet_phi_   =  pfMet_phi;
-    pfMet_en_    =  pfMet_en;
-    pfMet_sumEt_ =  pfMet_sumEt;
-    caloMet_pt_  =  caloMet_pt;
-    caloMet_phi_ =  caloMet_phi;
-    /*
-    // first b info
-    FirstJet_btag_pt_  = (first_bjet != -1 ) ? jet_btag_pt->at(first_bjet)   : -999;
-    FirstJet_btag_eta_ = (first_bjet != -1 ) ? jet_btag_eta->at(first_bjet)  : -999;
-    FirstJet_btag_phi_ = (first_bjet != -1 ) ? jet_btag_phi->at(first_bjet)  : -999;
-    FirstJet_btag_flavor_ = (first_bjet != -1 ) ? jet_btag_flavor->at(first_bjet)  : -999;
-    FirstJet_btag_discriminator_ = (first_bjet != -1 ) ? jet_btag_pfCSVv2IVF_discriminator->at(first_bjet)  : -999;
+      pfMet_et_    =  pfMet_et;
+      pfMet_pt_    =  pfMet_pt;
+      pfMet_phi_   =  pfMet_phi;
+      pfMet_en_    =  pfMet_en;
+      pfMet_sumEt_ =  pfMet_sumEt;
+      caloMet_pt_  =  caloMet_pt;
+      caloMet_phi_ =  caloMet_phi;
+      
+      TLorentzVector MET;
+      MET.SetPxPyPzE(pfMet_px,pfMet_py,pfMet_pz,pfMet_en_);
 
-    bJet_size = (first_bjet != -1 ) ?  bjet_count : -999;
+      //tmass_METL = sqrt(pow(mu_promptEt + pfMet_et, 2) - (pow(mu_promptPt + pfMet_pt, 2)));
 
-    //second b info
-    SecondJet_btag_pt_  = (second_bjet != -1 ) ? jet_btag_pt->at(second_bjet)   : -999;
-    SecondJet_btag_eta_ = (second_bjet != -1 ) ? jet_btag_eta->at(second_bjet)  : -999;
-    SecondJet_btag_phi_ = (second_bjet != -1 ) ? jet_btag_phi->at(second_bjet)  : -999;
-    SecondJet_btag_flavor_ = (second_bjet != -1 ) ? jet_btag_flavor->at(second_bjet)  : -999;
-    SecondJet_btag_discriminator_ = (second_bjet != -1 ) ? jet_btag_pfCSVv2IVF_discriminator->at(second_bjet)  : -999;
+      tmass_METL = sqrt(pow(mu_promptPt + pfMet_pt, 2) - pow(px1 + pfMet_px, 2) - pow(py1 + pfMet_py, 2));
+      float MetLMass = (Mu1 + MET).M();
 
-    //third b info
-    ThirdJet_btag_pt_  = (third_bjet != -1 ) ? jet_btag_pt->at(third_bjet)   : -999;
-    ThirdJet_btag_eta_ = (third_bjet != -1 ) ? jet_btag_eta->at(third_bjet)  : -999;
-    ThirdJet_btag_phi_ = (third_bjet != -1 ) ? jet_btag_phi->at(third_bjet)  : -999;
-    ThirdJet_btag_flavor_ = (third_bjet != -1 ) ? jet_btag_flavor->at(third_bjet)  : -999;
-    ThirdJet_btag_discriminator_ = (third_bjet != -1 ) ? jet_btag_pfCSVv2IVF_discriminator->at(third_bjet)  : -999;
-    */
-    newtree->Fill();
+      Mass_METL = MetLMass;
+      newtree->Fill();
     }
-
+    
   }
- h_nTrueInteractions50->Write();
- h_nTrueInteractions100->Write();
 
- newfile->Write();  
+  h_nTrueInteractions50->Write();
+  h_nTrueInteractions100->Write();
 
- newtree->Print();
- newtree->AutoSave();
+  //newfile->Write(); 
+  //newtree->Print();
+  newtree->AutoSave();
 
   delete newfile;
-
   return 0;
 }
