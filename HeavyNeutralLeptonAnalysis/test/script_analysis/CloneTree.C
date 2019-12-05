@@ -77,36 +77,44 @@ using namespace RooFit;
 using namespace RooStats;
 
 
-int main(){
-  
+int main(int argc, char** argv){
 
+  if(argc < 4) {
+    std::cout<<"Arguments Missing!"<<std::endl;
+    std::cout<<"Usage:  "<<argv[0]<<"  path/to/ntuples  input_filename  isMC"<<std::endl;
+    return 0;
+  }
   //Get old file, old tree and set top branch address
   //TFile *oldfile = new TFile("/eos/cms/store/group/phys_exotica/HNL/Background/crab_Analysis_WZToLLLNu/Background_Analysis.root");
   //TFile *oldfile = new TFile("/user/moanwar/Run2016/CMSSW_8_0_29/src/HNL/HeavyNeutralLeptonAnalysis/test/signal/HNL_M5_mu_2.95.root");
   //TTree *oldtree = (TTree*)oldfile->Get("HeavyNeutralLepton/tree_");
+  std::string filepath = argv[1];
+  std::string filename = argv[2];
+  std::string   flagMC = argv[3];
 
-
+  if( (flagMC.find("true") == string::npos && flagMC.find("True") == string::npos) &&
+      (flagMC.find("false") == string::npos && flagMC.find("False") == string::npos) ){
+        std::cout<<" Flag for specifing data or MC processing should be only [true/True] or [false/False]\n";
+        return 0;
+      }
   //////selection cuts
 
   Float_t isoCut = 0.15;
-  bool isMC = true;
+  bool isMC = (flagMC.find("true") != string::npos || flagMC.find("True") != string::npos);
   //if I want to use a TChain.....
   //cout<< "starting..."<<endl;
   TChain * oldtree = new TChain("HeavyNeutralLepton/tree_","");
+  string tree ="HeavyNeutralLepton/tree_";
+  //Background
 
-  //oldtree->Add("/eos/cms/store/group/phys_exotica/HNL/Data/SingleMuon/crab_Run_2016B-v3_SingleMuon/Data_Analysis10.root/HeavyNeutralLepton/tree_");
+  oldtree->Add(Form("%s/%s/%s",filepath.c_str(),filename.c_str(),tree.c_str()));
 
 //=============================================================================================//
 
   TH1F* h_nTrueInteractions50      = new TH1F("nTrueInteractions50" , "nTrueInteractions 50 bin" , 50, 0., 50. );
   TH1F* h_nTrueInteractions100     = new TH1F("nTrueInteractions100" , "nTrueInteractions 100 bin" , 100, 0., 100. );
 
-//=============================================================================================//
-
-  char fileName[256];
-  cout<<"Please enter the name of the output root file you want to create (yyy.root) : "<<endl;
-  cin.getline(fileName,256);
-  TFile *newfile = new TFile(fileName,"recreate");
+  TFile *newfile = new TFile(filename.c_str(),"recreate");
 
   //TFile *newfile = new TFile("skimmedSignale.root","recreate");
   //Create a new file + a clone of old tree in new file 
@@ -115,7 +123,7 @@ int main(){
   //cout<<"cloning done"<<endl;
 
   // Long64_t nentries = oldtree->GetEntries();
-  Long64_t nentries = oldtree->GetEntriesFast();
+  Long64_t nentries = oldtree->GetEntries();
   cout  <<nentries<<endl;
 
 //======================= Old Tree Variables ==========================================// 
