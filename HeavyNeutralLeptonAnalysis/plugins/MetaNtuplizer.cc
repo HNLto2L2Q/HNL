@@ -76,7 +76,7 @@ private:
 
   TTree *meta_tree_;
   std::map<std::string, std::string> to_json_;
-  bool string_dumped_, isMC_, hasLhe_, useWeighted_, triedWeighted_;
+  bool string_dumped_, isMC_, isMCSignal_, hasLhe_, useWeighted_, triedWeighted_;
   TH1F *pu_distro_;
   TH1F *histo_ctau;
   unsigned int lumi_;
@@ -85,6 +85,7 @@ private:
   unsigned long long processed_ = 0;
   long long processedWeighted_ = 0; 
   vector<double> sumw_;
+  float branch_ctau_;
 };
 
 //
@@ -105,6 +106,7 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   pu_token_(consumes< std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puSrc"))),
   string_dumped_(false),
   isMC_(iConfig.getParameter<bool>("isMC")),
+  isMCSignal_(iConfig.getParameter<bool>("isMCSignal")),
 	hasLhe_(iConfig.getParameter<bool>("hasLHE")),
 	sumw_()
 {
@@ -126,9 +128,12 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   meta_tree_->Branch("processed", &processed_);
   meta_tree_->Branch("processedWeighted", &processedWeighted_);
   meta_tree_->Branch("sum_weigts", &sumw_);
+  meta_tree_->Branch("branch_ctau", &branch_ctau_);
 
   pu_distro_   = fs->make<TH1F>("PUDistribution", "PUDistribution", 100, 0, 100);
+
   histo_ctau   = fs->make<TH1F>("ctau", "ctau", 100, 0, 100);
+
 }
 
 //
@@ -147,7 +152,7 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 	double weight = 1.;
 
 	int npu = -1;
-	if(isMC_) {
+	if(isMC_ || isMCSignal_) {
 	  edm::Handle< std::vector<PileupSummaryInfo> > pu_info;
 	  iEvent.getByToken(pu_token_, pu_info);
 
@@ -170,7 +175,7 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 		}
 		if(lheinfo->weights().size() == 0) 
 			throw cms::Exception("RuntimeError") << "The LHEInfo I got works but has not weights!" << std::endl;
-
+		
 		vector<double> ctau_info = lheinfo.product()->hepeup().VTIMUP;
 		vector<int> ctau_pdgid = lheinfo.product()->hepeup().IDUP;
 
@@ -184,7 +189,9 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 		    flag = i;
 		}
 		if(flag != -1){
-		  histo_ctau->Fill(ctau_info.at(flag));}
+		  histo_ctau->Fill(ctau_info.at(flag));
+		  branch_ctau_ = ctau_info.at(flag);
+		}
 
 		//std::cout << weight << std::endl;
 		size_t nws = lheinfo->weights().size();
