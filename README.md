@@ -27,5 +27,10 @@ cp files/L1PrefiringMaps_new.root data/
 popd 
 
 git clone git@github.com:HNLto2L2Q/HNL.git
+pushd HNL/
+# For 2016
+git checkout run_2016v2
+popd
+
 scramv1 b -j 8
 ```
