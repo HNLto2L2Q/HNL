@@ -21,7 +21,7 @@ hasLHE_ = True
 #        hasLHE_ = False
 #    else:
 #        hasLHE_ = True
-    
+
 #if pyEnable == 1:
 #    hasLHE_ == True
 #else:
@@ -29,7 +29,7 @@ hasLHE_ = True
 
 #print hasLHE_
 
-debugLevel    = -1 
+debugLevel    = -1
 
 isMC_         = True
 isMCSignal_   = False
@@ -75,16 +75,16 @@ process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
-process.source = cms.Source("PoolSource", 
+process.source = cms.Source("PoolSource",
                             fileNames =  cms.untracked.vstring(
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
 
 #'/store/mc/RunIISpring16MiniAODv2/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v4/40000/04E3024A-EF2B-E611-9794-02163E013F44.root'#2016 sample
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root' 
-'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/100000/4C8087A0-F5E9-E811-829E-001E6724807F.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/280000/42B83DB5-9C21-E911-AE73-0CC47AC52A94.root'
-#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
+#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root'
+#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/100000/4C8087A0-F5E9-E811-829E-001E6724807F.root'
+'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/280000/42B83DB5-9C21-E911-AE73-0CC47AC52A94.root'
+#'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/120000/96922A9A-B5B8-E811-986B-02163E017F81.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/F0B31586-DE42-E811-9BF1-0242AC1C0500.root'
@@ -132,7 +132,7 @@ else :    jetCorrectorLevels = ['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Res
 process.jetCorrFactors = process.updatedPatJetCorrFactors.clone(
     src = cms.InputTag("slimmedJets"),
     levels = jetCorrectorLevels,
-    payload = 'AK4PFchs') 
+    payload = 'AK4PFchs')
 
 process.slimmedJetsJEC = process.updatedPatJets.clone(
     jetSource = cms.InputTag("slimmedJets"),
@@ -215,7 +215,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',
                                             genEventInfoProduct   = cms.InputTag("generator"),
                                             PUInfo                = cms.InputTag("slimmedAddPileupInfo"),
                                             lheEventProducts      = cms.InputTag("externalLHEProducer"),
-                                            SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"), 
+                                            SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"),
                                             electronsVeto  = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-veto"),
                                             electronsLoose = cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-loose"),
                                             electronsMedium= cms.InputTag("egmGsfElectronIDs:cutBasedElectronID-Summer16-80X-V1-medium"),
@@ -254,7 +254,7 @@ if isMC_:
         *process.jetCorrFactors
         *process.slimmedJetsJEC
         *process.prefiringweight
-        #*process.fullPatMetSequenceModifiedMET 
+        #*process.fullPatMetSequenceModifiedMET
         *process.electronMVAValueMapProducer
         *process.btagging
         *process.displacedInclusiveVertexing
@@ -263,7 +263,7 @@ if isMC_:
         *process.jetSmearingDown
         *process.HeavyNeutralLepton
     )
-else : 
+else :
     process.p = cms.Path(
         process.metaTree
         *process.LeptonsFilter
@@ -276,4 +276,3 @@ else :
         *process.displacedInclusiveVertexing
         *process.HeavyNeutralLepton
     )
-    
