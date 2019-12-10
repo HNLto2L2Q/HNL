@@ -73,7 +73,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(10)
 )
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
@@ -83,6 +83,7 @@ process.source = cms.Source("PoolSource",
 #'file:/afs/cern.ch/user/a/atalierc/CMSSW_9_4_10/src/HNL/HeavyNeutralLeptonAnalysis/test/HIG-RunIIFall17MiniAODv2-00666.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14_ext1-v2/50000/FE8D896F-386C-E811-AAAB-001E6779264E.root' 
 'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/100000/4C8087A0-F5E9-E811-829E-001E6724807F.root'
+# 'root://xrootd-cms.infn.it//store/data/Run2016H/SingleMuon/MINIAOD/17Jul2018-v1/40000/D8CBE17C-8C8B-E811-BBB1-001E67E6920C.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/280000/42B83DB5-9C21-E911-AE73-0CC47AC52A94.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root' 
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
@@ -248,7 +249,7 @@ process.TriggerSelection = cms.EDFilter( "TriggerResultsFilter",
 if isMC_:
         process.p = cms.Path(
         process.metaTree
-        #*process.TriggerSelection
+        *process.TriggerSelection
         *process.LeptonsFilter
         *process.egmGsfElectronIDSequence
         *process.jetCorrFactors
