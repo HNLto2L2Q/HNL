@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
-displacedInclusiveVertexFinder  = cms.EDProducer("DisplacedInclusiveVertexFinder",
-#displacedInclusiveVertexFinder  = cms.EDProducer("InclusiveVertexFinder",
+#displacedInclusiveVertexFinder  = cms.EDProducer("DisplacedInclusiveVertexFinder",
+displacedInclusiveVertexFinder  = cms.EDProducer("InclusiveVertexFinder",
        beamSpot = cms.InputTag("offlineBeamSpot"),
        primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
        #tracks = cms.InputTag("displacedAssocToTracks","displacedAssocToTracks","ANA"),

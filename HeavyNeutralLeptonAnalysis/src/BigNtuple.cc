@@ -16,6 +16,37 @@ void BigNtuple::fill_evtInfo(const edm::EventID& id) {
   evt_  = id.event();
 }
 
+void BigNtuple::set_weightsInfo(TTree* tree){
+  tree->Branch("gen_weight" , &gen_weight_);
+  tree->Branch("lhe_weight" , &lhe_weight_);
+  tree->Branch("lhe_ctau" , &lhe_ctau_);
+}
+
+void BigNtuple::fill_weightsInfo(const edm::Handle<GenEventInfoProduct> genEventInfoHandle, edm::Handle<LHEEventProduct> lheinfo){
+
+  if(!lheinfo.isValid()) {
+			throw cms::Exception("RuntimeError") << "The Handle of LHEInfo I was trying to access is not valid!" << std::endl;
+		}
+		if(lheinfo->weights().size() == 0)
+			throw cms::Exception("RuntimeError") << "The LHEInfo I got works but has not weights!" << std::endl;
+
+		vector<double> ctau_info = lheinfo.product()->hepeup().VTIMUP;
+		vector<int> ctau_pdgid = lheinfo.product()->hepeup().IDUP;
+
+		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
+
+		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
+		//histo_ctau->Fill(*flag);
+		int flag = -1;
+		for(unsigned int i = 0; i < ctau_pdgid.size(); i++){
+		  if(fabs(ctau_pdgid.at(i)) == 9990012 || fabs(ctau_pdgid.at(i)) == 9900012 || fabs(ctau_pdgid.at(i)) == 9900014 || fabs(ctau_pdgid.at(i)) == 9900016)
+		    flag = i;
+		}
+		if(flag != -1) lhe_ctau_ = ctau_info.at(flag);
+
+    gen_weight_ = genEventInfoHandle->weight();
+    lhe_weight_ = lheinfo->weights()[0].wgt;
+}
 
 void BigNtuple::set_prefiring(TTree* tree){
   tree->Branch("prefire_weight" , &prefire_weight_);
@@ -42,8 +73,10 @@ void BigNtuple::set_mc_genInfo(TTree* tree) {
   tree->Branch("lep_VY",    &lep_VY_);
   tree->Branch("lep_VZ",    &lep_VZ_);
   tree->Branch("lep_status",&lep_status_);
+  tree->Branch("lep_isprompt",&lep_isprompt_);
+
 }
-void  BigNtuple::fill_mc_genInfo(const reco::Candidate* genPart , float decay){
+void  BigNtuple::fill_mc_genInfo(const reco::Candidate* genPart , float decay, float prompt_status){
 
     lep_PID_.push_back(genPart->pdgId());
     lep_Charge_.push_back(genPart->charge());
@@ -57,10 +90,11 @@ void  BigNtuple::fill_mc_genInfo(const reco::Candidate* genPart , float decay){
     lep_VY_.push_back(genPart->vertex().y());
     lep_VZ_.push_back(genPart->vertex().z());
     lep_status_.push_back(genPart->status());
+    lep_isprompt_.push_back(prompt_status);
 }
 
 void BigNtuple::set_pv_genInfo(TTree* tree) {
-  
+
   tree->Branch("lep1_gen_PID" , &lep1_gen_PID_, "lep1_gen_PID/I");
   tree->Branch("lep1_gen_Charge",&lep1_gen_Charge_, "lep1_gen_Charge/I");
   tree->Branch("lep1_gen_Pt",&lep1_gen_Pt_,"lep1_gen_Pt/F");
@@ -83,7 +117,7 @@ void BigNtuple::set_pv_genInfo(TTree* tree) {
 
 
 void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt ,std::vector<reco::GenParticle> prtCollection ){
-  float vx = prt.vx(), vy = prt.vy(), vz = prt.vz();  
+  float vx = prt.vx(), vy = prt.vy(), vz = prt.vz();
   reco::GenParticle lep1;
   auto pOrdering = [&](reco::GenParticle first, reco::GenParticle second){return first.pt() > second.pt();};
   std::sort(prtCollection.begin(), prtCollection.end(), pOrdering);
@@ -92,7 +126,7 @@ void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt ,std::vector<reco::
       lep1 = genPart;
       break;
     }
-  }//loop on daughter of HNL to find the lept2 with highest p                                                                                                                                              
+  }//loop on daughter of HNL to find the lept2 with highest p
   //cout<<"the pdgId of first muon  = "<<lep1.pdgId()<<" the pT of first lep 1 = "<<lep1.pt()<<" the mother of first muon = "<<lep1.mother()->pdgId() <<endl;
   lep1_gen_PID_ = lep1.pdgId();
   // genkinematics
@@ -120,7 +154,7 @@ void  BigNtuple::fill_pv_genInfo(const reco::GenParticle prt ,std::vector<reco::
 }//filling the information of the HNL (mjN) particle
 
 void BigNtuple::set_sv_genInfo(TTree* tree) {
-  
+
   tree->Branch("lep2_gen_PID" , &lep2_gen_PID_, "lep2_gen_PID/I");
   tree->Branch("lep2_gen_Charge",&lep2_gen_Charge_,"lep2_gen_Charge/I");
   tree->Branch("lep2_gen_Pt",&lep2_gen_Pt_,"lep2_gen_Pt/F");
@@ -143,7 +177,7 @@ void BigNtuple::set_sv_genInfo(TTree* tree) {
 
 }
 
-void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco::GenParticle> prtCollection ){ 
+void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco::GenParticle> prtCollection ){
   reco::GenParticle lep2;
   float vx = hnl.vx(), vy = hnl.vy(), vz = hnl.vz();
   auto pOrdering = [&](reco::GenParticle first, reco::GenParticle second){return first.pt() > second.pt();};
@@ -167,17 +201,17 @@ void  BigNtuple::fill_sv_genInfo(const reco::GenParticle hnl , std::vector<reco:
   //set_sv_x(lep2.vx());
   //set_sv_y(lep2.vy());
   //set_sv_z(lep2.vz());
-  
+
   // Vertexflight ()
   float dx = vx - lep2.vx(), dy = vy - lep2.vy(), dz = vz - lep2.vz();
   float beta_hnl  = hnl.p() / hnl.energy();
   float gamma_hnl = hnl.energy() / hnl.mass();
-  
+
   lep2_gen_MomLxyz_ = std::sqrt(dx*dx + dy*dy + dz*dz);
   lep2_gen_MomLz_ = dz;
   lep2_gen_MomLxy_ = std::sqrt(dx*dx + dy*dy);
   lep2_gen_MomCTau0_ = std::sqrt(dx*dx + dy*dy + dz*dz) / (beta_hnl * gamma_hnl);
-  
+
   for(auto genPart: prtCollection){
     daugh_gen_PID_.push_back(genPart.pdgId());
     daugh_gen_Pt_.push_back(genPart.pt());
@@ -214,7 +248,7 @@ void BigNtuple::fill_pvInfo(const reco::VertexCollection& pvs){
 
   float x  = pv.x(), y = pv.y(), z = pv.z();
   float xE = pv.xError(), yE = pv.yError(), zE = pv.zError();
-  
+
   pvX_ = x;
   pvY_ = y;
   pvZ_ = z;
@@ -227,7 +261,7 @@ void BigNtuple::fill_pvInfo(const reco::VertexCollection& pvs){
   pvLxySigma_ = std::sqrt( x * x + y * y ) / std::sqrt(xE * xE + yE * yE);
   pvLxyzSigma_ = std::sqrt( x * x + y * y + z * z )/ std::sqrt(xE * xE + yE * yE + zE * zE);
   pvChi2_ = pv.chi2();
-  
+
   reco::Vertex::trackRef_iterator vtxIter = pv.tracks_begin();
   float  SumPtSq =  0;
   int NTrack = 0;
@@ -289,12 +323,12 @@ void BigNtuple::fill_trigInfo(const edm::TriggerResults& triggerResults, const e
     const std::string &name = trigNames.triggerName(i);
     bool fired = triggerResults.accept(i);
     if(!fired) continue;
-    
+
     passEle32_WPTight_Gsf_ |= name.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos;
     passMu3_PFJet40_    |= name.find("HLT_Mu3_PFJet40_v")    != std::string::npos;
     passMu8_TrkIsoVVL_  |= name.find("HLT_Mu8_TrkIsoVVL_v")  != std::string::npos;
     passMu17_TrkIsoVVL_ |= name.find("HLT_Mu17_TrkIsoVVL_v") != std::string::npos;
-    
+
     passIsoMuTk18_  |=  name.find("HLT_IsoTkMu18_v") != std::string::npos;
     passIsoMuTk20_  |=  name.find("HLT_IsoTkMu20_v") != std::string::npos;
     passIsoMuTk22_  |=  name.find("HLT_IsoTkMu22_v") != std::string::npos;
@@ -684,7 +718,7 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
 
   //projection in x, y (and z) of the sum of the tracks which form the vertex
   TVector3 sv_momentum_3D( bestVertex.p4().x(), bestVertex.p4().y(), bestVertex.p4().z());
-  TVector3 sv_momentum_2D( bestVertex.p4().x(), bestVertex.p4().y(), 0); 
+  TVector3 sv_momentum_2D( bestVertex.p4().x(), bestVertex.p4().y(), 0);
 
   float sign2D =  (sv_momentum_2D * (svVector2D - pvVector2D)) > 0 ? -1: 1;
   float sign3D =  (sv_momentum_3D * (svVector3D - pvVector3D)) > 0 ? -1: 1;
@@ -698,7 +732,7 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
 
   float svAngle3D = pvToVertex3D.Angle(sv_momentum_3D);
   float svAngle2D = pvToVertex2D.Angle(sv_momentum_2D);
-  
+
   //bestVertex info
   best_sv_px_ = bestVertex.p4().px();
   best_sv_py_ = bestVertex.p4().py();
@@ -709,12 +743,12 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
   best_sv_recox_ = bestVertex.x();
   best_sv_recoy_ = bestVertex.y();
   best_sv_recoz_ = bestVertex.z();
-    
+
 
   sv_lx_.push_back(dx);
   sv_ly_.push_back(dy);
   sv_lz_.push_back(dz);
-  
+
   sv_numTracks_.push_back(bestVertex.nTracks());
   sv_x_.push_back(x);
   sv_y_.push_back(y);
@@ -986,7 +1020,7 @@ void BigNtuple::fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp 
       jet_daughter_NumberOfHits_.back().push_back(daughter->numberOfHits());
       jet_daughter_NumberOfPixelHits_.back().push_back(daughter->numberOfPixelHits());
       jet_daughter_HasTrack_.back().push_back(true);
-    } 
+    }
   }
 
 
@@ -1052,7 +1086,7 @@ void BigNtuple::set_eleInfo(TTree* tree){
   tree->Branch("ele_dxy",&ele_dxy_);
   tree->Branch("ele_dz",&ele_dz_);
   tree->Branch("ele_3dIP",& ele_3dIP);
-  tree->Branch("ele_3dIPSig",& ele_3dIPSig); 
+  tree->Branch("ele_3dIPSig",& ele_3dIPSig);
   tree->Branch("ele_2dIP",& ele_2dIP );
   tree->Branch("ele_2dIPSig",& ele_2dIPSig);
 
@@ -1109,7 +1143,7 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
 
   if(ele_.superCluster().isNonnull() and ele_.superCluster()->seed().isNonnull())
     dEtaInSeed = ele_.deltaEtaSuperClusterTrackAtVtx() - ele_.superCluster()->eta() + ele_.superCluster()->seed()->eta();
-  
+
   else dEtaInSeed =  std::numeric_limits<float>::max();
 
   ele_FirstGenMatch_.push_back(match1);
@@ -1118,7 +1152,7 @@ void BigNtuple::fill_eleInfo(const pat::Electron& ele_, const reco::Vertex& pv, 
 
   ele_Et_.push_back(ele_.superCluster()->energy() * sin(ele_.p4().theta()));
   ele_EtFromCaloEn_.push_back(ele_.caloEnergy() * sin(ele_.p4().theta()));
-  
+
   ele_pt_.push_back(ele_.pt());
   ele_px_.push_back(ele_.px());
   ele_py_.push_back(ele_.py());
@@ -1347,4 +1381,3 @@ void BigNtuple::set_massCorrection(TTree *tree){
 void BigNtuple::fill_massCorrection(double mass_corr){
   sv_mass_corr_ = mass_corr;
 }
-
