@@ -30,7 +30,7 @@ git cms-merge-topic lathomas:L1Prefiring_9_4_9
 pushd L1Prefiring/EventWeightProducer/
 mkdir data
 cp files/L1PrefiringMaps_new.root data/
-popd 
+popd
 
 # Official Prescription for calculating corrections and uncertainties on Missing Transverse Energy (MET)
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10
@@ -39,6 +39,9 @@ git cms-merge-topic cms-met:METFixEE2017_949_v2
 #PLEASE CHECK THE BAD CHANNEL CORRECTION
 #https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_ecal_BadCalibReducedM
 #they are included in the final cgf but they are 'WORK IN PROGRESS' in the twiki
+
+## Adding the modify IVF
+git cms-merge-topic clacaputo:HNL_IVF_Mods
 
 git clone git@github.com:HNLto2L2Q/HNL.git
 pushd HNL/

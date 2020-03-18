@@ -1,6 +1,6 @@
 #ifndef HNL_HeavyNeutralLeptonAnalysis_BigNtuple
 #define HNL_HeavyNeutralLeptonAnalysis_BigNtuple
-/* 
+/*
 	 Class: BigNtuple
 	 Simple interface class to hide all the ROOT I/O from the plugin and make it more readable
 */
@@ -31,6 +31,11 @@
 #include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaHcalIsolation.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 #include "DataFormats/Common/interface/Handle.h"
+
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+
 
 class BigNtuple {
 public:
@@ -88,6 +93,9 @@ public:
 	void set_evtInfo(TTree* tree);
 	void fill_evtInfo(const edm::EventID& id, int& pile_up_info);
 
+	void set_weightsInfo(TTree* tree);
+	void fill_weightsInfo(const edm::Handle<GenEventInfoProduct> genEventInfoHandle, edm::Handle<LHEEventProduct> lheinfo);
+
         void set_prefiring(TTree* tree);
         void fill_prefiring(double weight, double weightup, double weightdown);
 
@@ -109,7 +117,7 @@ public:
 
 	void set_muInfo(TTree* tree);
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , std::pair<double, double> match1 , std::pair<double,double> match2 );
-	
+
 	void set_jetInfo(TTree* tree);
 	//void fill_jetInfo(const pat::Jet& jet);
 	void fill_jetInfo(const pat::Jet& jet, float smeared,float smearedUp ,float smearedDown ,double un , double unSmeared );
@@ -132,7 +140,7 @@ public:
 
         //void set_bjetInfo(TTree* tree);
 	//void fill_bjetInfo(const pat::Jet& jet, int flavor);
- 
+
 	void reset() {
 	  BigNtuple dummy; //create a new one
 	  *this = dummy; //use assignment to reset
@@ -148,7 +156,11 @@ private:
 	int tnpv = -1;
 	unsigned long long evt_ = 0;
 
-	// primary vertex infos  -- they shouldn't be vector 
+	float gen_weight_ = 0;
+	float lhe_weight_ = 0;
+	float lhe_ctau_   = 0;
+
+	// primary vertex infos  -- they shouldn't be vector
 	float pvX_ = -1000;
 	float pvY_ = -1000;
 	float pvZ_ = -1000;
@@ -224,7 +236,7 @@ private:
 	bool passIsoMuTk27_  = 0;
 	bool passIsoMuTk17e_ = 0;
 	bool passIsoMuTk22e_ = 0;
-	
+
 	bool passIsoMu18_  = 0;
 	bool passIsoMu20_  = 0;
 	bool passIsoMu22_  = 0;
@@ -234,10 +246,10 @@ private:
 	bool passIsoMu22e_ = 0;
 	bool passTkMu17_   = 0;
 	bool passTkMu20_   = 0;
-	
+
 	bool passIsoMu24All_ = 0;
 	bool passIsoMu27All_ = 0;
-	
+
 	bool passDoubleMu17TrkIsoMu8_     = 0;
 	bool passDoubleMu17TrkIsoTkMu8_   = 0;
 	bool passDoubleTkMu17TrkIsoTkMu8_ = 0;
@@ -258,7 +270,7 @@ private:
 	float best_sv_pz_ = 999;
 	float best_sv_pt_ = 999;
 	float best_sv_energy_ = 999;
- 
+
         float best_sv_recox_ = 999;
         float best_sv_recoy_ = 999;
 	float best_sv_recoz_ = 999;
@@ -446,21 +458,21 @@ private:
 	//electron info
 
 	std::vector<float>   ele_Et_;
-	std::vector<float>   ele_EtFromCaloEn_;    
-	std::vector<float>   ele_pt_; 
+	std::vector<float>   ele_EtFromCaloEn_;
+	std::vector<float>   ele_pt_;
 	std::vector<float>   ele_etaSC_;
 	std::vector<float>   ele_phiSC_;
-	std::vector<float>   ele_phiWidth_; 
-	std::vector<float>   ele_etaWidth_; 
+	std::vector<float>   ele_phiWidth_;
+	std::vector<float>   ele_etaWidth_;
 	std::vector<float>   ele_energySC_;
 	std::vector<float>   ele_thetaSC_;
 	std::vector<float>   ele_preshowerEnergySC_;
-	std::vector<float>   ele_etaTrack_; 
+	std::vector<float>   ele_etaTrack_;
 	std::vector<float>   ele_phiTrack_;
-	std::vector<float>   ele_thetaTrack_;   
+	std::vector<float>   ele_thetaTrack_;
 	std::vector<float>   ele_x_;
 	std::vector<float>   ele_y_;
-	std::vector<float>   ele_z_;  
+	std::vector<float>   ele_z_;
 	std::vector<float>   ele_e2x5Max_;
 	std::vector<float>   ele_e1x5_;
 	std::vector<float>   ele_e5x5_;
@@ -471,14 +483,14 @@ private:
 	std::vector<float>   ele_e1x5Full5x5_;
 	std::vector<float>   ele_e5x5Full5x5_;
 	std::vector<float>   ele_e2x5MaxOver5x5Full5x5_;
-	std::vector<float>   ele_e1x5Over5x5Full5x5_;  
+	std::vector<float>   ele_e1x5Over5x5Full5x5_;
 	std::vector<float>   ele_zTrackPositionAtVtx_;
 	std::vector<float>   ele_hadronicOverEm_;
 	std::vector<float>   ele_deltaEtaInSC_;
 	std::vector<float>   ele_deltaPhiInSC_;
 	std::vector<float>   ele_deltaEtaInSeedCluster_;
 	std::vector<float>   ele_deltaPhiInSeedCluster_;
-	std::vector<float>   ele_sigmaIetaIeta_;  
+	std::vector<float>   ele_sigmaIetaIeta_;
 	std::vector<float>   ele_e2x5Right_;
 	std::vector<float>   ele_e2x5Left_;
 	std::vector<float>   ele_e2x5Top_;
@@ -491,41 +503,41 @@ private:
 	std::vector<float>   ele_e3x3_;
 	std::vector<float>   ele_frac51_;
 	std::vector<float>   ele_frac15_;
-	
+
 	std::vector<int>   ele_rawId_;
 	std::vector<int>   ele_ieta_;
 	std::vector<int>   ele_nbOfMissingHits_;
 	std::vector<int>   ele_charge_;
 	std::vector<bool>  ele_isEcalDrivenSeed_;
 	std::vector<bool>  ele_isPassConversionVeto_;
-  
+
 	std::vector<float>   ele_dxy_;
-	std::vector<float>   ele_dz_; 
+	std::vector<float>   ele_dz_;
 	std::vector<float>   ele_rhoIso_;
 	std::vector<float>   ele_fbrem_;
 	std::vector<float>   ele_EoverP_;
-	std::vector<float>   ele_Xposition_;   
-	std::vector<float>   ele_Yposition_;   
+	std::vector<float>   ele_Xposition_;
+	std::vector<float>   ele_Yposition_;
 	std::vector<float>   ele_dr03TkSumPt_;
 	std::vector<float>   ele_hcalDepth1OverEcal_;
 	std::vector<float>   ele_hcalDepth2OverEcal_;
 	std::vector<float>   ele_dr03HcalDepth2TowerSumEt_;
-	std::vector<float>   ele_hcalDepth2TowerSumEtNoVeto_; 
-	std::vector<float>   ele_hcalDepth1TowerSumEtNoVeto_; 
+	std::vector<float>   ele_hcalDepth2TowerSumEtNoVeto_;
+	std::vector<float>   ele_hcalDepth1TowerSumEtNoVeto_;
 	std::vector<float>   ele_EcalPlusHcald1iso_;
 	std::vector<float>   ele_dr03EcalRecHitSumEt_;
 	std::vector<float>   ele_dr03HcalDepth1TowerSumEt_;
 	std::vector<float>   ele_dr03HcalDepth1TowerSumEtBc_;
 	std::vector<float>   ele_pfSumPhotonEt_;
-	std::vector<float>   ele_pfSumChargedHadronPt_; 
+	std::vector<float>   ele_pfSumChargedHadronPt_;
 	std::vector<float>   ele_pfSumNeutralHadronEt_;
-	std::vector<float>   ele_pfSumPUPt_;  
+	std::vector<float>   ele_pfSumPUPt_;
 	std::vector<float>   ele_pfDeltaBeta_;
 	std::vector<std::pair<double,double>>   ele_FirstGenMatch_;
 	std::vector<std::pair<double,double>>   ele_SecondGenMatch_;
 
 	std::vector<float>   ele_Mva2016_;
-	std::vector<float>   ele_CutVeto_; 
+	std::vector<float>   ele_CutVeto_;
 	std::vector<float>   ele_CutLoose_;
 	std::vector<float>   ele_CutMedium_;
 	std::vector<float>   ele_CutTight_;
@@ -558,7 +570,7 @@ private:
 	*/
 
 	//MET info
-	
+
 	float  pfMet_et_ = -1000;
 	float  pfMet_pt_ = -1000;
 	float  pfMet_phi_ = -1000;
@@ -604,7 +616,7 @@ private:
 
 
 
-}; 
+};
 
 
 #endif
