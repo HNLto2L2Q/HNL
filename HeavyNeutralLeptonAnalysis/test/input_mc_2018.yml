@@ -167,3 +167,123 @@ samples:
     xsec: 34.97 #https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8
     unit_per_job: 1
     prescale : 0
+#-------- QCD ---------
+  QCD_Pt-80to120_ext:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-80to120_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM
+    xsec: 106500.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-80to120:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-80to120_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM
+    xsec: 106500.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-800to120:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-800to1000_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext3-v2/MINIAODSIM
+    xsec: 4.723
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-600to800:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-600to800_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM
+    xsec: 25.25
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-50to80:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM
+    xsec: 452200.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-470to600_ext:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-470to600_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM
+    xsec: 79.37
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-470to600:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-470to600_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM
+    xsec: 79.37
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-30to50:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-30to50_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM
+    xsec: 1662000.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-300to470_ext:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-300to470_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext3-v1/MINIAODSIM
+    xsec: 800.9
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-300to470:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-300to470_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM
+    xsec: 800.9
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-20to30:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-20to30_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v4/MINIAODSIM
+    xsec: 3160000.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-170to300:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-170to300_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM
+    xsec: 8683.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-15to20:
+    group: QCD
+    era: '2018'
+    dsname:  /QCD_Pt-15to20_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v3/MINIAODSIM
+    xsec: 2799000.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-120to170_ext:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-120to170_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15_ext1-v2/MINIAODSIM
+    xsec: 21230.0
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0
+  QCD_Pt-120to170:
+    group: QCD
+    era: '2018'
+    dsname: /QCD_Pt-120to170_MuEnrichedPt5_TuneCP5_13TeV_pythia8/RunIIAutumn18MiniAOD-102X_upgrade2018_realistic_v15-v1/MINIAODSIM
+    unit_per_job: 1
+    prescale: 0
+    hasLHE: 0

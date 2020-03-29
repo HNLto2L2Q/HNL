@@ -41,15 +41,20 @@ options.register(
     "offset to split sample"
 )
 
+options.register(
+    'hasLHE', True,
+    VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    "The sample has LHE products"
+)
 
 options.parseArguments()
 #hasLHE_ = options.Flag
 
 period_ = options.period
-hasLHE_ = True
+hasLHE_ = options.hasLHE
 debugLevel    = -1 
 isMC_         = options.isMC
-isMCSignal_    = False
+isMCSignal_    = True
 prescale_ = options.prescale
 offset_ = options.offset
 GT_MC = '102X_upgrade2018_realistic_v18'#94X_mc2017_realistic_v14
@@ -97,7 +102,7 @@ if prescale_ >= 0:
 ###################### input file for testing ##########################
 process.source = cms.Source("PoolSource", 
                             fileNames =  cms.untracked.vstring(
-                                '/store/data/Run2018D/SingleMuon/MINIAOD/PromptReco-v2/000/321/735/00000/86409C5E-C7AA-E811-858F-FA163E33C798.root'
+                                '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-80to120_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v2/110000/99C13D85-30DE-5349-930E-D1662BE02690.root'
                             )
 )
 

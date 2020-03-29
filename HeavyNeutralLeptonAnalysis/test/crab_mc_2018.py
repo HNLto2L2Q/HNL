@@ -1,4 +1,4 @@
-from CRABClient.UserUtilities import config, ClientException, getUsernameFromSiteDB
+from CRABClient.UserUtilities import config, ClientException, getUsernameFromCRIC
 #from input_crab_data import dataset_files
 import yaml
 
@@ -10,7 +10,7 @@ config.General.workArea = 'HNL_MC_2018'
 config.section_('Data')
 config.Data.splitting = 'FileBased'
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/%s/HNL_MC_2018' % (getUsernameFromSiteDB())
+config.Data.outLFNDirBase = '/store/user/%s/HNL_MC_2018' % (getUsernameFromCRIC())
 config.Data.inputDBS = 'global'
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
@@ -21,7 +21,7 @@ config.section_('User')
 config.section_('Site')
 config.Site.storageSite = 'T2_BE_UCL'
 
-
+from pdb import set_trace
 if __name__ == '__main__':
 
     from CRABAPI.RawCommand import crabCommand
@@ -35,17 +35,19 @@ if __name__ == '__main__':
        doc = yaml.load(f)
        samples = doc['samples'].keys()
        for sample in samples:
+         if 'QCD' not in sample: continue
          name       = sample
          unitPerJob = doc['samples'][sample]['unit_per_job'] 
          dataset    = doc['samples'][sample]['dsname']
          group      = doc['samples'][sample]['group']
          prescaleValue = int(doc['samples'][sample]['prescale'])
+         hasLHE = bool(doc['samples'][sample].get('hasLHE', 1))
 
          print dataset, unitPerJob, name, prescaleValue
          config.Data.inputDataset = dataset
          config.General.requestName = name
          config.Data.unitsPerJob = int(unitPerJob)
-         config.JobType.pyCfgParams = ['isMC=True']
+         config.JobType.pyCfgParams = ['isMC=True', 'hasLHE=%s' % hasLHE]
          
          if prescaleValue > 0:
              print 'further splitting...'
@@ -55,7 +57,7 @@ if __name__ == '__main__':
                  config.Data.inputDataset = dataset
                  config.General.requestName = name + '_'  + str(i)
                  config.Data.unitsPerJob = int(unitPerJob)
-                 config.JobType.pyCfgParams = ['isMC=True','prescale=%s'%prescaleValue, 'offset=%s'%i]
+                 config.JobType.pyCfgParams = ['isMC=True','prescale=%s'%prescaleValue, 'offset=%s'%i, 'hasLHE=%s' % hasLHE]
                  crabCommand('submit', config = config, dryrun = False)
 
 
