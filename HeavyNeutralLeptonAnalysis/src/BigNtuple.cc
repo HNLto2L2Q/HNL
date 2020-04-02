@@ -751,8 +751,8 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
 
   sv_tracks_Sumcharge_.push_back(ch);
   sv_tracks_Sumpt_.push_back(pt);
-  sv_match_dxyz.push_back(match.first);
-  sv_match_dxy.push_back(match.second);
+  sv_match_dxyz_.push_back(match.first);
+  sv_match_dxy_.push_back(match.second);
 
 }
 

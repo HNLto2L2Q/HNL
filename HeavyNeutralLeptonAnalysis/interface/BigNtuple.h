@@ -315,16 +315,14 @@ private:
 	std::vector<std::vector<float> > sv_tracks_dxy_;
 	std::vector<std::vector<float> > sv_tracks_dxyz_;
 
-	float sv_match_dxyz_;
-	float sv_match_dxy_;
 	std::vector<float> sv_lx_;
 	std::vector<float> sv_ly_;
 	std::vector<float> sv_lz_;
 
 	std::vector<int  > sv_tracks_Sumcharge_;
 	std::vector<float> sv_tracks_Sumpt_;
-	std::vector<float> sv_match_dxy;
-	std::vector<float> sv_match_dxyz;
+	std::vector<float> sv_match_dxy_;
+	std::vector<float> sv_match_dxyz_;
 
 
 	//muon infos

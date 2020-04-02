@@ -71,10 +71,11 @@ for yml in ymls:
         pwd = os.getcwd()
 
         yml_name = yml.split('.')[0]
-        #createFolder(inputs_folder+yml_name)
-        process_folder_name = logs_folder+yml_name+ "/" + tag
+
+        process_folder_name = inputs_folder + yml_name + "/" + tag
+        logs_folder_name    = logs_folder   + yml_name + "/" + tag
         createFolder(process_folder_name)
-        # createFolder(outputs_folder)
+        createFolder(logs_folder_name)
 
         samples = yaml.load(f)
 

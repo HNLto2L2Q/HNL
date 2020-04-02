@@ -437,10 +437,15 @@ std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_et
 
 //===================================== Displaced Vertex Gen Match ================================================//
 std::pair<float, float> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco) {
-  double metric_xyz = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())) + ((vgen_z-vreco.z())*(vgen_z-vreco.z())));
-  double metric_xy = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())));
-  return make_pair(metric_xyz, metric_xy);
-}
+  float metric_xyz = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())) + ((vgen_z-vreco.z())*(vgen_z-vreco.z())));
+  float metric_xy = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())));
+  if(metric_xyz < 0.2){
+    return make_pair(metric_xyz, metric_xy);
+    }
+    else{
+      return make_pair(-999., -999.);
+    }
+  }
 
 
 // ------------ method called for each event  ------------
@@ -665,7 +670,7 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
 
 	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_mu) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
-	 ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true);
+   ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true);
        }
      }
      //file muon branches with events contain sv
