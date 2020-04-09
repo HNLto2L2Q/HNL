@@ -18,8 +18,8 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing('analysis')
 options.register(
-    'period', 'A', 
-    VarParsing.multiplicity.singleton, VarParsing.varType.string, 
+    'period', 'A',
+    VarParsing.multiplicity.singleton, VarParsing.varType.string,
     "Period: default A"
 )
 
@@ -47,12 +47,24 @@ options.register(
     "The sample has LHE products"
 )
 
+options.register ('inputFile',
+	          '',
+              VarParsing.multiplicity.singleton,
+              VarParsing.varType.string,
+	          info="input file name")
+
+options.register ('newIVF',
+               False,
+               VarParsing.multiplicity.singleton,
+               VarParsing.varType.bool,
+               info="switch between the different version of IVF")
+
 options.parseArguments()
 #hasLHE_ = options.Flag
 
 period_ = options.period
 hasLHE_ = options.hasLHE
-debugLevel    = -1 
+debugLevel    = -1
 isMC_         = options.isMC
 isMCSignal_    = True
 prescale_ = options.prescale
@@ -91,7 +103,7 @@ LumiList.LumiList().getVLuminosityBlockRange()
 #from Configuration.AlCa.GlobalTag import GlobalTag
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
-    
+
 
 ##################### prescale #######################################
 if prescale_ >= 0:
@@ -100,11 +112,17 @@ if prescale_ >= 0:
                                   offset=cms.int32(offset_))
 
 ###################### input file for testing ##########################
-process.source = cms.Source("PoolSource", 
-                            fileNames =  cms.untracked.vstring(
+if len(options.inputFile) == 0:
+    process.source = cms.Source("PoolSource",
+                                fileNames =  cms.untracked.vstring(
                                 '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-80to120_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v2/110000/99C13D85-30DE-5349-930E-D1662BE02690.root'
-                            )
-)
+                                )
+                               )
+
+else:
+    process.source = cms.Source("PoolSource",
+                                fileNames =  cms.untracked.vstring('file:'+options.inputFile)#'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17_aug2018_miniAODv3/displaced/HeavyNeutrino_lljj_M-3_V-0.00244948974278_mu_Dirac_massiveAndCKM_LO/heavyNeutrino_1.root')
+                                )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 ####################################################################
@@ -192,7 +210,7 @@ setupEgammaPostRecoSeq(process, runVID=False, era = '2018-Prompt')
 #https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe#Recipe_details_10_2_X_X_10_or_9   Should not be needed
 
 #https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Instructions_for_9_4_X_X_9_or_10  Should not be needed
-    
+
 
 process.HeavyNeutralLepton = cms.EDAnalyzer(
     'HeavyNeutralLeptonAnalysis',#HeavyNeutralLeptonAnalysis
@@ -215,7 +233,7 @@ process.HeavyNeutralLepton = cms.EDAnalyzer(
     genEventInfoProduct   = cms.InputTag("generator"),
     PUInfo                = cms.InputTag("slimmedAddPileupInfo"),
     lheEventProducts      = cms.InputTag("externalLHEProducer"),
-    SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"), 
+    SecondaryVertices     = cms.InputTag("displacedInclusiveSecondaryVertices"),
     electronsMVA   = cms.string("ElectronMVAEstimatorRun2Fall17NoIsoV1Values"), # TO CHANGE
     electronsVeto  = cms.string("cutBasedElectronID-Fall17-94X-V2-veto"),
     electronsLoose = cms.string("cutBasedElectronID-Fall17-94X-V2-loose"),
@@ -231,6 +249,18 @@ process.MessageLogger = cms.Service(
     suppressWarning= cms.untracked.vstring('displacedInclusiveVertexFinder')
 )
 
+process.Timing = cms.Service("Timing",
+  summaryOnly = cms.untracked.bool(True),
+  useJobReport = cms.untracked.bool(False)
+)
+
+## IVF Mod --- Porting needed for 102X
+##print 'Getting HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing PSet'
+##print ' Default useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
+##process.displacedInclusiveVertexFinder.useObjectForSeeding.setValue(options.newIVF)
+##print ' New useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
+
+
 process.p = cms.Path()
 if prescale_ >= 0:  process.p *= process.prescale
 
@@ -242,7 +272,7 @@ if edmOut:
         process.edmOut = cms.OutputModule(
             "PoolOutputModule",
             # use this in case of filter available
-            outputCommands = cms.untracked.vstring( 
+            outputCommands = cms.untracked.vstring(
                 'keep *',
             ),
             fileName = cms.untracked.string('edmTEST.root')
