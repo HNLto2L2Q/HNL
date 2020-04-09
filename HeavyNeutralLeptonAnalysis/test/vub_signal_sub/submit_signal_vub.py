@@ -12,6 +12,7 @@ parser.add_argument("--cfgfile", type=str, required=True, help="path to cfgfile 
 parser.add_argument("--masses", type=int, choices=[1,2,3,4,5,6,8,10,15,20], nargs='*',
                                 help="HNL mass value [1,2,3,4,5,6,8,10,15,20]" )
 parser.add_argument("--newIVF", action='store_true', default=False, help="Process events with the modify IVF")
+parser.add_argument("--isMC", action='store_true', default=False, help="Processed events is MC")
 
 
 now = datetime.now()
@@ -22,6 +23,7 @@ ymls = args.ymls
 masses = args.masses
 cfgfile = os.path.abspath(args.cfgfile)
 newIVF = args.newIVF
+isMC   = args.isMC
 
 tag = "newIVF_{}".format(time) if newIVF else "usualIVF_{}".format(time)
 
@@ -122,7 +124,11 @@ for yml in ymls:
                 idx = re.findall(r"\d+",file)[-1]
                 shell_filename = "bash_script_{idx}.sh".format(idx=str(idx))
                 shell_script   = open("{folder}/{sh}".format(folder=sample_scripts_folder,sh=shell_filename), "w")
-                command = "cmsRun {file_cfg} inputFile={path} outputFile={outFile} newIVF={flag}".format(file_cfg=cfgfile, path=file, outFile="output_"+str(idx)+".root", flag=("True" if newIVF else "False"))
+                command = "cmsRun {file_cfg} inputFile={path} outputFile={outFile} newIVF={flag} isMC={mc_flag}".format(file_cfg=cfgfile,
+                                                                                                                        path=file,
+                                                                                                                        outFile="output_"+str(idx)+".root",
+                                                                                                                        flag=("True" if newIVF else "False"),
+                                                                                                                        mc_flag=("True" if isMC else "False" ))
                 #print(command)
                 script = bash_script_tmp.format(cmssw_src=cmssw_src_folder, command=command, copy_cmd=copy_cmd, outFile="output_"+str(idx)+".root", output_path=copy_destination)
                 shell_script.write(script)

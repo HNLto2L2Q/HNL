@@ -129,7 +129,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 
 
 ###################### output file #############################
-process.TFileService = cms.Service("TFileService", fileName = cms.string("Analysis_output_prova.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 ################################################################
 
 
