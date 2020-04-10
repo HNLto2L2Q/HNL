@@ -17,33 +17,41 @@ import importlib
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
-obj = VarParsing ('analysis')
+options = VarParsing ('analysis')
 # outputFile already defined in VarParsing
-#obj.register ('outputFile',
-#              'Analysis_output',
-#               VarParsing.multiplicity.singleton,
-#               VarParsing.varType.string,
-#               info="input file name")
-obj.register ('inputFile',
+options.register(
+    'hasLHE', True,
+    VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    "The sample has LHE products"
+)
+options.register(
+    'isMC', False,
+    VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    "isMC: default False"
+)
+options.register(
+    'isMCSignal', False,
+    VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    "isMCSignal: default False"
+)
+options.register ('inputFile',
 	          '',
               VarParsing.multiplicity.singleton,
               VarParsing.varType.string,
 	          info="input file name")
-obj.register ('newIVF',
+options.register ('newIVF',
                False,
                VarParsing.multiplicity.singleton,
                VarParsing.varType.bool,
                info="switch between the different version of IVF")
 # get and parse the command line arguments
-obj.parseArguments()
-
-hasLHE_ = True
+options.parseArguments()
 
 debugLevel    = -1
 
-isMC_         = True
-isMCSignal_    = True
-#hasLHE_       = False #Only for MC with Matrix Element generators
+hasLHE_     = options.hasLHE
+isMC_       = options.isMC
+isMCSignal_ = options.isMCSignal
 
 algorithm     = "AK4PFchs"
 
@@ -51,8 +59,6 @@ GT_MC = '94X_mc2017_realistic_v10'#94X_mc2017_realistic_v14
 GT_DATA = '92X_dataRun2_2017Repro_v4'#94X_dataRun2_v6
 
 GT      =  GT_MC if isMC_ else GT_DATA
-
-#system('ls -ltr')
 
 process = cms.Process("AnalysisProc")
 process.load("RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi")
@@ -78,54 +84,44 @@ LumiList.LumiList().getVLuminosityBlockRange()
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
-#input_file_list = options.inputFile
-#myfilelist      = cms.untracked.vstring()
-##if input_file_list != None:
-#list_from_input_list = open("list.txt", "r")
-#lines = list_from_input_list.readlines()
-#stripped_lines = map(lambda x: x.rstrip("\n"), lines)
-#for line in stripped_lines:
-#    myfilelist.extend([line])
-
-#print "my file " , myfilelist
-
-#-------------------------------------------------------data section
-
-#data 2017 lumi 41.86 /fb
-
-#if(isMC_ == False):
-#    if len('/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13_patch4/src/HNL/data/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt') > 0:
-#        import FWCore.PythonUtilities.LumiList as LumiList
-#        process.source.lumisToProcess = LumiList.LumiList(filename = 'Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt').getVLuminosityBlockRange()
-#        import FWCore.PythonUtilities.LumiList as LumiList
-#        import FWCore.ParameterSet.Types as CfgTypes
-#        process.source.lumisToProcess = CfgTypes.untracked(CfgTypes.VLuminosityBlockRange())
-#        JSONfile = '/afs/cern.ch/user/a/atalierc/CMSSW_9_4_13_patch4/src/HNL/data/Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt'
-#        myLumis = LumiList.LumiList(filename = JSONfile).getCMSSWString().split(',')
-#        process.source.lumisToProcess.extend(myLumis)
-
-
-#-------------------------------------------------------------------
-
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
     )
 
+###################### input file for testing ##########################
+if len(options.inputFile) == 0:
+    process.source = cms.Source("PoolSource",
+                                fileNames =  cms.untracked.vstring(
+                                '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-80to120_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v2/110000/99C13D85-30DE-5349-930E-D1662BE02690.root'
+                                )
+                               )
+else:
+	process.source = cms.Source("PoolSource",
+                            	fileNames =  cms.untracked.vstring('file:'+options.inputFile)
+                            	)
+########################################################################
 
-process.source = cms.Source("PoolSource",
-                            fileNames =  cms.untracked.vstring('file:'+obj.inputFile)#'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17_aug2018_miniAODv3/displaced/HeavyNeutrino_lljj_M-3_V-0.00244948974278_mu_Dirac_massiveAndCKM_LO/heavyNeutrino_1.root')
-                            )
+###################### output file #############################
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
+################################################################
 
-
-process.TFileService = cms.Service("TFileService", fileName = cms.string(obj.outputFile))
+######################  Meta Ntuplizer #########################
 process.load('HNL.HeavyNeutralLeptonAnalysis.MetaNtuplizer_cfi')
 process.metaTree.isMC = isMC_
 process.metaTree.weightsSrc = cms.InputTag('externalLHEProducer')
 process.metaTree.globalTag = GT
 process.metaTree.args = cms.string('USELESS') #FILL ME!
 process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
+################################################################
 
+########################### Displaced IVF ######################
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
+print 'Getting HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing PSet'
+print ' Default useoptionsectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useoptionsectForSeeding.value()
+process.displacedInclusiveVertexFinder.useoptionsectForSeeding.setValue(options.newIVF)
+print ' New useoptionsectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useoptionsectForSeeding.value()
+################################################################
+
 
 addElectronSequence(process)
 
@@ -151,7 +147,7 @@ runMetCorAndUncFromMiniAOD(process, isData = not(isMC_), jetCollUnskimmed = "sli
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import DataFormat, switchOnVIDElectronIdProducer, setupAllVIDIdsInModule, setupVIDElectronSelection
 switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
 
-process.egmGsfElectronIDs.physicsObjectSrc = "slimmedElectrons"
+process.egmGsfElectronIDs.physicsoptionsectSrc = "slimmedElectrons"
 
 id_modules = [
     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Fall17_94X_V2_cff',
@@ -204,7 +200,7 @@ process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
                                          L1Maps = cms.string("${CMSSW_BASE}/src/L1Prefiring/EventWeightProducer/data/L1PrefiringMaps_new.root"), # update this line with the location of this file
                                          DataEra = cms.string("2017BtoF"), #Use 2016BtoH for 2016
                                          UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
-                                         PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
+                                         PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per optionsect
                                          )
 
 #bad channels correction TO BE CHECK
@@ -276,16 +272,11 @@ process.Timing = cms.Service("Timing",
   useJobReport = cms.untracked.bool(False)
 )
 
-print 'Getting HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing PSet'
-print ' Default useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
-process.displacedInclusiveVertexFinder.useObjectForSeeding.setValue(obj.newIVF)
-print ' New useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
-
 if (isMC_):
     process.p = cms.Path(
-       # process.metaTree
-       # process.LeptonsFilter
-        process.ecalBadCalibReducedMINIAODFilter
+         process.metaTree
+#        *process.LeptonsFilter
+        *process.ecalBadCalibReducedMINIAODFilter
         *process.egmGsfElectronIDSequence
         *process.prefiringweight
         *process.fullPatMetSequenceModifiedMET
@@ -301,18 +292,9 @@ if (isMC_):
         )
 else:
     process.p = cms.Path(
+        process.metaTree
         #process.LeptonsFilter
-#        *process.egmGsfElectronIDSequence
-#        *process.prefiringweight
-#        *process.fullPatMetSequenceModifiedMET
-#        *process.electronMVAValueMapProducer
-#        *process.btagging
-#        *process.displacedInclusiveVertexing
-#        *process.ele_Sequence
-#        *process.jetCorrFactors
-#        *process.slimmedJetsJEC
-#        *process.HeavyNeutralLepton
-        process.ecalBadCalibReducedMINIAODFilter
+        *process.ecalBadCalibReducedMINIAODFilter
         *process.egmGsfElectronIDSequence
         *process.jetCorrFactors
         *process.slimmedJetsJEC

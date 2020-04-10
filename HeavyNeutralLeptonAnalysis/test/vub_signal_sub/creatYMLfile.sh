@@ -9,8 +9,8 @@ if [ $# -lt 3 ]
 then
   echo "Missing arguments!!"
   echo "Usage: $0 [path] [regex] [output]"
-  echo "[path]   : path containg the different signal folders"
-  echo "[regex]  : regular exprassion used for matching the signal wanted"
+  echo "[path]   : path containing the different signal folders"
+  echo "[regex]  : regular expression used for matching the signal wanted"
   echo "[output] : output file name (without .yml)"
   exit
 fi
