@@ -60,6 +60,7 @@ def get_user():
 metaTree = cms.EDAnalyzer(
     'MetaNtuplizer',
     isMC=cms.bool(False),
+    isMCSignal = cms.bool(False),
     weightsSrc = cms.InputTag('externalLHEProducer'),
     puSrc = cms.InputTag('slimmedAddPileupInfo'),
     commit=cms.string( git_version()),

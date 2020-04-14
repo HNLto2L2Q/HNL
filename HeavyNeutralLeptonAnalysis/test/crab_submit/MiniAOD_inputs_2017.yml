@@ -75,19 +75,19 @@ background:
       era:  '2017'
       dsname: /TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM
       xsec: 54.23 # https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8
-      unit_per_job: 1
+      unit_per_job: 2
     TTJets_SingleLeptFromT:
       group: ttbar
       era:  '2017'
       dsname: /TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM
       xsec: 109.6 # https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8
-      unit_per_job: 1
+      unit_per_job: 2
     TTJets_SingleLeptFromTbar:
       group: ttbar
       era:  '2017'
       dsname: /TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM
       xsec: 109.6 # https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8
-      unit_per_job: 1
+      unit_per_job: 2
   # -------- W+Jests
     WJetsToLNu:
       group: WJets

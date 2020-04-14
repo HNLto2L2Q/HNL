@@ -117,9 +117,9 @@ process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
 ########################### Displaced IVF ######################
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
 print 'Getting HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing PSet'
-print ' Default useoptionsectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useoptionsectForSeeding.value()
-process.displacedInclusiveVertexFinder.useoptionsectForSeeding.setValue(options.newIVF)
-print ' New useoptionsectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useoptionsectForSeeding.value()
+print ' Default useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
+process.displacedInclusiveVertexFinder.useObjectForSeeding.setValue(options.newIVF)
+print ' New useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
 ################################################################
 
 
@@ -147,7 +147,7 @@ runMetCorAndUncFromMiniAOD(process, isData = not(isMC_), jetCollUnskimmed = "sli
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import DataFormat, switchOnVIDElectronIdProducer, setupAllVIDIdsInModule, setupVIDElectronSelection
 switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
 
-process.egmGsfElectronIDs.physicsoptionsectSrc = "slimmedElectrons"
+process.egmGsfElectronIDs.physicsObjectSrc = "slimmedElectrons"
 
 id_modules = [
     'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Fall17_94X_V2_cff',
@@ -200,7 +200,7 @@ process.prefiringweight = cms.EDProducer("L1ECALPrefiringWeightProducer",
                                          L1Maps = cms.string("${CMSSW_BASE}/src/L1Prefiring/EventWeightProducer/data/L1PrefiringMaps_new.root"), # update this line with the location of this file
                                          DataEra = cms.string("2017BtoF"), #Use 2016BtoH for 2016
                                          UseJetEMPt = cms.bool(False), #can be set to true to use jet prefiring maps parametrized vs pt(em) instead of pt
-                                         PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per optionsect
+                                         PrefiringRateSystematicUncty = cms.double(0.2) #Minimum relative prefiring uncty per object
                                          )
 
 #bad channels correction TO BE CHECK

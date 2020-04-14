@@ -9,6 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--ymls", type=str, nargs='*', required=True, help="yml files" )
 parser.add_argument("--cfgfile", type=str, required=True, help="path to cfgfile to be used" )
 parser.add_argument("--newIVF", action='store_true', default=False, help="Process events with the modify IVF")
+parser.add_argument("--dryRun", action='store_true', default=False, help="CRAB submit dryrun")
 parser.add_argument("--types", type=str, choices=["data", "background", "signal"], nargs='*',
                                default=["data", "background", "signal"],
                                help="sample types [data, background, signal]" )
@@ -24,6 +25,7 @@ ymls         = args.ymls
 types        = args.types
 cfgfile      = os.path.abspath(args.cfgfile)
 newIVF       = args.newIVF
+dryRun       = args.dryRun
 storage_site = args.storage_site
 groups       = args.groups
 
@@ -102,4 +104,4 @@ if __name__ == '__main__':
                         config.Data.lumiMask = lumi_file
                         print '\t '+lumi_file
 
-                    #crabCommand('submit', config = config, dryrun = True)
+                    crabCommand('submit', config = config, dryrun = dryRun)
