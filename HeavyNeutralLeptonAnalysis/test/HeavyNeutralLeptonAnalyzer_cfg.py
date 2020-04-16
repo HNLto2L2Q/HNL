@@ -52,6 +52,11 @@ debugLevel    = -1
 hasLHE_     = options.hasLHE
 isMC_       = options.isMC
 isMCSignal_ = options.isMCSignal
+inputFile   = options.inputFile
+## Option already registered in VarParsing
+## See: vi /cvmfs/cms.cern.ch/slc6_amd64_gcc630/cms/cmssw/CMSSW_9_4_13/src/FWCore/ParameterSet/python/VarParsing.py
+maxEvents   = options.maxEvents
+outputFile  = options.outputFile
 
 algorithm     = "AK4PFchs"
 
@@ -85,11 +90,11 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(maxEvents)
     )
 
 ###################### input file for testing ##########################
-if len(options.inputFile) == 0:
+if len(inputFile) == 0:
     process.source = cms.Source("PoolSource",
                                 fileNames =  cms.untracked.vstring(
                                 '/store/mc/RunIIAutumn18MiniAOD/QCD_Pt-80to120_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/102X_upgrade2018_realistic_v15_ext1-v2/110000/99C13D85-30DE-5349-930E-D1662BE02690.root'
@@ -97,12 +102,12 @@ if len(options.inputFile) == 0:
                                )
 else:
 	process.source = cms.Source("PoolSource",
-                            	fileNames =  cms.untracked.vstring('file:'+options.inputFile)
+                            	fileNames =  cms.untracked.vstring('file:'+inputFile)
                             	)
 ########################################################################
 
 ###################### output file #############################
-process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(outputFile))
 ################################################################
 
 ######################  Meta Ntuplizer #########################
@@ -264,12 +269,20 @@ process.HeavyNeutralLepton = cms.EDAnalyzer('HeavyNeutralLeptonAnalysis',#HeavyN
                                             )
 
 process.MessageLogger = cms.Service("MessageLogger",
-                                suppressWarning= cms.untracked.vstring('displacedInclusiveVertexFinder')
+                                    destinations          = cms.untracked.vstring( 'messageLogger_warning'),
+                                    messageLogger_warning = cms.untracked.PSet(
+                                                                                threshold = cms.untracked.string( 'WARNING' )
+                                                                               ),
+                                    suppressWarning= cms.untracked.vstring('displacedInclusiveVertexFinder')
 )
 
 process.Timing = cms.Service("Timing",
   summaryOnly = cms.untracked.bool(True),
   useJobReport = cms.untracked.bool(False)
+)
+
+process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
+    ignoreTotal = cms.untracked.int32(1)
 )
 
 if (isMC_):
