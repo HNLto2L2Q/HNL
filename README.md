@@ -14,7 +14,7 @@ cmsenv
 ## Ref: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPostRecoRecipes#2018_Data_MC
 
 git cms-init
-git cms-merge-topic cms-egamma:EgammaPostRecoTools #just adds in an extra file to have a setup function to make things easier 
+git cms-merge-topic cms-egamma:EgammaPostRecoTools #just adds in an extra file to have a setup function to make things easier
 git cms-merge-topic cms-egamma:PhotonIDValueMapSpeedup1029 #optional but speeds up the photon ID value module so things fun faster
 git cms-merge-topic cms-egamma:slava77-btvDictFix_10210 #fixes the Run2018D dictionary issue, see https://github.com/cms-sw/cmssw/issues/26182, may not be necessary for later releases, try it first and see if it works
 #now to add the scale and smearing for 2018 (eventually this will not be necessary in later releases but is harmless to do regardless)
@@ -32,6 +32,9 @@ git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
 ## Ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#How_to_run_ecal_BadCalibReducedM
 
 git cms-addpkg RecoMET/METFilters
+
+## Adding the modify IVF
+git cms-addpkg RecoVertex/AdaptiveVertexFinder
 
 #now build everything
 scram b -j 8

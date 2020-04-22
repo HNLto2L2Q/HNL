@@ -30,6 +30,12 @@ options.register(
 )
 
 options.register(
+    'isMCSignal', False,
+    VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    "isMCSignal: default False"
+)
+
+options.register(
     'prescale', -1,
     VarParsing.multiplicity.singleton, VarParsing.varType.int,
     "prescale to split sample"
@@ -66,7 +72,7 @@ period_ = options.period
 hasLHE_ = options.hasLHE
 debugLevel    = -1
 isMC_         = options.isMC
-isMCSignal_    = True
+isMCSignal_    = options.isMCSignal
 prescale_ = options.prescale
 offset_ = options.offset
 GT_MC = '102X_upgrade2018_realistic_v18'#94X_mc2017_realistic_v14
@@ -146,6 +152,10 @@ process.metaTree.hasLHE = cms.bool(hasLHE_ and isMC_)
 
 ########################### Displaced IVF ######################
 process.load('HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing_cff')
+print 'Getting HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing PSet'
+print ' Default useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
+process.displacedInclusiveVertexFinder.useObjectForSeeding.setValue(options.newIVF)
+print ' New useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
 ################################################################
 
 
@@ -253,12 +263,6 @@ process.Timing = cms.Service("Timing",
   summaryOnly = cms.untracked.bool(True),
   useJobReport = cms.untracked.bool(False)
 )
-
-## IVF Mod --- Porting needed for 102X
-##print 'Getting HNL.DisplacedAdaptiveVertexFinder.displacedInclusiveVertexing PSet'
-##print ' Default useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
-##process.displacedInclusiveVertexFinder.useObjectForSeeding.setValue(options.newIVF)
-##print ' New useObjectForSeeding.value(): %s' % process.displacedInclusiveVertexFinder.useObjectForSeeding.value()
 
 
 process.p = cms.Path()

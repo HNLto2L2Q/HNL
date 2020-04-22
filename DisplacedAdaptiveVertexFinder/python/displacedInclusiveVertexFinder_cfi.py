@@ -5,25 +5,28 @@ displacedInclusiveVertexFinder  = cms.EDProducer("InclusiveVertexFinder",
        primaryVertices = cms.InputTag("offlineSlimmedPrimaryVertices"),
        #tracks = cms.InputTag("displacedAssocToTracks","displacedAssocToTracks","ANA"),
        tracks = cms.InputTag("unpackedTracksAndVertices"),
+       muons = cms.InputTag("slimmedMuons"),
+       electrons = cms.InputTag("slimmedElectrons"),
+       useObjectForSeeding = cms.bool(False),
        minHits = cms.uint32(6), #c'era 6 old 8 -> 0 AOD produciton has problems with nhits
        maximumLongitudinalImpactParameter = cms.double(200), #200 c'era 99999 old  .3 -> infty #1 va bene 99999
-       minPt = cms.double(0.8), #0.95 c'era 0.4 old .8 -> 1 
+       minPt = cms.double(0.8), #0.95 c'era 0.4 old .8 -> 1
        maxNTracks = cms.uint32(100), #30 old 30 -> 100
 ################from 100 to 30 crab jobs too long
 
        clusterizer = cms.PSet(
            seedMax3DIPSignificance = cms.double(9999.),
            seedMax3DIPValue = cms.double(9999.),
-           seedMin3DIPSignificance = cms.double(1.2),#1.2 
+           seedMin3DIPSignificance = cms.double(1.2),#1.2
            seedMin3DIPValue = cms.double(0.005),#0.005
            clusterMaxDistance = cms.double(0.05), #0.05 cera 0.4 500um #old .05 -> 1
            clusterMaxSignificance = cms.double(4.5), #4.5 sigma  #old  4.5 ---> infty
-           distanceRatio = cms.double(20), # was cluster scale = 1 / density factor =0.05 
+           distanceRatio = cms.double(20), # was cluster scale = 1 / density factor =0.05
            clusterMinAngleCosine = cms.double(0.5), # only forward decays   #old accept backward decays (unboosted topologies) .5 -> -9999
        ),
 
        vertexMinAngleCosine = cms.double(0.95), # scalar prod direction of tracks and flight dir  #old accept backward decays  .95 -> .6 me 0
-       vertexMinDLen2DSig = cms.double(2.5), #2.5 sigma 
+       vertexMinDLen2DSig = cms.double(2.5), #2.5 sigma
        vertexMinDLenSig = cms.double(0.5), #0.5 sigma
        fitterSigmacut =  cms.double(3),
        fitterTini = cms.double(256),
@@ -38,5 +41,3 @@ displacedInclusiveVertexFinder  = cms.EDProducer("InclusiveVertexFinder",
        )
 
 )
-
-
