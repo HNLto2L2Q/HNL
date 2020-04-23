@@ -33,7 +33,7 @@ git cms-merge-topic cms-met:METFixEE2017_949_v2_backport_to_102X
 
 git cms-addpkg RecoMET/METFilters
 
-## Adding the modify IVF
+## Adding the IVF
 git cms-addpkg RecoVertex/AdaptiveVertexFinder
 
 #now build everything
@@ -47,6 +47,8 @@ pushd HNL/
 # For 2018
 git checkout run_2018
 popd
+# Patch for new IVF
+git am HNL/DisplacedAdaptiveVertexFinder/patches/new-IVF-porting-to-10_2_15_patch2.patch
 
 scram b -j 8
 ```
