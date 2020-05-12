@@ -18,6 +18,7 @@ void BigNtuple::fill_evtInfo(const edm::EventID& id) {
 
 void BigNtuple::set_weightsInfo(TTree* tree){
   tree->Branch("gen_weight" , &gen_weight_);
+  tree->Branch("lhe_OrginalWeight", &lhe_OrginalWeight_);
   tree->Branch("lhe_weight" , &lhe_weight_);
   tree->Branch("lhe_ctau" , &lhe_ctau_);
 }
@@ -27,14 +28,11 @@ void BigNtuple::fill_weightsInfo(const edm::Handle<GenEventInfoProduct> genEvent
   if(!lheinfo.isValid()) {
 			throw cms::Exception("RuntimeError") << "The Handle of LHEInfo I was trying to access is not valid!" << std::endl;
 		}
-		if(lheinfo->weights().size() == 0)
-			throw cms::Exception("RuntimeError") << "The LHEInfo I got works but has not weights!" << std::endl;
-
+  if(lheinfo->weights().size() == 0)
+    throw cms::Exception("RuntimeError") << "The LHEInfo I got works but has not weights!" << std::endl;
 		vector<double> ctau_info = lheinfo.product()->hepeup().VTIMUP;
 		vector<int> ctau_pdgid = lheinfo.product()->hepeup().IDUP;
-
 		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
-
 		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
 		//histo_ctau->Fill(*flag);
 		int flag = -1;
@@ -43,7 +41,7 @@ void BigNtuple::fill_weightsInfo(const edm::Handle<GenEventInfoProduct> genEvent
 		    flag = i;
 		}
 		if(flag != -1) lhe_ctau_ = ctau_info.at(flag);
-
+    lhe_OrginalWeight_ = lheinfo->originalXWGTUP();
     gen_weight_ = genEventInfoHandle->weight();
     lhe_weight_ = lheinfo->weights()[0].wgt;
 }
@@ -691,9 +689,10 @@ void BigNtuple::fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double 
     tree->Branch("sv_ly" , & sv_ly_);
     tree->Branch("sv_lz" , & sv_lz_);
     tree->Branch("sv_hasMuon", & sv_hasMuon_);
+    tree->Branch("sv_LFV", &sv_LFV_);
   }
 
-void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv , std::pair<float, float> match, bool lept){
+void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv , std::pair<float, float> match, bool lept, bool lfv){
 
   float svChi2 = bestVertex.chi2();
   float svNDof = bestVertex.ndof();
@@ -777,6 +776,7 @@ void BigNtuple::fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex&
   sv_Angle3D_.push_back(svAngle3D);
   sv_Angle2D_.push_back(svAngle2D);
   sv_hasMuon_.push_back(lept);
+  sv_LFV_.push_back(lfv);
 
 
   int ch = 0;

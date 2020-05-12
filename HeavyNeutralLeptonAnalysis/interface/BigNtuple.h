@@ -119,7 +119,7 @@ public:
         void fill_pileupInfo( float npt, float npit);
 
 	void set_sv_Info(TTree* tree);
-        void fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, std::pair<float, float> match, bool lept);
+        void fill_sv_Info(const reco::Vertex& bestVertex, const reco::Vertex& pv, std::pair<float, float> match, bool lept, bool lfv);
 
 	void set_muInfo(TTree* tree);
         void fill_muInfo(const pat::Muon& mu, const reco::Vertex& pv, double Rho , double match1 , double match2 , double match3);
@@ -158,9 +158,10 @@ private:
 	unsigned int run_ = 0;
 	unsigned long long evt_ = 0;
 
-	float gen_weight_ = 0;
-	float lhe_weight_ = 0;
-	float lhe_ctau_   = 0;
+	float gen_weight_       = 0;
+	float lhe_OrginalWeight_= 0;
+	float lhe_weight_       = 0;
+	float lhe_ctau_         = 0;
 
 	std::vector<float> prefire_weight_ ;
 	std::vector<float> prefire_weightup_ ;
@@ -306,6 +307,7 @@ private:
 
 	//secondary verteces info due to mu
 	std::vector<bool> sv_hasMuon_;
+	std::vector<bool> sv_LFV_;
 	std::vector<int>   sv_numTracks_;
 	std::vector<float> sv_x_;
 	std::vector<float> sv_y_;

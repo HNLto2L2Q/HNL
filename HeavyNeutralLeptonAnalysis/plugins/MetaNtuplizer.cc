@@ -103,8 +103,8 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   pu_token_(consumes< std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puSrc"))),
   string_dumped_(false),
   isMC_(iConfig.getParameter<bool>("isMC")),
-	hasLhe_(iConfig.getParameter<bool>("hasLHE")),
-	sumw_()
+  hasLhe_(iConfig.getParameter<bool>("hasLHE")),
+  sumw_()
 {
   useWeighted_ = true;
   triedWeighted_ = false;

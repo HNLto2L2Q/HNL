@@ -73,7 +73,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, GT)
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
+    input = cms.untracked.int32(-1)
 )
 process.source = cms.Source("PoolSource",
                             fileNames =  cms.untracked.vstring(
@@ -86,7 +86,12 @@ process.source = cms.Source("PoolSource",
 #'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/280000/42B83DB5-9C21-E911-AE73-0CC47AC52A94.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/20000/3279EE6B-108C-E811-804C-F01FAFD8EA6A.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/100000/D8FD945E-5588-E811-A866-D8D385FF33B9.root'
-'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/100000/4C8087A0-F5E9-E811-829E-001E6724807F.root'
+#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/100000/4C8087A0-F5E9-E811-829E-001E6724807F.root'
+#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v1/00000/06D08F8C-FBC2-E811-AC7B-0090FAA57460.root'
+#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/280000/009D1E1A-111F-E911-AD7E-6CC2173DABE0.root'
+#'root://xrootd-cms.infn.it//store//mc/RunIISummer16MiniAODv3/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext2-v1/280000/1A569771-871E-E911-AE14-0CC47AC17550.root'
+'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v1/00000/2EBE1EFA-CFC2-E811-96B1-0090FAA57FA4.root'
+#'root://xrootd-cms.infn.it//store/mc/RunIISummer16MiniAODv3/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/80000/08FECAA0-2CEF-E811-B07D-008CFAC93C10.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/120000/96922A9A-B5B8-E811-986B-02163E017F81.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/QCD_Pt-50to80_MuEnrichedPt5_TuneCP5_13TeV_pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/70000/F0B31586-DE42-E811-9BF1-0242AC1C0500.root'
 #'root://xrootd-cms.infn.it//store/mc/RunIIFall17MiniAODv2/WJetsToLNu_BGenFilter_Wpt-200toInf_TuneCP5_13TeV-madgraphMLM-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/30000/FEAFC6E4-ED82-E811-8398-0025904CF766.root'
@@ -250,7 +255,7 @@ process.TriggerSelection = cms.EDFilter( "TriggerResultsFilter",
 if isMC_:
         process.p = cms.Path(
         process.metaTree
-        #*process.TriggerSelection
+        *process.TriggerSelection
         *process.LeptonsFilter
         *process.egmGsfElectronIDSequence
         *process.jetCorrFactors
