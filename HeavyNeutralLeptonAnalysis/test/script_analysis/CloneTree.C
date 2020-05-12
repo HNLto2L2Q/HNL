@@ -105,18 +105,179 @@ int main(int argc, char** argv){
   Long64_t nentries = oldtree->GetEntries();
   cout  <<nentries<<endl;
 
+  /*
+int main(){
+  
+
+  //Get old file, old tree and set top branch address
+  //TFile *oldfile = new TFile("/eos/cms/store/group/phys_exotica/HNL/Background/crab_Analysis_WZToLLLNu/Background_Analysis.root");
+  //TFile *oldfile = new TFile("/user/moanwar/Run2016/CMSSW_8_0_29/src/HNL/HeavyNeutralLeptonAnalysis/test/signal/HNL_M5_mu_2.95.root");
+  //TTree *oldtree = (TTree*)oldfile->Get("HeavyNeutralLepton/tree_");
+
+
+  //////selection cuts
+
+  Float_t isoCut = 0.1;
+  bool isMC = true;
+  //if I want to use a TChain.....
+  //cout<< "starting..."<<endl;
+  TChain * oldtree = new TChain("HeavyNeutralLepton/tree_","");
+  string tree ="HeavyNeutralLepton/tree_";
+  //Background
+  //string inputPath = "/pnfs/iihe/cms/store/user/moanwar/SamplesToSkimm_run5_muon";
+  //string inputPath = "/user/moanwar/SamplesToSkimm_run6";
+  //string fileName = "DYJetsToLL_M-10to50_madgraphMLM.root";
+  //string fileName = "DYJetsToLL_M-50_madgraphMLM.root";
+  //string fileName = "WJetsToLNu_TuneCUETP8M1_1.root";
+  //string fileName = "WJetsToLNu_TuneCUETP8M1_2.root";
+  //string fileName = "WJetsToLNu_TuneCUETP8M1_madgraph.root"; // the other version of wjets at madgraph *** recommeded start skimm from here
+  //string fileName = "DYJetsToLL_M-10to50_TuneCUETP8M.root";
+  //string fileName = "DYJetsToLL_M-50_TuneCUETP8M1.root"; 
+  //string fileName = "TT_TuneCUETP8M2T4_13TeV_MuonChannel.root";
+  //string fileName = "WJetsToLNu_TuneCUETP8M1.root"; 
+  //string fileName = "GluGluHToZZTo4L_M125.root"; 
+  //string fileName = "ST_s-channel_4f_leptonDecays.root"; 
+  //string fileName = "ST_t-channel_antitop_4f_inclusiveDecays.root"; 
+  //string fileName = "ST_t-channel_top_4f_inclusiveDecays.root"; 
+  //string fileName = "ST_tW_antitop_5f_inclusiveDecays.root"; 
+  //string fileName = "ST_tW_top_5f_inclusiveDecays.root"; 
+  //string fileName = "TTGJets_TuneCUETP8M1.root"; 
+  //string fileName = "ttWJets_13TeV_madgraphMLM.root"; 
+  //string fileName = "TTWJetsToLNu_TuneCUETP8M1.root"; 
+  //string fileName = "ttZJets_13TeV_madgraphMLM.root"; 
+  //string fileName = "TTZToLLNuNu_M-10.root"; 
+  //string fileName = "VHToNonbb_M125.root"; 
+  //string fileName = "WGToLNuG_TuneCUETP8M1.root"; 
+  //string fileName = "WpWpJJ_QCD_TuneCUETP8M1.root"; 
+  //string fileName = "WWTo2L2Nu_13TeV.root"; 
+  //string fileName = "WWToLNuQQ_13TeV-powheg.root"; 
+  //string fileName = "WWW_4F_TuneCUETP8M1.root"; 
+  //string fileName = "WWZ_TuneCUETP8M1.root"; 
+  //string fileName = "WZTo1L3Nu_13TeV_amcatnloFXFX.root"; 
+  //string fileName = "WZTo3LNu_TuneCUETP8M1.root"; 
+  //string fileName = "WZToLNu2QorQQ2L_aTGC.root"; 
+  //string fileName = "WZZ_TuneCUETP8M1.root"; 
+  //string fileName = "ZGTo2LG_TuneCUETP8M1.root"; 
+  //string fileName = "ZZTo2L2Nu_13TeV_powheg.root"; 
+  //string fileName = "ZZTo2L2Q_13TeV_amcatnloFXFX.root"; 
+  //string fileName = "ZZTo4L_13TeV-amcatnloFXFX.root"; 
+  //string fileName = "ZZZ_TuneCUETP8M1.root"; 
+  //string fileName = "QCD_Pt-120to170_Mu.root"; 
+  //string fileName = "QCD_Pt-170to300_Mu.root"; 
+  //string fileName = "QCD_Pt-20to30_Mu.root"; 
+  //string fileName = "QCD_Pt-30to50_Mu.root"; 
+  //string fileName = "QCD_Pt-50to80_Mu.root"; 
+  //string fileName = "QCD_Pt-80to120_Mu.root"; 
+
+
+  //signal
+  string inputPath = "/user/moanwar/heavyneutrino/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/signal_samples_mu";
+  //string fileName = "M_mu_M1_14.84.root";
+  //string fileName = "M_mu_M2_158.00.root";  
+  //string fileName = "M_mu_M2_38.87.root";   
+  //string fileName = "M_mu_M2_64.78.root";   
+  //string fileName = "M_mu_M3_22.82.root";   
+  //string fileName = "M_mu_M3_32.60.root";   
+  //string fileName = "M_mu_M3_45.64.root";   
+  //string fileName = "M_mu_M1_74.22.root";   
+  //string fileName = "M_mu_M2_31.50.root";   
+  //string fileName = "M_mu_M2_41.00.root";   
+  //string fileName = "M_mu_M2_97.17.root";   
+  //string fileName = "M_mu_M3_23.15.root";   
+  //string fileName = "M_mu_M3_45.55.root";   
+  //string fileName = "M_mu_M3_76.07.root";   
+  //string fileName = "M_mu_M5_14.77.root";
+  //string fileName = "M_mu_M5_18.46.root";
+  //string fileName = "M_mu_M5_24.61.root";
+  //string fileName = "M_mu_M5_69.66.root";
+  //string fileName = "M_mu_M5_92.88.root";
+  //string fileName = "M_mu_M4_16.17.root";
+  //string fileName = "M_mu_M4_24.25.root";
+  //string fileName = "M_mu_M4_48.51.root";
+  //string fileName = "M_mu_M4_57.47.root";
+  //string fileName = "M_mu_M4_60.63.root";
+  //string fileName = "M_mu_M4_76.87.root";
+  //string fileName = "M_mu_M4_80.84.root";
+  //string fileName = "M_mu_M8_1.25.root";
+  //string fileName = "M_mu_M8_1.56.root";
+  //string fileName = "M_mu_M8_1.89.root";
+  //string fileName = "M_mu_M10_6.28.root";
+  //string fileName = "M_mu_M10_6.90.root";
+  //string fileName = "M_mu_M6_12.53.root";
+  //string fileName = "M_mu_M6_13.72.root";
+  //string fileName = "M_mu_M6_82.25.root";
+  string fileName = "M_mu_M15.root";
+
+  oldtree->Add(Form("%s/%s/%s",inputPath.c_str(),fileName.c_str(),tree.c_str()));
+
+
+  TH1F* h_nTrueInteractions50      = new TH1F("nTrueInteractions50" , "nTrueInteractions 50 bin" , 50, 0., 50. );
+  TH1F* h_nTrueInteractions100     = new TH1F("nTrueInteractions100" , "nTrueInteractions 100 bin" , 100, 0., 100. );
+
+  //char fileName[256];
+  //cout<<"Please enter the name of the output root file you want to create (yyy.root) : "<<endl;
+  //cin.getline(fileName,256);
+
+  string outputPath = " ~/run1_mu_MiniAODv3/";
+  //string outputPath = "/user/moanwar/skimmed_test/";
+
+  TFile *newfile = new TFile(Form("%s/%s",outputPath.c_str(),fileName.c_str()),"recreate");
+
+  //TFile *newfile = new TFile(fileName,"recreate");
+
+  //TFile *newfile = new TFile("skimmedSignale.root","recreate");
+  //Create a new file + a clone of old tree in new file 
+  //TTree *newtree = oldtree->CloneTree(0); 
+  TTree *newtree  = new TTree("newtree","Analysis Tree");
+
+  //cout<<"cloning done"<<endl;
+
+  // Long64_t nentries = oldtree->GetEntries();
+  Long64_t nentries = oldtree->GetEntries();
+  cout  <<nentries<<endl;
+  */
+  //special case to be remove 
+
+
+  /*
+
+  Float_t lep2_gen_MomCTau0;
+  oldtree->SetBranchAddress("lep2_gen_MomCTau0", &lep2_gen_MomCTau0);
+
+  Float_t GenCtau ;
+
+  TBranch* branch_GenCtau        = newtree->Branch("GenCtau", &GenCtau, "GenCtau/F");
+  */
+
 //======================= Old Tree Variables ==========================================// 
   // These are the variables I cut on 
   Bool_t passIsoMu24All;
   Bool_t passIsoMu27All;
   Bool_t passIsoMuTk24;
   Bool_t passIsoMu24;
-
+  Bool_t passMu3_PFJet40;
+  Bool_t passMu8_TrkIsoVVL;
+  Bool_t passMu17_TrkIsoVVL;
 
   oldtree->SetBranchAddress("passIsoMu24" , &passIsoMu24);
   oldtree->SetBranchAddress("passIsoMuTk24" , &passIsoMuTk24);
   oldtree->SetBranchAddress("passIsoMu24All",&passIsoMu24All);
   oldtree->SetBranchAddress("passIsoMu27All",&passIsoMu27All);
+  oldtree->SetBranchAddress("passMu3_PFJet40"   , &passMu3_PFJet40);
+  oldtree->SetBranchAddress("passMu8_TrkIsoVVL" , &passMu8_TrkIsoVVL);
+  oldtree->SetBranchAddress("passMu17_TrkIsoVVL", &passMu17_TrkIsoVVL);
+
+  Float_t gen_weight ;
+  Float_t lhe_weight ;
+  Float_t lhe_ctau ;
+  vector<Float_t>   *mu_DecayChain = 0;
+  if(isMC){
+    oldtree->SetBranchAddress("gen_weight" , &gen_weight);
+    oldtree->SetBranchAddress("lhe_weight" , &lhe_weight);
+    oldtree->SetBranchAddress("lhe_ctau"   , &lhe_ctau);
+    oldtree->SetBranchAddress("mu_DecayChain"   , &mu_DecayChain);
+  }
+
 
   vector<Float_t>   *npT = 0;
   oldtree->SetBranchAddress("npT",&npT);
@@ -210,6 +371,11 @@ int main(int argc, char** argv){
   vector<Float_t>   *mu_RPCTofTimeAtIpOutIn  = 0 ;
   vector<Float_t>   *mu_RPCTofTimeAtIpOutInErr  = 0 ;
 
+  vector<Float_t>   *mu_3dIP = 0;
+  vector<Float_t>   *mu_3dIPSig = 0 ;
+  vector<Float_t>   *mu_2dIP = 0 ;
+  vector<Float_t>   *mu_2dIPSig = 0 ;
+
 
    vector<Bool_t>  *sv_hasMuon = 0 ;
    vector<Int_t>   *sv_munTracks = 0 ;
@@ -256,6 +422,7 @@ int main(int argc, char** argv){
    vector<vector<float> >  *sv_tracks_dxyz = 0;
    vector<vector<float> >  *sv_tracks_p = 0;
 
+
    vector<Float_t>   *jetSmearedPt = 0;
    vector<Float_t>   *jet_ptuncorrected =0;
    vector<Float_t>   *jet_charge = 0;
@@ -289,6 +456,7 @@ int main(int argc, char** argv){
   vector<Float_t>   *jet_DeepCsv_c = 0;
   vector<Float_t>   *jet_DeepCsv_bb = 0;
   vector<Float_t>   *jet_HadronFlavor = 0;
+
 
   Float_t   pfMet_et;
   Float_t   pfMet_pt;
@@ -356,6 +524,11 @@ int main(int argc, char** argv){
   oldtree->SetBranchAddress("mu_RPCTofTimeAtIpInOutErr" , &mu_RPCTofTimeAtIpInOutErr);
   oldtree->SetBranchAddress("mu_RPCTofTimeAtIpOutIn" , &mu_RPCTofTimeAtIpOutIn);
   oldtree->SetBranchAddress("mu_RPCTofTimeAtIpOutInErr" , &mu_RPCTofTimeAtIpOutInErr);
+
+  oldtree->SetBranchAddress("mu_3dIP",& mu_3dIP);
+  oldtree->SetBranchAddress("mu_3dIPSig",& mu_3dIPSig);
+  oldtree->SetBranchAddress("mu_2dIP",& mu_2dIP);
+  oldtree->SetBranchAddress("mu_2dIPSig",& mu_2dIPSig);
 
   oldtree->SetBranchAddress("mu_FirstGenMatch", &mu_FirstGenMatch);
   oldtree->SetBranchAddress("mu_SecondGenMatch", &mu_SecondGenMatch);
@@ -451,6 +624,23 @@ int main(int argc, char** argv){
   oldtree->SetBranchAddress("jet_DeepCsv_bb" ,&jet_DeepCsv_bb);
   oldtree->SetBranchAddress("jet_HadronFlavor" ,&jet_HadronFlavor);
 
+  //systematic
+  vector<Float_t>   *jetPt_JECUp= 0;
+  vector<Float_t>   *jetPt_JECDown = 0;
+  vector<Float_t>   *jetSmearedPt_unUp =0;
+  vector<Float_t>   *jetSmearedPt_unDown = 0 ;
+  vector<Float_t>   *prefire_weight=0;
+  vector<Float_t>   *prefire_weightup=0;
+  vector<Float_t>   *prefire_weightdown=0;
+
+  oldtree->SetBranchAddress("jetPt_JECUp",&jetPt_JECUp);
+  oldtree->SetBranchAddress("jetPt_JECDown",&jetPt_JECDown);
+  oldtree->SetBranchAddress("jetSmearedPt_unUp",&jetSmearedPt_unUp);
+  oldtree->SetBranchAddress("jetSmearedPt_unDown",&jetSmearedPt_unDown);
+  oldtree->SetBranchAddress("prefire_weight",&prefire_weight);
+  oldtree->SetBranchAddress("prefire_weightup",&prefire_weightup);
+  oldtree->SetBranchAddress("prefire_weightdown",&prefire_weightdown);
+
   //Throw away some branches -- thos are all the  one I don't want to keep in the ntuples
   //IMPORTANT: we cannot throw away the branches with the variable we are using in the loop!
   oldtree->SetBranchStatus("ele_*",    0);
@@ -477,12 +667,19 @@ int main(int argc, char** argv){
 
   //================================ PU Weight ============================================//                                                                                                                 
   Float_t TrueNumInteractions;
+  Float_t mc_gen_weight ;
+  Float_t mc_lhe_weight ;
+  Float_t mc_lhe_ctau ;
 
   TBranch* branch_TrueNumInteractions     = newtree->Branch("TrueNumInteractions",&TrueNumInteractions,"TrueNumInteractions/F");
+  TBranch* branch_mc_gen_weight = newtree->Branch("mc_gen_weight",&mc_gen_weight,"mc_gen_weight/F");
+  TBranch* branch_mc_lhe_weight = newtree->Branch("mc_lhe_weight",&mc_lhe_weight,"mc_lhe_weight/F");
+  TBranch* branch_mc_lhe_ctau   = newtree->Branch("mc_lhe_ctau",&mc_lhe_ctau,"mc_lhe_ctau/F");
 
 
 //======================= First Muon Variables ==========================================//   
 Float_t mu_promptPt,mu_promptEta, mu_promptPhi, mu_promptCharge, mu_promptEt, mu_promptE;
+ Float_t mu_prompt3dIP, mu_prompt3dIPSig, mu_prompt2dIP, mu_prompt2dIPSig ;
 
 Float_t mu_promptRhoIso,        mu_promptTrackiso,       mu_promptPfSumChHadPt,
 	mu_promptPFSumPhotonEt, mu_promptPfSumPUPt,      mu_promptEmIso,
@@ -493,7 +690,7 @@ Float_t mu_promptRhoIso,        mu_promptTrackiso,       mu_promptPfSumChHadPt,
 	mu_promptNDof,          mu_promptTimeAtIpInOut,  mu_promptTimeAtIpInOutErr,
         mu_promptTimeAtIpOutIn, mu_promptTimeAtIpOutInErr,  mu_promptPfSumNHadEt, mu_promptGlobalMuon;
 
-Float_t mu_promptInnerTrackFraction, mu_promptSegmentCompatibility,
+ Float_t mu_promptInnerTrackFraction, mu_promptSegmentCompatibility,mu_promptMotherID,
         mu_promptTrkKink,    mu_promptChi2LocalPosition ,RelIso_prompt;
 
  Int_t   mu_promptValidMuonHits, mu_promptMatchedStations, mu_promptValidPixelHits, 
@@ -561,8 +758,17 @@ TBranch* branch_mu_promptGlobalMuon = newtree->Branch("mu_promptGlobalMuon", &mu
  TBranch* branch_mu_promptsize = newtree->Branch("mu_promptsize", &mu_promptsize ,"mu_promptsize/I"); 
 
  TBranch* branch_RelIso_prompt  = newtree->Branch("RelIso_prompt", &RelIso_prompt ,"RelIso_prompt/F");
+
+ TBranch* branch_mu_promptMotherID = newtree->Branch("mu_promptMotherID" ,&mu_promptMotherID ,"mu_promptMotherID/F");
+
+ TBranch* branch_mu_prompt3dIP = newtree->Branch("mu_prompt3dIP" ,& mu_prompt3dIP ,"mu_prompt3dIP/F");
+ TBranch* branch_mu_prompt3dIPSig = newtree->Branch("mu_prompt3dIPSig" ,& mu_prompt3dIPSig ,"mu_prompt3dIPSig/F");
+ TBranch* branch_mu_prompt2dIP = newtree->Branch("mu_prompt2dIP" ,& mu_prompt2dIP ,"mu_prompt2dIP/F");
+ TBranch* branch_mu_prompt2dIPSig  = newtree->Branch("mu_prompt2dIPSig" ,& mu_prompt2dIPSig ,"mu_prompt2dIPSig/F");
+
 //======================= Second Muon Variables ==========================================//
 Float_t mu_secondPt,mu_secondEta, mu_secondPhi, mu_secondCharge, mu_secondEt, mu_secondE;
+ Float_t mu_second3dIP, mu_second3dIPSig, mu_second2dIP, mu_second2dIPSig ;
 
 Float_t mu_secondRhoIso,        mu_secondTrackiso,  mu_secondPfSumChHadPt,
         mu_secondPFSumPhotonEt, mu_secondPfSumPUPt,      mu_secondEmIso,        
@@ -573,7 +779,7 @@ Float_t mu_secondRhoIso,        mu_secondTrackiso,  mu_secondPfSumChHadPt,
         mu_secondNDof,          mu_secondTimeAtIpInOut,  mu_secondTimeAtIpInOutErr, 
         mu_secondTimeAtIpOutIn, mu_secondTimeAtIpOutInErr,  mu_secondPfSumNHadEt, mu_secondGlobalMuon;
 
-Float_t mu_secondInnerTrackFraction, mu_secondSegmentCompatibility,
+ Float_t mu_secondInnerTrackFraction, mu_secondSegmentCompatibility,mu_secondMotherID,
         mu_secondTrkKink,            mu_secondChi2LocalPosition, RelIso_second;
 
 
@@ -649,6 +855,13 @@ TBranch* branch_mu_mT          = newtree->Branch("mu_mT", &mu_mT, "mu_mT/F");
 TBranch* branch_vtxmu_mass     = newtree->Branch("vtxmu_mass", &vtxmu_mass, "vtxmu_mass/F");   
 
  TBranch* branch_RelIso_second  = newtree->Branch("RelIso_second", &RelIso_second ,"RelIso_second/F");
+
+ TBranch* branch_mu_secondMotherID = newtree->Branch("mu_secondMotherID" ,&mu_secondMotherID ,"mu_secondMotherID/F");
+
+ TBranch* branch_mu_second3dIP     = newtree->Branch("mu_second3dIP" ,& mu_second3dIP ,"mu_second3dIP/F");
+ TBranch* branch_mu_second3dIPSig  = newtree->Branch("mu_second3dIPSig" ,& mu_second3dIPSig ,"mu_second3dIPSig/F");
+ TBranch* branch_mu_second2dIP     = newtree->Branch("mu_second2dIP" ,& mu_second2dIP ,"mu_second2dIP/F");
+ TBranch* branch_mu_second2dIPSig  = newtree->Branch("mu_second2dIPSig" ,& mu_second2dIPSig ,"mu_second2dIPSig/F");
 
 //======================= Tracks in Second Vertex Variables ==========================================//
 
@@ -962,10 +1175,7 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
  TBranch* branch_prompt_mujet_chargedHadronEnergyFraction = newtree->Branch("prompt_mujet_chargedHadronEnergyFraction", &prompt_mujet_chargedHadronEnergyFraction,"prompt_mujet_chargedHadronEnergyFraction/F");
 
  TBranch* branch_prompt_mujet_notSmeard_pt                = newtree->Branch("prompt_mujet_notSmeard_pt" ,&prompt_mujet_notSmeard_pt,"prompt_mujet_notSmeard_pt/F");
-
  TBranch* branch_prompt_mujet_raw_pt                      = newtree->Branch("prompt_mujet_raw_pt",&prompt_mujet_notSmeard_pt,"prompt_mujet_notSmeard_pt/F");
-
-
  TBranch* branch_prompt_mujet_CsvV2        =  newtree->Branch("prompt_mujet_CsvV2", &prompt_mujet_CsvV2, "prompt_mujet_CsvV2/F");
  TBranch* branch_prompt_mujet_DeepCsv_udsg =  newtree->Branch("prompt_mujet_DeepCsv_udsg", &prompt_mujet_DeepCsv_udsg, "prompt_mujet_DeepCsv_udsg/F");
  TBranch* branch_prompt_mujet_DeepCsv_b    =  newtree->Branch("prompt_mujet_DeepCsv_b", &prompt_mujet_DeepCsv_b, "prompt_mujet_DeepCsv_b/F");
@@ -973,7 +1183,6 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
  TBranch* branch_prompt_mujet_DeepCsv_bb   =  newtree->Branch("prompt_mujet_DeepCsv_bb", &prompt_mujet_DeepCsv_bb,"prompt_mujet_DeepCsv_bb/F");
  TBranch* branch_prompt_mujet_HadronFlavor =  newtree->Branch("prompt_mujet_HadronFlavor", &prompt_mujet_HadronFlavor,"prompt_mujet_HadronFlavor/F");
  TBranch* branch_prompt_mujet_RSecMu       =  newtree->Branch("prompt_mujet_RSecMu", &prompt_mujet_RSecMu,"prompt_mujet_RSecMu/F");
-
  TBranch* branch_prompt_mujet_M=  newtree->Branch("prompt_mujet_M", &prompt_mujet_M,"prompt_mujet_M/F");
 
 
@@ -1046,6 +1255,18 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
 
  TBranch* branch_tmass_METL    = newtree->Branch("tmass_METL", &tmass_METL, "tmass_METL/F");
 
+ //=========================== systematic ================================================================//
+
+ Float_t mujetPt_JECUp, mujetPt_JECDown, mujetSmearedPt_unUp, mujetSmearedPt_unDown, sys_prefire_weight, sys_prefire_weightup, sys_prefire_weightdown;
+
+ TBranch* branch_mujetPt_JECUp           = newtree->Branch("mujetPt_JECUp",&mujetPt_JECUp,"mujetPt_JECUp/F");
+ TBranch* branch_mujetPt_JECDown         = newtree->Branch("mujetPt_JECDown",&mujetPt_JECDown,"mujetPt_JECDown/F");
+ TBranch* branch_mujetSmearedPt_unUp     = newtree->Branch("mujetSmearedPt_unUp",&mujetSmearedPt_unUp,"mujetSmearedPt_unUp/F");
+ TBranch* branch_mujetSmearedPt_unDown   = newtree->Branch("mujetSmearedPt_unDown",&mujetSmearedPt_unDown,"mujetSmearedPt_unDown/F");
+ TBranch* branch_sys_prefire_weight      = newtree->Branch("sys_prefire_weight",&sys_prefire_weight,"sys_prefire_weight/F");
+ TBranch* branch_sys_prefire_weightup    = newtree->Branch("sys_prefire_weightup",&sys_prefire_weightup,"sys_prefire_weightup/F");
+ TBranch* branch_sys_prefire_weightdown  = newtree->Branch("sys_prefire_weightdown",&sys_prefire_weightdown,"sys_prefire_weightdown/F");
+
 //======================= Start the running over input branches ==========================================//
  for (int i=0;i<oldtree->GetEntries(); i++) {
 
@@ -1060,8 +1281,15 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
       npt_ = i;
     }
 
+    unsigned wt = -1;
+    for(unsigned j=0; j<prefire_weight->size(); ++j){
+      wt = j;
+    }
+
+
     //if (passIsoMu24All==0) continue;  // cut on the trigger!
     if (passIsoMu24 == 0 && passIsoMuTk24 == 0) continue;
+    ///if ( passMu3_PFJet40  == 0 && passMu8_TrkIsoVVL  == 0 && passMu17_TrkIsoVVL == 0 && passIsoMu24 == 0 && passIsoMuTk24 == 0) continue;
     
     //cout<<"========================== This the new event ==========================="<<endl;
 
@@ -1339,8 +1567,17 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
    
     if(FirstMuon != -1 && SecondMuon != -1 && SecondVertex != -1 && mujet != -1){
     //if(FirstMuon != -1 && SecondMuon != -1 && SecondVertex != -1 ){
+                         //GenCtau = (lep2_gen_MomCTau0 > -1) ? lep2_gen_MomCTau0 : 0;
       //pile up weight
       TrueNumInteractions = (isMC) ? npT->at(npt_) : 0;
+      mc_gen_weight = (isMC) ? gen_weight  : 0;
+      mc_lhe_weight = (isMC) ? lhe_weight  : 0;
+      mc_lhe_ctau   = (isMC) ? lhe_ctau    : 0;
+
+      sys_prefire_weight     = (isMC) ? prefire_weight->at(wt)     :0;
+      sys_prefire_weightup   = (isMC) ? prefire_weightup->at(wt)   :0;
+      sys_prefire_weightdown = (isMC) ? prefire_weightdown->at(wt) :0;
+
 
       //pv info     
       pvX_        =  pvX ;
@@ -1415,6 +1652,12 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
    mu_promptRPCTofTimeAtIpOutInErr = mu_RPCTofTimeAtIpOutInErr->at(FirstMuon);
    mu_promptsize                   =  count_prompt;
 
+   mu_promptMotherID  = (isMC) ? mu_DecayChain->at(FirstMuon): 0;
+
+   mu_prompt3dIP     = mu_3dIP->at(FirstMuon);
+   mu_prompt3dIPSig  = mu_3dIPSig->at(FirstMuon);
+   mu_prompt2dIP     = mu_2dIP->at(FirstMuon);
+   mu_prompt2dIPSig  = mu_2dIPSig->at(FirstMuon);
 
    double A_eff_prompt;
 
@@ -1504,6 +1747,12 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
     double deltaBetaR3 = (charged + std::max(0.0, neutral+sumPhotonEt-0.5*pileup))/mu_secondPt;
     RelIso_second = (charged + std::max(0.0, neutral+sumPhotonEt- mu_secondRhoIso*A_eff_second))/mu_secondPt;
 
+    mu_secondMotherID  = (isMC) ? mu_DecayChain->at(SecondMuon): 0;
+
+    mu_second3dIP     = mu_3dIP->at(SecondMuon);
+    mu_second3dIPSig  = mu_3dIPSig->at(SecondMuon);
+    mu_second2dIP     = mu_2dIP->at(SecondMuon);
+    mu_second2dIPSig  = mu_2dIPSig->at(SecondMuon);
 
     TLorentzVector Mu1;
     TLorentzVector Mu2; 
@@ -1791,6 +2040,11 @@ TBranch* branch_sv_tracks_dxyz_n   =   newtree->Branch("sv_tracks_dxyz_n", &sv_t
       float hnl_m = (mujet != -1) ?  (mu_jet).M() : -999;
       hnl_mass = hnl_m ;
       mujet_M = mujetmass;
+
+      mujetPt_JECUp         =  (mujet != -1) ? jetPt_JECUp->at(mujet)          : -999;
+      mujetPt_JECDown       =  (mujet != -1) ? jetPt_JECDown->at(mujet)        : -999;
+      mujetSmearedPt_unUp   =  (mujet != -1) ? jetSmearedPt_unUp->at(mujet)    : -999;
+      mujetSmearedPt_unDown =  (mujet != -1) ? jetSmearedPt_unDown->at(mujet)  : -999;
 
       // jets closer to prompt mu 
       prompt_mujet_charge_                     = (prompt_mujet != -1) ? jet_charge->at(prompt_mujet)                      : -999;
