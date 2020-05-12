@@ -14,13 +14,14 @@ g++ -g -std=c++11 -Wl,--no-as-needed `root-config --cflags` `root-config --libs`
 ./CloneTree.exe [path/to/ntuples] [input_filename]  [isMC]
 ```
 
-Where `[path/to/ntuples]` is the full path to the ntuples location, 
-`[input_filename]` is the ROOT file name used as input and 
+Where `[path/to/ntuples]` is the full path to the ntuples location,
+`[input_filename]` is the ROOT file name used as input and
 `[isMC]` is a boolen for switch on/off some part of the code
 
 
-### __qsub__ submit
-Instruction on how to submit HNL2L2Q skim on __VUB T2__.
+### Submit on batch system
+Instruction on how to submit HNL2L2Q skim on a batch system.
+The script `submit_skim.py` will find if is running on __lxplus__ or __VUB-T2__ and it will create scripts for HTCondor or PBS.
 
 1. Compile `CloneTree.C`
 
@@ -28,7 +29,7 @@ Instruction on how to submit HNL2L2Q skim on __VUB T2__.
 g++ -g -std=c++11 -Wl,--no-as-needed `root-config --cflags` `root-config --libs` -lMinuit CloneTree.C -o CloneTree.exe
 ```
 
-2. Modify `sample.yml` where you specify the path to the different samples and the file name of each samples
+2. Modify `sample.yml` or `sample_lxplus.yml` where you specify the path to the different samples and the file name of each samples
 
 ```python
 path_sig: "/user/moanwar/heavyneutrino/CMSSW_9_4_13/src/HNL/HeavyNeutralLeptonAnalysis/test/signal_samples_mu"
@@ -36,9 +37,31 @@ path_bkg: "/pnfs/iihe/cms/store/user/moanwar/SamplesToSkimm_run5_muon"
 path_data: "/pnfs/iihe/cms/store/user/moanwar/SamplesToSkimm_run5_muon"
 ```
 
-3. Run `python submit_skim.py`:
+3. Run `python submit_skim.py` plus options:
+
   - it creates `FARM/inputs`, `FARM/logs` and `FARM/outputs` that will contain respectively scripts to be submitted, logs and the ROOT output files.
-  - it loops on the __samples__ list in `samples.yml` and create and store, in `FARM/inputs` the _.sh_ for each samples. The template bash script is:
+  - it loops on the __samples__ list in `yml` file that you parse and create and store, in `FARM/inputs` the _.sh_ for each samples.
+
+- `submit_skim.py` options:
+
+```bash
+usage: submit_skim.py [-h] --ymls [YMLS [YMLS ...]] [--onlyBackground]
+                      [--skipSignals]
+                      [--groups [{dyjets,singletop,ttV,VVV,VV} [{dyjets,singletop,ttV,VVV,VV} ...]]]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --ymls [YMLS [YMLS ...]]
+                        yml files
+  --onlyBackground      Submit skimming only for background samples
+  --skipSignals         Submit skimming skipping signals samples
+  --groups [{dyjets,singletop,ttV,VVV,VV} [{dyjets,singletop,ttV,VVV,VV} ...]]
+                        Group of sample to process [dyjets, singletop, ttV,
+                        VVV, VV]
+```
+
+- The template bash script is:
+
 
 ```bash
 bash_script_tmp = """#!/bin/bash
@@ -46,13 +69,10 @@ set -e
 
 FOLDER=\"{folder}\"
 
-source $VO_CMS_SW_DIR/cmsset_default.sh
-pushd $FOLDER
+{source_command}
+pushd {cmssw_src}
 eval `scramv1 runtime -sh`
 popd
-
-# g++ -g -std=c++11 -Wl,--no-as-needed `root-config --cflags` `root-config --libs` -lMinuit $FOLDER/CloneTree.C -o CloneTree.exe
-# cp $FOLDER/CloneTree.exe .
 
 {command}
 
@@ -60,5 +80,56 @@ mv *.root $FOLDER/{output}
 """
 ```
 
-  - it creates `skimming_submit.sh` in `FARM/inputs`, that is a list of `qsub` commands
-4. Run `bash FARM/inputs/skimming_submit.sh`
+  - it creates `skimming_submit.sh` (qsub) or `skimming_submit.cmd` (HTCondor) in `FARM/inputs`
+  - condor template:
+
+```python
+  condor_cfg = """Universe                = vanilla
+  Environment             = CONDORJOBID=$(Process)
+  requirements            = (OpSysAndVer =?= "SLCern6")
+  notification            = Error
+  when_to_transfer_output = ON_EXIT
+  transfer_output_files   = ""
+  should_transfer_files   = YES
+  executable = $(filename)
+  output = {logsfolder}/$Fn(filename).$(ClusterId).$(ProcId).out
+  error  = {logsfolder}/$Fn(filename).$(ClusterId).$(ProcId).err
+  log    = {logsfolder}/$Fn(filename).$(ClusterId).$(ProcId).log
+  +JobFlavour = "testmatch"
+  queue filename matching files {inputsfolder}/{script_wildcard}
+  """
+```
+4. Run
+  - __qsub__: `bash FARM/inputs/skimming_submit.sh`
+  - __HTCondor__: `condor_submit FARM/inputs/skimming_submit.cmd`
+
+#### Example
+
+```bash
+python submit_skim.py --ymls samples_lxplus.yml --onlyBackground --groups singletop
+```
+
+where _groups_ are defined for each sample in the yml file and should also be used to aggregate samples under the same macro process. If `--groups` is skipped, the script will loop on all the samples.
+
+```yml
+ST_s-channel_4f_leptonDecays:
+  filename: 'ST_s-channel_4f_leptonDecays.root'
+  weight: 0.000003681
+  group: singletop
+ST_tW_antitop_5f_inclusiveDecays:
+  filename: 'ST_tW_antitop_5f_inclusiveDecays.root'
+  weight: 0.000005262
+  group: singletop
+ST_tW_top_5f_inclusiveDecays:
+  filename: 'ST_tW_top_5f_inclusiveDecays.root'
+  weight: 0.000005156
+  group: singletop
+ST_t-channel_antitop_4f_inclusiveDecays:
+  filename: 'ST_t-channel_antitop_4f_inclusiveDecays.root'
+  weight: 0.000002101
+  group: singletop
+ST_t-channel_top_4f_inclusiveDecays:
+  filename: 'ST_t-channel_top_4f_inclusiveDecays.root'
+  weight: 0.000002027
+  group: singletop
+```
