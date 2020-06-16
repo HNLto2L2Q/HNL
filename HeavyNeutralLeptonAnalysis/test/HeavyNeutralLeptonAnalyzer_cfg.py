@@ -130,7 +130,7 @@ else:
                                 fileNames =  cms.untracked.vstring('file:'+options.inputFile)#'file:/pnfs/iihe/cms/store/user/tomc/heavyNeutrinoMiniAOD/Moriond17_aug2018_miniAODv3/displaced/HeavyNeutrino_lljj_M-3_V-0.00244948974278_mu_Dirac_massiveAndCKM_LO/heavyNeutrino_1.root')
                                 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 ####################################################################
 
 
@@ -251,7 +251,8 @@ process.HeavyNeutralLepton = cms.EDAnalyzer(
     electronsTight = cms.string("cutBasedElectronID-Fall17-94X-V2-tight"),
     jetsSmeared     = cms.InputTag("jetSmearing"     if isMC_ else "patJetsReapplyJEC"),
     jetsSmearedUp   = cms.InputTag("jetSmearingUp"   if isMC_ else "patJetsReapplyJEC"),
-    jetsSmearedDown = cms.InputTag("jetSmearingDown" if isMC_ else "patJetsReapplyJEC")
+    jetsSmearedDown = cms.InputTag("jetSmearingDown" if isMC_ else "patJetsReapplyJEC"),
+    electronsEffectiveAreas = cms.FileInPath('RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt')
 )
 
 process.MessageLogger = cms.Service(
@@ -264,11 +265,28 @@ process.Timing = cms.Service("Timing",
   useJobReport = cms.untracked.bool(False)
 )
 
+triggers = [
+    'HLT_IsoMu24_v*',
+    'HLT_IsoMu27_v*',
+    'HLT_Mu50_v*',
+    'HLT_Ele27_WPTight_Gsf_v*',
+    'HLT_Ele32_WPTight_Gsf_v*',
+    'HLT_Ele115_CaloIdVT_GsfTrkIdT_v*',
+]
+process.TriggerSelection = cms.EDFilter( "TriggerResultsFilter",
+                                         triggerConditions = cms.vstring(*triggers),
+                                         hltResults = cms.InputTag( "TriggerResults", "", "HLT" ),
+                                         l1tResults = cms.InputTag( "" ),
+                                         l1tIgnoreMask = cms.bool( False ),
+                                         l1techIgnorePrescales = cms.bool( False ),
+                                         daqPartitions = cms.uint32( 1 ),
+                                         throw = cms.bool( True )
+                                     )
 
 process.p = cms.Path()
 if prescale_ >= 0:  process.p *= process.prescale
 
-process.p *= process.metaTree*process.LeptonsFilter*process.egammaPostRecoSeq*process.ecalBadCalibReducedMINIAODFilter*process.fullPatMetSequence*process.displacedInclusiveVertexing*process.jetSmearingSeq*process.HeavyNeutralLepton
+process.p *= process.metaTree*process.TriggerSelection*process.LeptonsFilter*process.egammaPostRecoSeq*process.ecalBadCalibReducedMINIAODFilter*process.fullPatMetSequence*process.displacedInclusiveVertexing*process.jetSmearingSeq*process.HeavyNeutralLepton
 
 
 # crea un output EDM

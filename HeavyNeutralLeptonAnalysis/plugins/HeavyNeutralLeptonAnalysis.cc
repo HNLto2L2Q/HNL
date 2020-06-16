@@ -2,7 +2,7 @@
 //
 // Package:    HNL/HeavyNeutralLeptonAnalysis
 // Class:      HeavyNeutralLeptonAnalysis
-// 
+//
 /**\class HeavyNeutralLeptonAnalysis HeavyNeutralLeptonAnalysis.cc HNL/HeavyNeutralLeptonAnalysis/plugins/HeavyNeutralLeptonAnalysis.cc
 
  Description: [one line class summary]
@@ -79,10 +79,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
-
 #include "CondFormats/JetMETObjects/interface/JetResolution.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
-#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 
 #include "FWCore/PythonParameterSet/interface/MakeParameterSets.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
@@ -124,31 +121,50 @@ class HeavyNeutralLeptonAnalysis : public edm::one::EDAnalyzer<edm::one::SharedR
 public:
   explicit HeavyNeutralLeptonAnalysis(const edm::ParameterSet&);
   ~HeavyNeutralLeptonAnalysis();
-  
+
   reco::VertexCollection getMatchedVertex_Muon(const pat::Muon & mu, const reco::VertexCollection& vertexCollection);
   reco::VertexCollection getMatchedVertex_Electron(const pat::Electron & ele, const reco::VertexCollection& vtxCollection);
   reco::VertexCollection PrimaryVertex( const reco::VertexCollection &vtx);
   bool isAncestor(const reco::Candidate* ancestor, const reco::Candidate* particle);
-  std::pair<float, float> MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
-  std::pair<double, double> MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton);
+  std::pair<double, double> MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco);
+  double MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton);
+  double MatchGenLeptonsMC(const reco::Candidate& lepton , int pdgId);
+
+  void getDecayChain(const reco::GenParticle& gen, const std::vector<reco::GenParticle>& gen_part, std::set<int>& table);
+  unsigned GetMotherID(const reco::GenParticle* gen, const std::vector<reco::GenParticle>& genParticles);
+
+  bool bosonInTable(const std::set<int>& decays);
+  bool bQuarkInTable(const std::set<int>& decays);
+  bool bMesonInTable(const std::set<int>& decays);
+  bool bBaryonInTable(const std::set<int>& decays);
+  bool cQuarkInTable(const std::set<int>& decays);
+  bool cMesonInTable(const std::set<int>& decays);
+  bool cBaryonInTable(const std::set<int>& decays);
+  bool sBaryonInTable(const std::set<int>& decays);
+  bool lightMesonInTable(const std::set<int>& decays);
+  bool lightBaryonInTable(const std::set<int>& decays);
+  bool pi0InTable(const std::set<int>& decays);
+  bool photonInTable(const std::set<int>& decays);
+  bool tauInTable(const std::set<int>& decays);
+  bool udsInTable(const std::set<int>& decays);
+
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-  
+
   //transverse mass
   inline double MT(TLorentzVector *l, TLorentzVector *met) {
     return sqrt(pow(l->Pt() + met->Pt(), 2) - pow(l->Px() + met->Px(), 2) - pow(l->Py() + met->Py(), 2));
   }
-  
+
 
 private:
   virtual void beginJob() override;
   virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void initialize(const edm::Event&); 
+  virtual void initialize(const edm::Event&);
   virtual void endJob() override;
-    
+
   edm::Service<TFileService> fs;
   TTree * tree_;
   BigNtuple ntuple_;
-
 
   //--------------Variables------------------------
   int    debug;
@@ -159,7 +175,6 @@ private:
 
   bool   isMC;
   bool   isMCSignal;
-
   SmartSelectionMonitor mon;
 
   //--------------Template-------------------------
@@ -187,13 +202,14 @@ private:
   edm::EDGetTokenT                < LHEEventProduct > lheEventProductToken_;
   edm::EDGetTokenT         < reco::VertexCollection > inclusiveSecondaryVertices_;
 
+  EffectiveAreas electronsEffectiveAreas;
 
   const std::string eleMva_;
   const std::string eleVeto_;
   const std::string eleLoose_;
   const std::string eleMedium_;
   const std::string eleTight_;
-  
+
 protected:
   edm::Handle         < reco::VertexCollection > vtxHandle;
   edm::Handle                         < double > rhoHandle;
@@ -211,7 +227,12 @@ protected:
   edm::Handle            < edm::TriggerResults > triggerResultsHandle;
   edm::Handle            < edm::TriggerResults > metFilterResultsHandle;
   edm::Handle         < reco::VertexCollection > secondaryVertexHandle;
-  
+
+  //edm::Handle         <edm::ValueMap<float>> electronsMva;
+  edm::Handle         <edm::ValueMap<bool>> electronsVeto;
+  edm::Handle         <edm::ValueMap<bool>> electronsLoose;
+  edm::Handle         <edm::ValueMap<bool>> electronsMedium;
+  edm::Handle         <edm::ValueMap<bool>> electronsTight;
 
   /* Only for MC */
   edm::Handle    < reco::GenParticleCollection > genHandle;
@@ -220,9 +241,9 @@ protected:
   edm::Handle                < LHEEventProduct > lheEPHandle;
 
   //Prefiring stuff
-  //edm::EDGetTokenT< double > prefweight_token;
-  // edm::EDGetTokenT< double > prefweightup_token;
-  // edm::EDGetTokenT< double > prefweightdown_token;
+  edm::EDGetTokenT< double > prefweight_token;
+  edm::EDGetTokenT< double > prefweightup_token;
+  edm::EDGetTokenT< double > prefweightdown_token;
 
 
 };
@@ -263,22 +284,21 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   PUInfoToken_(consumes<std::vector<PileupSummaryInfo>>(iConfig.getParameter<edm::InputTag>("PUInfo"))),
   lheEventProductToken_(mayConsume<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheEventProducts"))),
   inclusiveSecondaryVertices_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("SecondaryVertices"))),
-  // bDiscbb_{iConfig.getParameter<std::string>("bDiscbb")},
-  // bDiscbbb_{iConfig.getParameter<std::string>("bDiscbbb")},
-  // bDiscbc_{iConfig.getParameter< std::string>("bDiscbc")},
+  electronsEffectiveAreas(iConfig.getParameter<edm::FileInPath>("electronsEffectiveAreas").fullPath()),
   eleMva_   {iConfig.getParameter<std::string>("electronsMVA")},
   eleVeto_  {iConfig.getParameter<std::string>("electronsVeto")},
   eleLoose_ {iConfig.getParameter<std::string>("electronsLoose")},
   eleMedium_{iConfig.getParameter<std::string>("electronsMedium")},
   eleTight_ {iConfig.getParameter<std::string>("electronsTight")}
+
   //prefweight_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProb"))),
   //prefweightup_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbUp"))),
   //prefweightdown_token(consumes< double >(iConfig.getParameter<edm::InputTag>("prefiringweight:NonPrefiringProbDown")))
 {
 
-  //  prefweight_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProb"));
-  // prefweightup_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbUp"));
-  // prefweightdown_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbDown"));
+  //prefweight_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProb"));
+  //prefweightup_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbUp"));
+  //prefweightdown_token = consumes< double >(edm::InputTag("prefiringweight:NonPrefiringProbDown"));
 
   //now do what ever initialization is needed
   usesResource("TFileService");
@@ -291,8 +311,12 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
     ntuple_.set_pv_genInfo(tree_);
     ntuple_.set_sv_genInfo(tree_);
   }
-  // ntuple_.set_prefiring(tree_);
+  if(isMC){
+  ntuple_.set_weightsInfo(tree_);
+  ntuple_.set_mc_genInfo(tree_);}
+  //ntuple_.set_prefiring(tree_);
   ntuple_.set_trigInfo(tree_);
+  ntuple_.set_pileupInfo(tree_);
   ntuple_.set_pvInfo(tree_);
   ntuple_.set_muInfo(tree_);
   ntuple_.set_eleInfo(tree_);
@@ -300,15 +324,14 @@ HeavyNeutralLeptonAnalysis::HeavyNeutralLeptonAnalysis(const edm::ParameterSet& 
   ntuple_.set_sv_Info(tree_);
   ntuple_.set_jetInfo(tree_);
   ntuple_.set_metInfo(tree_);
-  //  ntuple_.set_transverseMassInfo(tree_);
-  // ntuple_.set_massCorrection(tree_);  
-  //ntuple_.set_bjetInfo(tree_);
+  //ntuple_.set_transverseMassInfo(tree_);
+  //ntuple_.set_massCorrection(tree_);
 }
 
 
 HeavyNeutralLeptonAnalysis::~HeavyNeutralLeptonAnalysis()
 {
- 
+
    // do anything here that needs to be done at desctruction time
    // (e.g. close files, deallocate resources etc.)
 }
@@ -322,11 +345,11 @@ void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
   iEvent.getByToken(recHitEBToken_, recHitCollectionEBHandle);
   iEvent.getByToken(recHitEEToken_, recHitCollectionEEHandle);
   iEvent.getByToken(tausMiniAODToken_, tausHandle);
+  iEvent.getByToken(packedCandidateToken_, pfCandidatesHandle);
+  iEvent.getByToken(jetsMiniAODToken_, jetsHandle);
   iEvent.getByToken(jetSmearedToken_, jetsSmeared);
   iEvent.getByToken(jetSmearedUpToken_, jetsSmearedUp);
   iEvent.getByToken(jetSmearedDownToken_, jetsSmearedDown);
-  iEvent.getByToken(packedCandidateToken_, pfCandidatesHandle);
-  iEvent.getByToken(jetsMiniAODToken_, jetsHandle);
   iEvent.getByToken(pfMETAODToken_, metsHandle);
   iEvent.getByToken(triggerResultsToken_, triggerResultsHandle);
   iEvent.getByToken(metFilterResultsToken_, metFilterResultsHandle);
@@ -344,14 +367,14 @@ void HeavyNeutralLeptonAnalysis::initialize(const edm::Event& iEvent){
 
 //
 // member functions
-//===================================== vertex matching mu ================================================//   
+//===================================== vertex matching mu ================================================//
 reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Muon(const pat::Muon & muon, const reco::VertexCollection& vertexCollection){
   reco::VertexCollection  matchedVertices;
   const pat::PackedCandidate* cand = dynamic_cast<const pat::PackedCandidate*>(muon.sourceCandidatePtr(0).get());
   if(!cand) {
     cout << "THIS SHOULD NEVER HAPPEN! No packed candidated associated to muon?!" << endl;
   }
-  for(reco::VertexCollection::const_iterator ss = vertexCollection.begin(); ss != vertexCollection.end(); ++ss) {    
+  for(reco::VertexCollection::const_iterator ss = vertexCollection.begin(); ss != vertexCollection.end(); ++ss) {
     for(reco::Vertex::trackRef_iterator tt = ss->tracks_begin(); tt != ss->tracks_end(); ++tt) {
       float   dpt    = fabs(cand->pseudoTrack().pt() - tt->castTo<reco::TrackRef>()->pt());
       if( (cand->pseudoTrack().pt() == tt->castTo<reco::TrackRef>()->pt()) || dpt < 0.001) {
@@ -359,200 +382,335 @@ reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Muon(const p
 	break;
       }
     }
-  } 
+  }
   return matchedVertices;
 }
-//===================================== vertex matching ele ================================================// 
+//===================================== vertex matching ele ================================================//
 reco::VertexCollection HeavyNeutralLeptonAnalysis::getMatchedVertex_Electron(const pat::Electron & ele, const reco::VertexCollection& vtxCollection){
   reco::VertexCollection  matchedVertices;
   for(reco::VertexCollection::const_iterator ss = vtxCollection.begin(); ss != vtxCollection.end(); ++ss) {
     for(reco::Vertex::trackRef_iterator tt = ss->tracks_begin(); tt != ss->tracks_end(); ++tt) {
       for(edm::Ref<pat::PackedCandidateCollection> cand : ele.associatedPackedPFCandidates()){
-	float   dpt    = fabs(cand->pt() -  tt->castTo<reco::TrackRef>()->pt());
-	float   deta   = fabs(cand->eta() - tt->castTo<reco::TrackRef>()->eta());
-	if(dpt < 0.001 && deta < 0.001 && cand->charge() != 0){  //Je: to check! are those values ok? Don't we have a safer way to make the match as for the muons
+	//float   dpt    = fabs(cand->pt() -  tt->castTo<reco::TrackRef>()->pt());
+      float   deta   = fabs(cand->eta() - tt->castTo<reco::TrackRef>()->eta());
+      double dR = deltaR(cand->eta(), cand->phi(), tt->castTo<reco::TrackRef>()->eta(), tt->castTo<reco::TrackRef>()->phi());
+      //cout<<"dpt = "<<dpt<<" deta = "<<deta<<" dR = "<<dR<<endl;
+	if( dR < 0.05 or (dR < 0.1 and deta < 0.03) ){
+      //if(dpt < 0.001 && deta < 0.001 && cand->charge() != 0){  //Je: to check! are those values ok? Don't we have a safer way to make the match as for the muons
 	    matchedVertices.push_back(*ss);
 	    break;
-	  }
-	  }
+	}
       }
     }
-    return matchedVertices;
   }
-//===================================== primary vertex selection ============================================//  
+  return matchedVertices;
+}
+//===================================== primary vertex selection ============================================//
   reco::VertexCollection HeavyNeutralLeptonAnalysis::PrimaryVertex( const reco::VertexCollection &vtx)
 {
   reco::VertexCollection allPVs;
 
-  for(reco::VertexCollection::const_iterator PV = vtx.begin(); PV!=vtx.end();++PV) 
+  for(reco::VertexCollection::const_iterator PV = vtx.begin(); PV!=vtx.end();++PV)
     {
       if(!PV->isFake()) {
 	if(PV->ndof() > 4 && fabs(PV->position().z()) <= 24 && fabs(PV->position().rho()) <= 2 ) allPVs.push_back(*PV);
       }
-    } 
+    }
   return  allPVs;
 }
 
-//======================================================================================// 
-bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,const reco::Candidate* particle){
-
-const reco::Candidate * particle_mother = particle->mother(0);
-while(particle_mother->status() != 4){
-  particle_mother = particle_mother->mother(0);
-  if(particle_mother->pdgId() == ancestor->pdgId()){
-    return true;}
- }
- return false;
-
+//======================================================================================//
+bool HeavyNeutralLeptonAnalysis::isAncestor(const reco::Candidate* ancestor,const reco::Candidate* particle)
+{
+  if(ancestor->pdgId() == particle->pdgId() ) return true;
+  for(size_t i=0;i< particle->numberOfMothers();i++)
+    {
+      if(isAncestor(ancestor,particle->mother(i))) return true;
+    }
+  return false;
 }
-
 //===================================== Electron - Muon Gen Match ================================================//
-std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton){
-  
-  double recoGenDeltaR = 0.2;
-  double rho = sqrt(lepton.vx()*lepton.vx() + lepton.vy()*lepton.vy());
+ double HeavyNeutralLeptonAnalysis::MatchGenLeptons(float v_eta, float v_phi, const reco::Candidate& lepton){
   double dR = deltaR(lepton.eta(), lepton.phi(), v_eta, v_phi);
-
-  if(dR < recoGenDeltaR){ 
-    return make_pair(rho, dR);
-  }else{return make_pair(-999., -999.);}
+  double deta = sqrt( (lepton.eta() - v_eta ) * (lepton.eta() - v_eta ) );
+  if(dR < 0.03 or (dR < 0.1 and deta < 0.03)){
+  //if(dR < 0.2){
+    return dR;
+  }else{return -999.; }
 }//returns the lepton's tipe (true if is muon - false if is electron) and 1 or 0 if the lepton matches with the vertex defined by v_eta and v_phi
-
-
-//===================================== Displaced Vertex Gen Match ================================================// 
-std::pair<float, float> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco) {
-  double metric_xyz = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())) + ((vgen_z-vreco.z())*(vgen_z-vreco.z())));
-  double metric_xy = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())));      
-  return make_pair(metric_xyz, metric_xy);
+//====================================   get the decay's table   ================================================//
+void HeavyNeutralLeptonAnalysis::getDecayChain(const reco::GenParticle& gen, const std::vector<reco::GenParticle>& gp, std::set<int>& table){
+  if((table.empty() or table.find(gen.pdgId())==table.end()) and gen.pdgId() != 2212) table.insert(gen.pdgId());
+  if(gen.numberOfMothers() > 1) getDecayChain(gp[gen.motherRef(1).key()], gp, table);
+  if(gen.numberOfMothers() > 0) getDecayChain(gp[gen.motherRef(0).key()], gp, table);
 }
-  
-  
+//==================================== check whcih was the mother ================================================//
+bool HeavyNeutralLeptonAnalysis::bosonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry) > 22 && abs(entry) < 26) || (abs(entry) == 9900012);});
+}
+
+bool HeavyNeutralLeptonAnalysis::bQuarkInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry) == 5);});
+}
+
+bool HeavyNeutralLeptonAnalysis::bBaryonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry)/1000)%10 == 5;});
+}
+
+bool HeavyNeutralLeptonAnalysis::bMesonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ unsigned mod = abs(entry)%10000; return mod >= 500 && mod < 600;});
+}
+
+bool HeavyNeutralLeptonAnalysis::cQuarkInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry) == 4);});
+}
+
+ bool HeavyNeutralLeptonAnalysis::cBaryonInTable(const std::set<int>& decays){
+   return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry)/1000)%10 == 4;});
+ }
+
+bool HeavyNeutralLeptonAnalysis::cMesonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ unsigned mod = abs(entry)%10000; return mod >= 400 && mod < 500;});
+}
+
+bool HeavyNeutralLeptonAnalysis::sBaryonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ return (abs(entry)/1000)%10 == 3;});
+}
+
+bool HeavyNeutralLeptonAnalysis::lightMesonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(), [](const int entry){ unsigned mod = abs(entry)%10000; return (mod >= 100 && mod < 400) || entry == 21;});
+}
+
+bool HeavyNeutralLeptonAnalysis::lightBaryonInTable(const std::set<int>& decays){
+  return std::any_of(decays.cbegin(), decays.cend(),
+		     [](const int entry){
+		       if(abs(entry) == 2212) return false; // useless? there are no protons saved in the chain; actually those wo do appear you want to have here
+		       unsigned red = (abs(entry)/1000)%10;
+		       return (red == 1 || red == 2);
+		     });
+}
+bool HeavyNeutralLeptonAnalysis::pi0InTable(const std::set<int>& decays){return decays.count(111);}
+bool HeavyNeutralLeptonAnalysis::photonInTable(const std::set<int>& decays){return decays.count(22);}
+bool HeavyNeutralLeptonAnalysis::tauInTable(const std::set<int>& decays){return decays.count(15) or decays.count(-15);}
+bool HeavyNeutralLeptonAnalysis::udsInTable(const std::set<int>& decays){
+  if(sBaryonInTable(decays))      return true;
+  if(lightMesonInTable(decays))   return true;
+  if(lightBaryonInTable(decays))   return true;
+  return false;
+}
+//==================================== check and get the mother ID ================================================//
+unsigned HeavyNeutralLeptonAnalysis::GetMotherID(const reco::GenParticle* gen, const std::vector<reco::GenParticle>& genParticles){
+  if(!gen) return -1;
+  std::set<int> decays;
+  getDecayChain(*gen, genParticles, decays);
+  if(bosonInTable(decays)){
+    if(bMesonInTable(decays)){
+      if(cMesonInTable(decays)){
+	if(tauInTable(decays))      return 10 ; //Boson -> BMeson -> CMeson -> Tau -> Lep;
+	else                        return 20 ; //Boson -> BMeson -> CMeson -> Lep;
+      }
+      if(tauInTable(decays))        return 30 ; //Boson -> BMeson -> Tau -> Lep;
+      else                          return 40 ; //Boson -> BMeson -> Lep;
+    }
+    if(cMesonInTable(decays)){
+      if(tauInTable(decays))        return 50 ; //Boson -> CMeson -> Tau -> Lep;
+      else                          return 60 ; //Boson -> CMeson -> Lep;
+    }
+    if(udsInTable(decays))          return 70 ; //Boson -> pi_0 -> Lep;
+    if(tauInTable(decays))          return 80 ; //Boson -> Tau -> Lep;
+    else                            return 90 ; //Boson -> Lep;
+  }
+  if(bMesonInTable(decays)){
+    if(cMesonInTable(decays)){
+      if(tauInTable(decays))        return 100 ; //BMeson -> CMeson -> Tau -> Lep;
+      else                          return 120 ; //BMeson -> CMeson -> Lep;
+    }
+    if(tauInTable(decays))          return 130 ; //BMeson -> Tau -> Lep;
+    else                            return 140 ; //BMeson -> Lep;
+  }
+  if(cMesonInTable(decays)){
+    if(tauInTable(decays))          return 150 ; //CMeson -> Tau -> Lep;
+    else                            return 170 ; //CMeson -> Lep;
+  }
+  if(bBaryonInTable(decays))        return 180 ; //B_Baryon -> Lep;
+  if(cBaryonInTable(decays))        return 190 ; //C_Baryon -> Lep;
+  if(photonInTable(decays))         return 200 ; //photon -> Lep;
+  if(udsInTable(decays))            return 210 ; //pi_0 -> Lep;
+  if(bQuarkInTable(decays))         return 220 ; //B_Quark -> Lep;
+  if(cQuarkInTable(decays))         return 230 ; //C_Quark -> Lep;
+  else return 0;
+}
+//===================================== MC samples Lepton Match ==================================================//
+double HeavyNeutralLeptonAnalysis::MatchGenLeptonsMC(const reco::Candidate& lepton , int pdgId){
+  std::vector<reco::GenParticle> genParticles = *(genHandle.product());
+  double minDeltaR=999;
+  double minDeltaEta=999;
+  float decayChain = 9999;
+  for(auto& gp: genParticles) {
+    if (gp.status()==1 and gp.isLastCopy() and abs(gp.pdgId()) == pdgId ){
+      float  MotherID  =   GetMotherID(&gp , genParticles);
+      //if (MotherID > 0 ){
+	double dR = deltaR(lepton.eta(), lepton.phi(), gp.eta(), gp.phi());
+	double deta = sqrt( (lepton.eta() - gp.eta() ) * (lepton.eta() - gp.eta() ) );
+	if (dR<minDeltaR) {
+	  minDeltaR   = dR;
+	  minDeltaEta = deta;
+	  decayChain = MotherID;
+	  //}
+      }
+    }
+  }
+  if(minDeltaR < 0.1 or (minDeltaR < 0.2 and minDeltaEta < 0.1)) return decayChain;
+  else return -999.;
+}//returns the lepton's tipe (true if is muon - false if is electron) and 1 or 0 if the lepton matches with the vertex defined by v_eta and v_phi
+  //===================================== Displaced Vertex Gen Match ================================================//
+  std::pair<double, double> HeavyNeutralLeptonAnalysis::MatchGenVertex(float vgen_x, float vgen_y, float vgen_z, reco::Vertex vreco) {
+  double metric_xyz = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())) + ((vgen_z-vreco.z())*(vgen_z-vreco.z())));
+  double metric_xy = std::sqrt(((vgen_x-vreco.x())*(vgen_x-vreco.x())) + ((vgen_y-vreco.y())*(vgen_y-vreco.y())));
+  if(metric_xyz < 0.2){
+  return make_pair(metric_xyz, metric_xy);
+  }else{return make_pair(-999., -999.);}
+}
 // ------------ method called for each event  ------------
 void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
 
   initialize(iEvent);
 
-  //cout << "MET handle " <<  metsHandle.isValid() << "\n";
-
   ntuple_.reset();
-
+  ntuple_.fill_evtInfo(iEvent.id());
   /*
   edm::Handle< double > theprefweight;
   iEvent.getByToken(prefweight_token, theprefweight ) ;
-  double _prefiringweight =(*theprefweight);
+  float _prefiringweight =(*theprefweight);
 
   edm::Handle< double > theprefweightup;
   iEvent.getByToken(prefweightup_token, theprefweightup ) ;
-  double _prefiringweightup =(*theprefweightup);
+  float _prefiringweightup =(*theprefweightup);
 
   edm::Handle< double > theprefweightdown;
   iEvent.getByToken(prefweightdown_token, theprefweightdown ) ;
-  double _prefiringweightdown =(*theprefweightdown);
+  float _prefiringweightdown =(*theprefweightdown);
+  ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
   */
+  //=============================================================
+  //
+  //                 Gen level Info in monteCarlo
+  //
+  //=============================================================
+  if(isMC ){
+    // Adding gen weight and ctau infos
+    if(isMCSignal)ntuple_.fill_weightsInfo(genEventInfoHandle,lheEPHandle);
 
-  int tnpv = -1000;
-
-  if(isMC){
-    for (std::vector<PileupSummaryInfo>::const_iterator pvi = puInfoH->begin(); pvi != puInfoH->end(); ++pvi) {
-      int bx = pvi->getBunchCrossing();
-      if (bx == 0) {
-	tnpv = pvi->getTrueNumInteractions();
-	break;
+    std::vector<reco::GenParticle> genParticles = *(genHandle.product());
+    for(auto& gp: genParticles){
+      if ( (gp.status()==1 and (abs(gp.pdgId()) == 11 or abs(gp.pdgId()) == 13)) or (gp.isLastCopy() and gp.status()==2 and abs(gp.pdgId()) == 15) ){
+	float isprompt = gp.statusFlags().isPrompt();
+	float  MotherID =   GetMotherID(&gp , genParticles); //feed GetMotherID(all particles , the lep interst)
+	//cout<<" prt pdgId() = "<<gp.pdgId()<<" part mother()->pdgId() = "<<gp.mother()->pdgId()<<" part pt() = "<<gp.pt()<<" MotherID = "<<MotherID<<endl;
+	ntuple_.fill_mc_genInfo(&gp, MotherID,isprompt);
       }
     }
   }
-  //  std::cout<<"tmpv is "<<tnpv <<std::endl;
-  ntuple_.fill_evtInfo(iEvent.id(),tnpv);
-  // ntuple_.fill_prefiring(_prefiringweight, _prefiringweightup, _prefiringweightdown);
-  //============================================================= 
+
+  //=============================================================
   //
   //                 Gen level Info
   //
   //=============================================================
   if(isMCSignal){
     // mu && ele @ pv
-    
+
     std::vector<reco::GenParticle> genParticles = *(genHandle.product());
     reco::GenParticle majN;
-
-    for(auto& genPart: genParticles){
-      if ((genPart.pdgId() == 9900012 or genPart.pdgId() == 9900014 or genPart.pdgId() == 9900016) and genPart.isLastCopy()){
+    reco::GenParticle wBoson;
+      for(auto& genPart: genParticles){
+	if ( (abs(genPart.pdgId()) == 9990012 or abs(genPart.pdgId()) == 9900012 ) and abs(genPart.mother()->pdgId()) == 24){
 	majN = genPart;
-	//checking OK
-	//cout << "pt di HNL " << majN.pt() << "\n";
-	//cout << "eta di HNL " << majN.eta() << "\n";
-	//cout << "status di HNL " << majN.status() << "\n";
-	//cout << "pdgid di HNL " << majN.pdgId() << "\n";
-	ntuple_.fill_pv_genInfo(genPart,genParticles);
 	break;
       }
     }
-    
-    set<const reco::GenParticle*> finalParticles;
-    for(auto& genPart: genParticles){
-      if (genPart.status() == 1 and genPart.isLastCopy()){//genPart.status()==1 and
-	//checking OK
-	//cout << "chi sono " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
-	//cout << "chi e' mamma " << majN.pdgId() << " questo e' il suo status " << majN.status() << " questo e' il mio pt " << majN.pt() << "\n";
-	if (isAncestor(&majN, &genPart)){
-	  //cout << "chi sono (dopo is Anc) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
-	  const reco::GenParticle* mother = static_cast<const reco::GenParticle*>(genPart.mother(0));
 
-	  //I don't want to save all the gamma, just taking the pi0
-	  if (mother->pdgId()==111 and (mother->isLastCopy())){
-	    finalParticles.insert(static_cast<const reco::GenParticle*>(genPart.mother(0)));
-            //cout << "chi sono (dopo is Anc && if) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << "  uesto e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
-	  }
-	  else{
-	    //cout << "chi sono (dopo is Anc && else) " << genPart.pdgId() << " questo e' il mio status " << genPart.status() << " questo e' il mio pt " << genPart.pt() << " questo e' il mio numero di mamme " << genPart.numberOfMothers() << "\n";
-	    finalParticles.insert(&genPart);
-	    }
+    for(auto& genPart: genParticles){
+      if (abs(genPart.pdgId()) == 24){
+        wBoson = genPart;
+	break;
+      }
+    }
+
+    vector<reco::GenParticle> lep1;
+    for(auto& gp: genParticles) {
+      if (gp.status()==1 and gp.isLastCopy()){
+        const reco::Candidate * mom = gp.mother(0) ;
+	if (isAncestor(&wBoson, mom)  ){
+	  //cout<<"first mu pdgId() = "<<gp.pdgId()<<" first mu mother()->pdgId() = "<<gp.mother()->pdgId()<<" first mu pt() = "<<gp.pt()<<endl;
+          lep1.push_back(gp);
+          ntuple_.fill_pv_genInfo(majN, lep1);
+        }
+      }
+    }
+
+    //set 2 vector
+    vector<reco::GenParticle> final_particles;
+    for(auto& gp: genParticles) {
+      if (gp.status()==1 ){
+	const reco::Candidate * mom = gp.mother(0) ;
+	if (isAncestor(&majN, mom)  ){
+          //cout<<"second mu pdgId() = "<<gp.pdgId()<<" second mu mother()->pdgId() = "<<gp.mother()->pdgId()<<" second mu pt() = "<<gp.pt()<<endl;
+
+	  final_particles.push_back(gp);
+	  ntuple_.fill_sv_genInfo(majN, final_particles);
 	}
       }
     }
-    //set 2 vector
-    vector<reco::GenParticle> final_particles;
-    for(auto& gp : finalParticles) {
-      final_particles.push_back(*gp);
-    }
-    ntuple_.fill_sv_genInfo(majN, final_particles);
-}
 
+  }
 
-  //============================================================= 
+  //=============================================================
   //
   //                 Primary Vertex
-  // 
-  //=============================================================   
+  //
+  //=============================================================
   if(!vtxHandle.isValid()) return;
-  reco::VertexCollection pvs = PrimaryVertex(*vtxHandle);  
+  reco::VertexCollection pvs = PrimaryVertex(*vtxHandle);
   if(!pvs.size()) return;
-  ntuple_.fill_pvInfo(pvs);    
+  ntuple_.fill_pvInfo(pvs);
   //=============================================================
   //
   //             Trigger Info
-  //    
-  //=============================================================     
+  //
+  //=============================================================
    const edm::TriggerResults triggerResults =  *triggerResultsHandle.product();
    const edm::TriggerNames&    trigNames  = iEvent.triggerNames(triggerResults);
-   ntuple_.fill_trigInfo(triggerResults, trigNames);    
-
-   // if(ntuple_.get_passIsoMu24All() == false || ntuple_.get_passIsoMu27All() == false) return;
-   //cout << "getter " << ntuple_.get_passIsoMu24All() << "\n";
+   ntuple_.fill_trigInfo(triggerResults, trigNames);
+   //=============================================================
+   //
+   //               Pile Up Info
+   //
+   //=============================================================
+   if(isMC){
+     std::vector<PileupSummaryInfo>::const_iterator PVI;
+     for(PVI = puInfoH->begin(); PVI != puInfoH->end(); ++PVI) {
+       int BX = PVI->getBunchCrossing();
+       if(BX == 0) {
+	 npT = PVI->getTrueNumInteractions();
+	 npIT = PVI->getPU_NumInteractions();
+       }
+     }
+     ntuple_.fill_pileupInfo(npT, npIT );
+   }
 
    //=============================================================
    //
-   //                Select Muon To Fill
+   //               prepare the selection for all cases
    //
    //=============================================================
    std::string muon;
    pat::MuonCollection muons;
    vector<pat::Muon> looseMuons;
-   if(muonsHandle.isValid()){ 
+   if(muonsHandle.isValid()){
      muons = *muonsHandle;
      for(auto& mu : muons){
-       //       if(ntuple_.get_passIsoMu24All() == false || ntuple_.get_passIsoMu27All() == false) continue;
        if (!( fabs(mu.eta()) < 2.4 && mu.pt() > 5. )) continue;
        if (!mu.isLooseMuon()) continue;
        looseMuons.push_back(mu);
@@ -561,11 +719,41 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    // lambda function to sort this muons
    std::sort(looseMuons.begin(), looseMuons.end(), [](pat::Muon a, pat::Muon b) {return a.p() > b.p(); }); //p ordering
 
-   //============================================================= 
+   //vector<pat::Electron>  looseElectrons;
+   std::vector<pat::Electron> looseElectrons;
+   // using iterator to get ref for ele
+   for(auto ele = electronsHandle->begin(); ele != electronsHandle->end(); ++ele){
+     if(ele->gsfTrack().isNull() || ele->pt() < 5 || fabs(ele->eta()) > 2.5 )      continue;
+
+     if(ele->passConversionVeto() == 1) looseElectrons.push_back(*ele);
+   }
+
+   //=============================================================
+   //
+   //                Select Muon To Fill
+   //
+   //=============================================================
+
+   //fill muon branches with events at least 2 loose muons
+   if(looseMuons.size() > 1 or (looseMuons.size() > 0 and  looseElectrons.size() > 0) ){
+     for (const pat::Muon mu : looseMuons){
+       double rho = *(rhoHandle.product());
+       reco::TrackRef bestTrack = mu.muonBestTrack();
+
+       double matching_1stmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), mu) :  -999.;
+       double matching_2ndmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), mu) :  -999.;
+
+       double matching_test  = (isMC) ? MatchGenLeptonsMC(mu, 13) : -999;
+       //added the matching
+       ntuple_.fill_muInfo(mu, pvs.at(0), rho, matching_1stmu, matching_2ndmu, matching_test);
+     }
+   }
+
+   //=============================================================
    //
    //                Method for electrons
-   //                                                   
-   //============================================================= 
+   //
+   //=============================================================
 
    EcalRecHitCollection recHitCollectionEB;
    if(recHitCollectionEBHandle.isValid()){ recHitCollectionEB = *recHitCollectionEBHandle;}
@@ -573,111 +761,135 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    EcalRecHitCollection recHitCollectionEE;
    if(recHitCollectionEEHandle.isValid()){ recHitCollectionEE = *recHitCollectionEEHandle;}
 
-   vector<pat::Electron>  looseElectrons;
-   // using iterator to get ref for ele
-   for(auto ele = electronsHandle->begin(); ele != electronsHandle->end(); ++ele){
-     if(ele->gsfTrack().isNull() || ele->pt() < 5 || fabs(ele->eta()) > 2.5 )      continue;
-    
-     double rho = *(rhoHandle.product());
-     
-     auto eleRef = edm::Ref<std::vector<pat::Electron>>(electronsHandle, (ele - electronsHandle->begin()));
-     
-     std::auto_ptr<EcalClusterLazyTools> recHitEcal;
-     recHitEcal.reset(new EcalClusterLazyTools( iEvent, iSetup, recHitEBToken_, recHitEEToken_ ));
-     
-     std::pair<double, double> matching_1stele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), *ele) : make_pair(-999., -999.);
-     std::pair<double, double> matching_2ndele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), *ele) : make_pair(-999., -999.);
-     ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal);
-     
-     if(ele->full5x5_sigmaIetaIeta() <  0.036 && ele->passConversionVeto() == 1) looseElectrons.push_back(*ele); 
-     
-     float  ele_Mva_   = ele->userFloat(eleMva_   );
-     bool  ele_Veto_   = ele->electronID(eleVeto_  );
-     bool  ele_Loose_  = ele->electronID(eleLoose_ );
-     bool  ele_Medium_ = ele->electronID(eleMedium_);
-     bool  ele_Tight_  = ele->electronID(eleTight_ );
+   if(looseElectrons.size() > 1 or (looseMuons.size() > 0 and looseElectrons.size() > 0) ){
+     for(auto ele = electronsHandle->begin(); ele != electronsHandle->end(); ++ele){
+       if(ele->gsfTrack().isNull() || ele->pt() < 5 || fabs(ele->eta()) > 2.5 )      continue;
 
-     ntuple_.fill_eleIDInfo(ele_Mva_, ele_Veto_, ele_Loose_ , ele_Medium_, ele_Tight_);
+       double rho = *(rhoHandle.product());
+
+       auto eleRef = edm::Ref<std::vector<pat::Electron>>(electronsHandle, (ele - electronsHandle->begin()));
+
+       std::auto_ptr<EcalClusterLazyTools> recHitEcal;
+       recHitEcal.reset(new EcalClusterLazyTools( iEvent, iSetup, recHitEBToken_, recHitEEToken_ ));
+
+       double matching_1stele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), *ele) : -999.;
+       double matching_2ndele = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), *ele) : -999.;
+
+       double matching_test   = (isMC) ? MatchGenLeptonsMC(*ele, 11) : -999;
+
+       double charged   = ele->pfIsolationVariables().sumPhotonEt;
+       double neutral   = ele->pfIsolationVariables().sumNeutralHadronEt;
+
+       double pileup = rho*electronsEffectiveAreas.getEffectiveArea(ele->superCluster()->eta());
+
+       double RelIso = (charged + std::max(0.0, neutral-0.5*pileup))/ele->pt();
+
+
+       ntuple_.fill_eleInfo(*ele, pvs.at(0), rho , matching_1stele, matching_2ndele, recHitEcal , RelIso, matching_test);
+
+       pat::Electron eleMva = *ele;
+       float  ele_Mva_   = ele->userFloat(eleMva_   );
+       bool  ele_Veto_   = ele->electronID(eleVeto_  );
+       bool  ele_Loose_  = ele->electronID(eleLoose_ );
+       bool  ele_Medium_ = ele->electronID(eleMedium_);
+       bool  ele_Tight_  = ele->electronID(eleTight_ );
+
+       ntuple_.fill_eleIDInfo(ele_Mva_, ele_Veto_, ele_Loose_ , ele_Medium_, ele_Tight_);
+     }
    }
-   
+
    // lambda function to sort this electrons
    std::sort(looseElectrons.begin(), looseElectrons.end(), [](pat::Electron a, pat::Electron b) {return a.pt() > b.pt(); });
-   //=============================================================                    
-   //                     
-   //                Secondary Vertex                     
-   //                     
-   //============================================================= 
-   vector<reco::VertexCollection> sv;
+   //=============================================================
+   //
+   //                Secondary Vertex
+   //
+   //=============================================================
    if(secondaryVertexHandle.isValid()){
      //sv due to muon
      if(looseMuons.size() > 1){
        pat::Muon muonHNL = looseMuons[1];
        reco::VertexCollection bestVertices_mu  = getMatchedVertex_Muon(muonHNL, *secondaryVertexHandle);
-       sv.push_back(bestVertices_mu);
        // check if SV doesn't match with the PV
        for (const reco::Vertex& vtx_mu : bestVertices_mu){
 	 float x  = vtx_mu.x(), y = vtx_mu.y(), z = vtx_mu.z();
-	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();	 
+	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
-
-	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_lep2_x(), ntuple_.get_lep2_y(), ntuple_.get_lep2_z(), vtx_mu) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
-	 ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true);  // true for muons
+	 std::pair<double, double> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_mu) : make_pair(-999.,-999.);
+	 ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true, false);
        }
      }
-     //file muon branches with events contain sv
-     if(sv.size()){
-       for (const pat::Muon mu : looseMuons){
-	 double rho = *(rhoHandle.product());
-	 reco::TrackRef bestTrack = mu.muonBestTrack();
 
-	 std::pair<double, double> matching_1stmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), mu) : make_pair(-999., -999.);
-	 std::pair<double, double> matching_2ndmu = (isMC && isMCSignal) ? MatchGenLeptons(ntuple_.get_lep2_eta(), ntuple_.get_lep2_phi(), mu) : make_pair(-999., -999.);
-	 //added the matching
-	 ntuple_.fill_muInfo(mu, pvs.at(0), rho, matching_1stmu, matching_2ndmu);
-
+     if(looseMuons.size() > 0 and  looseElectrons.size() > 0){
+       pat::Muon muonHNL = looseMuons[0];
+       reco::VertexCollection bestVertices_mu  = getMatchedVertex_Muon(muonHNL, *secondaryVertexHandle);
+       for (const reco::Vertex& vtx_mu : bestVertices_mu){
+         float x  = vtx_mu.x(), y = vtx_mu.y(), z = vtx_mu.z();
+         float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
+         float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
+         if (selIVFIsPVScore < pvCompatibilityScore) continue;
+	 std::pair<double, double> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_mu) : make_pair(-999.,-999.);
+         ntuple_.fill_sv_Info(vtx_mu, pvs.at(0), matching_vtx, true, true);
        }
      }
-     
+
+
      //sv due to electron
      if(looseElectrons.size() > 1){
-       pat::Electron electronHNL = looseElectrons[1];       
+       pat::Electron electronHNL = looseElectrons[1];
        reco::VertexCollection bestVertices_ele  = getMatchedVertex_Electron(electronHNL, *secondaryVertexHandle);
-       for (const reco::Vertex& vtx_ele : bestVertices_ele){
+       for (const reco::Vertex& vtx_ele :bestVertices_ele){
 	 float x  = vtx_ele.x(), y = vtx_ele.y(), z = vtx_ele.z();
 	 float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
          float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
 	 if (selIVFIsPVScore < pvCompatibilityScore) continue;
-	 std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_lep2_x(), ntuple_.get_lep2_y(), ntuple_.get_lep2_z(), vtx_ele) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
-	 ntuple_.fill_sv_Info(vtx_ele, pvs.at(0), matching_vtx, false); // false for electrons
+	 //std::pair<float, float> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_ele) : make_pair(static_cast<float>(-999.), static_cast<float>(-999.));
+	 std::pair<double, double> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_ele) : make_pair(-999.,-999.);
+	 //cout<<"matching_vtx xyz = "<<matching_vtx.first<<" matching_vtx xy = "<<matching_vtx.second<<endl;
+	 ntuple_.fill_sv_Info(vtx_ele, pvs.at(0), matching_vtx, false, false);
+       }
+     }
+     
+     if(looseMuons.size() > 0 and  looseElectrons.size() > 0){
+       pat::Electron electronHNL = looseElectrons[0];
+       reco::VertexCollection bestVertices_ele  = getMatchedVertex_Electron(electronHNL, *secondaryVertexHandle);
+       for (const reco::Vertex& vtx_ele :bestVertices_ele){
+         float x  = vtx_ele.x(), y = vtx_ele.y(), z = vtx_ele.z();
+         float dx = x - pvs.at(0).x() , dy = y - pvs.at(0).y(), dz = z - pvs.at(0).z();
+         float  selIVFIsPVScore = std::sqrt((dx*dx) + (dy*dy) + (dz*dz));
+         if (selIVFIsPVScore < pvCompatibilityScore) continue;
+	 std::pair<double, double> matching_vtx = (isMC && isMCSignal) ? MatchGenVertex(ntuple_.get_sv_x(), ntuple_.get_sv_y(), ntuple_.get_sv_z(), vtx_ele) : make_pair(-999.,-999.);
+	 ntuple_.fill_sv_Info(vtx_ele, pvs.at(0), matching_vtx, false, true);
        }
      }
 
 
    }
-   //============================================================= 
-   //
-   //             Jets 
-   //       
    //=============================================================
+   //
+   //             Jets
+   //
+   //=============================================================
+
    edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-   iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl); 
+   iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
    JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
    JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
 
+
    pat::JetCollection jets;
-   //std::vector<tuple < std::vector<std::string>, std::vector<std::string>, std::vector<std::string> > > bDisc_info = make_tuple(bDiscbbToken_, bDiscbbbToken_, bDiscbcToken_); 
-   if(jetsHandle.isValid() && sv.size()){ 
+   //std::vector<tuple < std::vector<std::string>, std::vector<std::string>, std::vector<std::string> > > bDisc_info = make_tuple(bDiscbbToken_, bDiscbbbToken_, bDiscbcToken_);
+   if(jetsHandle.isValid() && ( looseMuons.size() > 1 || looseElectrons.size() > 1 or (looseMuons.size() > 0 and  looseElectrons.size() > 0 ) )   ){
      jets = *jetsHandle;
      for (const pat::Jet jet : jets) {
-       if( jet.pt() < 0.0 ) continue;
        if (!( fabs(jet.eta()) < 3 && jet.pt() > 5. )) continue;
 
        auto jetSmearedIt = jetsSmeared->begin();
        for(auto j = jetsSmeared->cbegin(); j != jetsSmeared->cend(); ++j){
 	 if(reco::deltaR(jet, *j) < reco::deltaR(jet, *jetSmearedIt)) jetSmearedIt = j;
        }
-       
+
        auto jetSmearedUpIt = jetsSmearedUp->begin();
        for(auto j = jetsSmearedUp->cbegin(); j != jetsSmearedUp->cend(); ++j){
 	 if(reco::deltaR(jet, *j) < reco::deltaR(jet, *jetSmearedUpIt))  jetSmearedUpIt = j;
@@ -704,54 +916,35 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
        float jetSmearedPt_JERDown = jetSmearedDownIt->pt();
        float jetSmearedPt_JERUp   = jetSmearedUpIt->pt();
 
-       //int flavor = std::abs( jet.partonFlavour() );       
-       //for( const std::string &bDiscrbb : bDiscbbToken_ ){
-       //for( const std::string &bDiscrbbb : bDiscbbbToken_ ){
-       //for( const std::string &bDiscrbc : bDiscbcToken_ ){
-	     //for(const std::tuple& bDiscr : bDisc_info)
-	     //for(std::vector::<tuple < std::vector<string>, std::vector<string>, std::vector<string> > >::const_iterator i = bDisc_info.begin(); i != bDisc_info->end(); i++){
-	     
-	     
-	     //ntuple_.fill_bjetInfo(jet, bDiscrbb, bDiscrbbb, bDiscrbc, flavor);
-       //ntuple_.fill_bjetInfo(jet, jet.bDiscriminator(*bDiscbbToken_.product().at(0)), jet.bDiscriminator(*bDiscbcToken_.product().at(0)), jet.bDiscriminator(*bDiscbbbToken_.product().at(0)), flavor);
        ntuple_.fill_jetInfo(jet ,jetSmearedPt ,jetSmearedPt_JERUp ,jetSmearedPt_JERDown ,unc ,uncSmeared );
-	     //}
-	     //}
-	     //}
      }
    }
    //=============================================================
    //
-   //            Missing Energy 
-   //     
-   //=============================================================    
+   //            Missing Energy
+   //
+   //=============================================================
    pat::METCollection mets;
 
-   //cout << "Sono fuori dall'if e sono un handle della met " <<  metsHandle.isValid() << "\n";
-
-   if(metsHandle.isValid() && sv.size()){ 
+   if(metsHandle.isValid() && ( looseMuons.size() > 1 || looseElectrons.size() > 1  or (looseMuons.size() > 0 and looseElectrons.size() > 0 ) ) ){
      mets = *metsHandle;
      const pat::MET met = mets.front();
      ntuple_.fill_metInfo(met);
-     //cout<< "Sono dentro l'if e sono un handle della met " <<  metsHandle.isValid() << " e questa e' la size del sv " << sv.size() << "\n";
    }
 
-   //pat::TauCollection taus;
-   //if(tausHandle.isValid()){ taus = *tausHandle;}
-   
-   //pat::PackedCandidateCollection pfCandidates;
-   //if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
-
-
-   //TO ADD TO THE SKIMMING - HERE IS WRONG
-   
    /*
+   pat::TauCollection taus;
+   if(tausHandle.isValid()){ taus = *tausHandle;}
+
+   pat::PackedCandidateCollection pfCandidates;
+   if (pfCandidatesHandle.isValid()) { pfCandidates = *pfCandidatesHandle; }
+
    TLorentzVector ivf_, prompt_lep;
    ivf_.SetPxPyPzE(ntuple_.get_sv_px(), ntuple_.get_sv_py(), ntuple_.get_sv_pz(), ntuple_.get_sv_en());
    prompt_lep.SetPtEtaPhiE(ntuple_.get_lep1_pt(), ntuple_.get_lep1_eta(), ntuple_.get_lep1_phi(), ntuple_.get_lep1_en());
    TLorentzVector ivfPlus_lep1 = ivf_ + prompt_lep;
 
-   if(ntuple_.get_met_px() > 0){ 
+   if(ntuple_.get_met_px() > 0){
 
    float transverse_mass_ivf = sqrt(pow(ivf_.Pt() + ntuple_.get_met_pt(), 2) - pow(ivf_.Px() + ntuple_.get_met_px(), 2) - pow(ivf_.Py() + ntuple_.get_met_py(), 2));//ivf transverse mass
    float transverse_mass_lep1 = sqrt(pow(prompt_lep.Pt() + ntuple_.get_met_pt(), 2) - pow(prompt_lep.Px() + ntuple_.get_met_px(), 2) - pow(prompt_lep.Py() + ntuple_.get_met_py(), 2));//prompt lepton transverse mass
@@ -763,30 +956,29 @@ void HeavyNeutralLeptonAnalysis::analyze(const edm::Event& iEvent, const edm::Ev
    TVector3 dir_sv, ivf3D_;
    dir_sv.SetMagThetaPhi(ntuple_.get_pvTosv_rho(), ntuple_.get_pvTosv_phi(), ntuple_.get_pvTosv_theta());
    ivf3D_.SetXYZ(ntuple_.get_sv_recox(), ntuple_.get_sv_recoy(), ntuple_.get_sv_recoz());
-   
+
    double ivf_mass = ivf_.M();
    double vertexPt2 = dir_sv.Cross(ivf3D_).Mag2() / dir_sv.Mag2();
    double mass_corrected = std::sqrt(ivf_mass * ivf_mass + vertexPt2) + std::sqrt(vertexPt2);
-   
+
    ntuple_.fill_massCorrection(mass_corrected);
    }
-
    */
-   tree_->Fill();   
+   tree_->Fill();
 }
-   
+
 
 
 
 
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 HeavyNeutralLeptonAnalysis::beginJob(){
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
+void
 HeavyNeutralLeptonAnalysis::endJob() {
 }
 

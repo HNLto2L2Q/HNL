@@ -78,7 +78,6 @@ private:
   std::map<std::string, std::string> to_json_;
   bool string_dumped_, isMC_, hasLhe_, useWeighted_, triedWeighted_;
   TH1F *pu_distro_;
-  TH1F *histo_ctau;
   unsigned int lumi_;
   unsigned int run_;
   unsigned long long processed_ = 0;
@@ -104,8 +103,8 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   pu_token_(consumes< std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puSrc"))),
   string_dumped_(false),
   isMC_(iConfig.getParameter<bool>("isMC")),
-	hasLhe_(iConfig.getParameter<bool>("hasLHE")),
-	sumw_()
+  hasLhe_(iConfig.getParameter<bool>("hasLHE")),
+  sumw_()
 {
   useWeighted_ = true;
   triedWeighted_ = false;
@@ -126,7 +125,6 @@ MetaNtuplizer::MetaNtuplizer(const edm::ParameterSet& iConfig):
   meta_tree_->Branch("sum_weigts", &sumw_);
 
   pu_distro_   = fs->make<TH1F>("PUDistribution", "PUDistribution", 100, 0, 100);
-  histo_ctau   = fs->make<TH1F>("ctau", "ctau", 100, 0, 100);
 }
 
 //
@@ -169,21 +167,6 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 		if(lheinfo->weights().size() == 0) 
 			throw cms::Exception("RuntimeError") << "The LHEInfo I got works but has not weights!" << std::endl;
 
-		vector<double> ctau_info = lheinfo.product()->hepeup().VTIMUP;
-		vector<int> ctau_pdgid = lheinfo.product()->hepeup().IDUP;
-
-		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
-
-		//for(std::vector<double>::iterator flag = ctau_info.begin(); flag != ctau_info.end(); ++flag){
-		//histo_ctau->Fill(*flag);
-		int flag = -1;
-		for(unsigned int i = 0; i < ctau_pdgid.size(); i++){	
-		  if(fabs(ctau_pdgid.at(i)) == 9990012 || fabs(ctau_pdgid.at(i)) == 9900012 || fabs(ctau_pdgid.at(i)) == 9900014 || fabs(ctau_pdgid.at(i)) == 9900016)
-		    flag = i;
-		}
-		if(flag != -1){
-		  histo_ctau->Fill(ctau_info.at(flag));}
-
 		//std::cout << weight << std::endl;
 		size_t nws = lheinfo->weights().size();
 		if(!sumw_.size()) {
@@ -198,8 +181,10 @@ void MetaNtuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup&)
 		}
 
 		weight = lheinfo->weights()[0].wgt;
+		//std::cout<<" weight = "<<weight<< std::endl;
 		for(size_t i=0; i<nws; ++i) {
 			sumw_[i] += lheinfo->weights()[i].wgt;
+			//std::cout <<"lheinfo->weights()[i].wgt "  <<lheinfo->weights()[i].wgt <<std::endl; 
 		}
 	}
 	processedWeighted_ += (weight < 0. ? -1. : 1.);
