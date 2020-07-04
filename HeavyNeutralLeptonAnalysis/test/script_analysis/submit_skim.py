@@ -17,8 +17,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--ymls", type=str, nargs='*', required=True, help="yml files" )
 parser.add_argument("--onlyBackground", action='store_true', help='Submit skimming only for background samples')
 parser.add_argument("--skipSignals", action='store_true', help='Submit skimming skipping signals samples')
-parser.add_argument("--groups", type=str, choices=["dyjets","singletop","ttV","VVV","VV"], nargs='*',
-                                help="Group of sample to process [dyjets, singletop, ttV, VVV, VV]" )
+parser.add_argument("--groups", type=str, choices=["dyjets","singletop","ttV","VVV","VV","data"], nargs='*',
+                                help="Group of sample to process [dyjets, singletop, ttV, VVV, VV, data]" )
 
 args = parser.parse_args()
 ymls = args.ymls

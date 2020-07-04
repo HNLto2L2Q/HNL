@@ -1,0 +1,286 @@
+data:
+  Run2016E_SingleMuon:
+    path: '/pnfs/iihe/cms/store/user/moanwar/SingleMuon/crab_Run15_Run2016E-17Jul2018_SingleMuon_trigAfilter_corr/200418_150505/0000/'
+    group: data
+backgrounds:
+  ttbar:
+    path: 'TT_TuneCUETP8M2T4_13TeV_MuonChannel.root'
+    weight: 0.000005408
+    color: 'b'
+  DYJetsToLL_M-50:
+    path: 'DYJetsToLL_M-50_TuneCUETP8M1.root'
+    weight: 0.000051654
+    color: 'y'
+    group: dyjets
+  DYJetsToLL_M-10to50:
+    path: 'DYJetsToLL_M-10to50_TuneCUETP8M.root'
+    weight: 0.000172819
+    color: 'y'
+    group: dyjets
+  WJetsToLNu:
+    path: 'WJetsToLNu_TuneCUETP8M1.root'
+    weight: 0.000235519
+  ST_s-channel_4f_leptonDecays:
+    path: 'ST_s-channel_4f_leptonDecays.root'
+    weight: 0.000003681
+    group: singletop
+  ST_tW_antitop_5f_inclusiveDecays:
+    path: 'ST_tW_antitop_5f_inclusiveDecays.root'
+    weight: 0.000005262
+    group: singletop
+  ST_tW_top_5f_inclusiveDecays:
+    path: 'ST_tW_top_5f_inclusiveDecays.root'
+    weight: 0.000005156
+    group: singletop
+  ST_t-channel_antitop_4f_inclusiveDecays:
+    path: 'ST_t-channel_antitop_4f_inclusiveDecays.root'
+    weight: 0.000002101
+    group: singletop
+  ST_t-channel_top_4f_inclusiveDecays:
+    path: 'ST_t-channel_top_4f_inclusiveDecays.root'
+    weight: 0.000002027
+    group: singletop
+  GluGluHToZZTo4L_M125:
+    path: 'GluGluHToZZTo4L_M125.root'
+    weight: 0.000000003
+  TTGJets:
+    path: 'TTGJets_TuneCUETP8M1.root'
+    weight: 0.000000268
+    group: ttV
+  TTWJetsToLNu:
+    path: 'TTWJetsToLNu_TuneCUETP8M1.root'
+    weight: 0.000000048
+    group: ttV
+  TTZToLLNuNu_M-10:
+    path: 'TTZToLLNuNu_M-10.root'
+    weight: 0.000000020
+    group: ttV
+  VHToNonbb_M125:
+    path: 'VHToNonbb_M125.root'
+    weight: 0.000000945
+  WpWpJJ_QCD:
+    path: 'WpWpJJ_QCD_TuneCUETP8M1.root'
+    weight: 0.000000184
+  WWW_4F:
+    path: 'WWW_4F_TuneCUETP8M1.root'
+    weight: 0.000000869
+    group: VVV
+  WWZ:
+    path: 'WWZ_TuneCUETP8M1.root'
+    weight: 0.000000660
+    group: VVV
+  WZZ:
+    path: 'WZZ_TuneCUETP8M1.root'
+    weight: 0.000000225
+    group: VVV
+  ZZZ:
+    path: 'ZZZ_TuneCUETP8M1.root'
+    weight: 0.000000056
+    group: VVV
+  WGToLNuG:
+    path: 'WGToLNuG_TuneCUETP8M1.root'
+    weight: 0.000021780
+    group: Vgamma
+  ZGTo2LG:
+    path: 'ZGTo2LG_TuneCUETP8M1.root'
+    weight: 0.000008457
+    group: Vgamma
+  WWTo2L2Nu:
+    path: 'WWTo2L2Nu_13TeV.root'
+    weight: 0.000006126
+    group: VV
+  WWToLNuQQ:
+    path: 'WWToLNuQQ_13TeV-powheg.root'
+    weight: 0.000007512
+    group: VV
+  WZTo3LNu:
+    path: 'WZTo3LNu_TuneCUETP8M1.root'
+    weight: 0.000000225
+    group: VV
+  WZTo1L3Nu:
+    path: 'WZTo1L3Nu_13TeV_amcatnloFXFX.root'
+    weight: 0.000001946
+    group: VV
+  ZZTo4L:
+    path: 'ZZTo4L_13TeV-amcatnloFXFX.root'
+    weight: 0.000000115
+    group: VV
+  ZZTo2L2Nu:
+    path: 'ZZTo2L2Nu_13TeV_powheg.root'
+    weight: 0.000000063
+    group: VV
+  ZZTo2L2Q:
+    path: 'ZZTo2L2Q_13TeV_amcatnloFXFX.root'
+    weight: 0.000000208
+    group: VV
+signals:
+  M_mu_M1_74.22:
+    path: 'M_mu_M1_74.22.root'
+    ctau: 74.22
+    mass: 1
+    weight: 0.000333641
+  M_mu_M1_14.84:
+    path: 'M_mu_M1_14.84.root'
+    ctau: 14.84
+    mass: 1
+    weight: 0.001648325
+  M_mu_M2_158.00:
+    path: 'M_mu_M2_158.00.root'
+    ctau: 158.00
+    mass: 2
+    weight: 4.351e-06
+  M_mu_M2_97.17:
+    path: 'M_mu_M2_97.17.root'
+    ctau: 97.17
+    mass: 2
+    weight: 1.0447e-05
+  M_mu_M2_64.78:
+    path: 'M_mu_M2_64.78.root'
+    ctau: 64.78
+    mass: 2
+    weight: 4.71e-05
+  M_mu_M2_41.00:
+    path: 'M_mu_M2_41.00.root'
+    ctau: 41.00
+    mass: 2
+    weight: 4.9693e-05
+  M_mu_M2_38.87:
+    path: 'M_mu_M2_38.87.root'
+    ctau: 38.87
+    mass: 2
+    weight: 7.846e-05
+  M_mu_M2_31.50:
+    path: 'M_mu_M2_31.50.root'
+    ctau: 31.50
+    mass: 2
+    weight: 3.6391e-05
+  M_mu_M3_76.07:
+    path: 'M_mu_M3_76.07.root'
+    ctau: 76.07
+    mass: 3
+    weight: 1.733e-06
+  M_mu_M3_45.64:
+    path: 'M_mu_M3_45.64.root'
+    ctau: 45.64
+    mass: 3
+    weight: 2.916e-06
+  M_mu_M3_45.55:
+    path: 'M_mu_M3_45.55.root'
+    ctau: 45.55
+    mass: 3
+    weight: 3.368e-06
+  M_mu_M3_32.60:
+    path: 'M_mu_M3_32.60.root'
+    ctau: 32.60
+    mass: 3
+    weight: 4.069e-06
+  M_mu_M3_23.15:
+    path: 'M_mu_M3_23.15.root'
+    ctau: 23.15
+    mass: 3
+    weight: 8.567e-06
+  M_mu_M3_22.82:
+    path: 'M_mu_M3_22.82.root'
+    ctau: 22.82
+    mass: 3
+    weight: 5.799e-06
+  M_mu_M4_80.84:
+    path: 'M_mu_M4_80.84.root'
+    ctau: 80.84
+    mass: 4
+    weight: 3.73e-07
+  M_mu_M4_76.87:
+    path: 'M_mu_M4_76.87.root'
+    ctau: 76.87
+    mass: 4
+    weight: 7.38e-07
+  M_mu_M4_60.63:
+    path: 'M_mu_M4_60.63.root'
+    ctau: 60.63
+    mass: 4
+    weight: 5.14e-07
+  M_mu_M4_57.47:
+    path: 'M_mu_M4_57.47.root'
+    ctau: 57.47
+    mass: 4
+    weight: 6e-07
+  M_mu_M4_48.51:
+    path: 'M_mu_M4_48.51.root'
+    ctau: 48.51
+    mass: 4
+    weight: 6.25e-07
+  M_mu_M4_24.25:
+    path: 'M_mu_M4_24.25.root'
+    ctau: 24.25
+    mass: 4
+    weight: 1.231e-06
+  M_mu_M4_16.17:
+    path: 'M_mu_M4_16.17.root'
+    ctau: 16.17
+    mass: 4
+    weight: 1.829e-06
+  M_mu_M5_92.88:
+    path: 'M_mu_M5_92.88.root'
+    ctau: 92.88
+    mass: 5
+    weight: 1.31e-07
+  M_mu_M5_69.66:
+    path: 'M_mu_M5_69.66.root'
+    ctau: 69.66
+    mass: 5
+    weight: 1e-09
+  M_mu_M5_24.61:
+    path: 'M_mu_M5_24.61.root'
+    ctau: 24.61
+    mass: 5
+    weight: 5.64e-07
+  M_mu_M5_18.46:
+    path: 'M_mu_M5_18.46.root'
+    ctau: 18.46
+    mass: 5
+    weight: 4.96e-07
+  M_mu_M5_14.77:
+    path: 'M_mu_M5_14.77.root'
+    ctau: 14.77
+    mass: 5
+    weight: 1.761e-06
+  M_mu_M6_82.25:
+    path: 'M_mu_M6_82.25.root'
+    ctau: 82.25
+    mass: 6
+    weight: 6.4e-08
+  M_mu_M6_13.72:
+    path: 'M_mu_M6_13.72.root'
+    ctau: 13.72
+    mass: 6
+    weight: 8.62e-07
+  M_mu_M6_12.53:
+    path: 'M_mu_M6_12.53.root'
+    ctau: 12.53
+    mass: 6
+    weight: 5.56e-07
+  M_mu_M8_1.89:
+    path: 'M_mu_M8_1.89.root'
+    ctau: 1.89
+    mass: 8
+    weight: 3.3e-07
+  M_mu_M8_1.56:
+    path: 'M_mu_M8_1.56.root'
+    ctau: 1.56
+    mass: 8
+    weight: 4.81e-07
+  M_mu_M8_1.25:
+    path: 'M_mu_M8_1.25.root'
+    ctau: 1.25
+    mass: 8
+    weight: 1.528e-06
+  M_mu_M10_6.90:
+    path: 'M_mu_M10_6.90.root'
+    ctau: 6.90
+    mass: 10
+    weight: 2.3e-08
+  M_mu_M10_6.28:
+    path: 'M_mu_M10_6.28.root'
+    ctau: 6.28
+    mass: 10
+    weight: 2.5e-08
